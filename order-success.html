@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmed – Aquanics</title>
-  <link rel="icon" href="/logo.png">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="logo.png">
+  
   <style>
     .success-hero {
       background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
@@ -202,6 +202,8 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header id="navbar"></header>
@@ -226,8 +228,8 @@
 
 <footer id="footer"></footer>
 
-<script src="/js/config.js"></script>
-<script src="/js/ui.js"></script>
+<script src="js/app.js"></script>
+<script src="js/app.js"></script>
 <script>
 const orderId = new URLSearchParams(window.location.search).get('id');
 
@@ -355,8 +357,8 @@ function renderOrder(order) {
           </div>
 
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
-            <a href="/account.html" class="btn btn-primary" style="justify-content:center">View All Orders</a>
-            <a href="/products.html" class="btn btn-outline" style="justify-content:center">Continue Shopping</a>
+            <a href="account.html" class="btn btn-primary" style="justify-content:center">View All Orders</a>
+            <a href="products.html" class="btn btn-outline" style="justify-content:center">Continue Shopping</a>
           </div>
         </div>
 
@@ -389,7 +391,7 @@ async function init() {
   UI.footer();
 
   if (!orderId) {
-    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/index.html" class="btn btn-primary" style="margin-top:16px">Go Home</a></div>';
+    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="index.html" class="btn btn-primary" style="margin-top:16px">Go Home</a></div>';
     return;
   }
 
@@ -398,7 +400,7 @@ async function init() {
     if (error || !order) throw new Error('Order not found');
     renderOrder(order);
   } catch(e) {
-    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/account.html" class="btn btn-primary" style="margin-top:16px">My Orders</a></div>';
+    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="account.html" class="btn btn-primary" style="margin-top:16px">My Orders</a></div>';
   }
 }
 

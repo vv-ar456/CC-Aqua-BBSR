@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Products – Aquanics</title>
-  <link rel="icon" href="/logo.png">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="logo.png">
+  
   <style>
     .layout{display:grid;grid-template-columns:260px 1fr;gap:28px;padding:28px 0 64px;align-items:start;}
     .sidebar{background:#fff;border-radius:var(--r2);padding:22px;position:sticky;top:90px;box-shadow:0 2px 16px rgba(0,212,170,.07);}
@@ -47,6 +47,8 @@
     .results-label{font-size:13px;color:var(--gray3);margin-top:2px;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="navbar"></div>
@@ -54,7 +56,7 @@
 
 <div class="container">
   <div class="breadcrumb" id="bc">
-    <a href="/index.html">Home</a><span class="breadcrumb-sep">›</span>
+    <a href="index.html">Home</a><span class="breadcrumb-sep">›</span>
     <span id="bc-label">All Products</span>
   </div>
 
@@ -137,8 +139,8 @@
 </a>
 <div id="footer"></div>
 
-<script src="/js/config.js"></script>
-<script src="/js/ui.js"></script>
+<script src="js/app.js"></script>
+<script src="js/app.js"></script>
 <script>
 const PER = 20;
 const P = new URLSearchParams(location.search);

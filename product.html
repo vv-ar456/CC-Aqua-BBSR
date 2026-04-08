@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Product – Aquanics</title>
-  <link rel="icon" href="/logo.png">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="logo.png">
+  
   <style>
     .prod-layout{display:grid;grid-template-columns:1fr 1fr;gap:52px;padding:32px 0 60px;align-items:start;}
     /* Gallery */
@@ -75,15 +75,17 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="navbar"></div>
 
 <div class="container">
   <div class="breadcrumb" id="bc">
-    <a href="/index.html">Home</a>
+    <a href="index.html">Home</a>
     <span class="breadcrumb-sep">›</span>
-    <a href="/products.html" id="bc-cat">Products</a>
+    <a href="products.html" id="bc-cat">Products</a>
     <span class="breadcrumb-sep">›</span>
     <span id="bc-name">Loading…</span>
   </div>
@@ -108,8 +110,8 @@
 </a>
 <div id="footer"></div>
 
-<script src="/js/config.js"></script>
-<script src="/js/ui.js"></script>
+<script src="js/app.js"></script>
+<script src="js/app.js"></script>
 <script>
 let prod=null, qty=1;
 const id = new URLSearchParams(location.search).get('id');
@@ -126,7 +128,7 @@ function switchTab(n){
 }
 
 function addToCart(){ if(prod) Cart.add({id:prod.id,name:prod.name,price:prod.price,image_url:prod.image_url},qty); }
-function buyNow(){ addToCart(); location.href='/cart.html'; }
+function buyNow(){ addToCart(); location.href='cart.html'; }
 
 function toggleWish(){
   if(!prod)return;
@@ -145,7 +147,7 @@ function render(p){
 
   document.title=p.name+' – Aquanics';
   document.getElementById('bc-cat').textContent=p.categories?.name||'Products';
-  document.getElementById('bc-cat').href='/products.html?cat='+(p.category_slug||'');
+  document.getElementById('bc-cat').href='products.html?cat='+(p.category_slug||'');
   document.getElementById('bc-name').textContent=p.name;
 
   document.getElementById('prod-layout').innerHTML=`
@@ -242,9 +244,9 @@ async function loadRelated(p){
 async function init(){
   await UI.nav();
   UI.footer();
-  if(!id){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="/products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
+  if(!id){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
   const p = await DB.product(id).catch(()=>null);
-  if(!p){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="/products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
+  if(!p){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
   render(p);
   loadRelated(p);
 }

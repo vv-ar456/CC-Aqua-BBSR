@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Login – Aquanics</title>
-  <link rel="icon" href="/logo.png">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="logo.png">
+  
   <style>
     body{background:linear-gradient(160deg,#020e18 0%,#051c2c 35%,#0a2d44 65%,#0f3d5c 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
     .card{background:rgba(255,255,255,.04);backdrop-filter:blur(32px);border:1px solid rgba(0,212,170,.15);border-radius:28px;padding:44px;width:100%;max-width:440px;box-shadow:0 32px 80px rgba(0,0,0,.4);}
@@ -36,10 +36,12 @@
     #msg{margin-bottom:12px;}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="card">
-  <div class="logo-wrap"><a href="/index.html"><img src="/logo.png" alt="Aquanics"></a></div>
+  <div class="logo-wrap"><a href="index.html"><img src="logo.png" alt="Aquanics"></a></div>
   <div class="tabs">
     <button class="tab on" onclick="swTab('login')">Login</button>
     <button class="tab"    onclick="swTab('reg')">Register</button>
@@ -102,10 +104,10 @@
       <button id="r-verify" class="btn btn-primary btn-lg btn-full" onclick="verifyOTP('r')">Verify & Create Account</button>
     </div>
   </div>
-  <p class="terms">By continuing, you agree to our <a href="/policies.html">Terms</a> & <a href="/policies.html#privacy">Privacy Policy</a></p>
+  <p class="terms">By continuing, you agree to our <a href="policies.html">Terms</a> & <a href="policies.html#privacy">Privacy Policy</a></p>
 </div>
 
-<script src="/js/config.js"></script>
+<script src="js/app.js"></script>
 <script>
 if(Auth.isLoggedIn()){ location.href=new URLSearchParams(location.search).get('redirect')||'/index.html'; }
 
