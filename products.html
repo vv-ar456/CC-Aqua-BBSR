@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .products-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 28px;
+      padding: 28px 0;
+    }
+
+    /* SIDEBAR FILTERS */
+    .filter-sidebar {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+    }
+    .filter-sidebar h3 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .filter-sidebar h3 button {
+      font-size: 12px;
+      color: var(--teal);
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      cursor: pointer;
+    }
+
+    .filter-group { margin-bottom: 24px; }
+    .filter-group-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gray-600);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .filter-group-title svg { width: 14px; height: 14px; transition: transform 0.2s; }
+    .filter-group.collapsed .filter-group-title svg { transform: rotate(-90deg); }
+    .filter-group.collapsed .filter-items { display: none; }
+
+    .filter-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .filter-check input[type=checkbox] { accent-color: var(--teal); width: 15px; height: 15px; }
+
+    .price-range-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .price-range-inputs input {
+      width: 80px;
+      padding: 6px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font-body);
+    }
+    .price-range-inputs span { color: var(--gray-400); font-size: 12px; }
+
+    .filter-rating {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .rating-chip {
+      padding: 4px 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      background: none;
+      font-family: var(--font-body);
+    }
+    .rating-chip.active { border-color: var(--teal); background: var(--teal); color: #fff; }
+
+    /* PRODUCTS MAIN */
+    .products-main {}
+
+    .products-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .products-topbar h1 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sort-select {
+      padding: 8px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+    .sort-select:focus { border-color: var(--teal); }
+
+    .view-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .view-btn {
+      background: none;
+      border: 1.5px solid var(--gray-200);
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--gray-400);
+      transition: var(--transition);
+    }
+    .view-btn.active { border-color: var(--teal); color: var(--teal); background: var(--gray-100); }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--teal);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .filter-tag button {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 40px;
+    }
+    .page-btn {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fff;
+      font-family: var(--font-body);
+      transition: var(--transition);
+      color: var(--text);
+    }
+    .page-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .page-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* MOBILE FILTER TOGGLE */
+    .filter-toggle-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .products-layout { grid-template-columns: 1fr; }
+      .filter-sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: 280px;
+        z-index: 1001;
+        border-radius: 0;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        padding-top: 48px;
+      }
+      .filter-sidebar.open { transform: translateX(0); }
+      .filter-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+      }
+      .filter-overlay.open { display: block; }
+      .filter-toggle-btn { display: flex; }
+      .filter-close { display: block !important; position: absolute; top: 12px; right: 12px; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header id="navbar"></header>
+
+<div class="filter-overlay" id="filter-overlay" onclick="closeFilter()"></div>
+
+<div class="container">
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="/index.html">Home</a>
+    <span class="breadcrumb-sep">›</span>
+    <span id="breadcrumb-cat">All Products</span>
+  </div>
+
+  <div class="products-layout">
+    <!-- SIDEBAR -->
+    <aside class="filter-sidebar" id="filter-sidebar">
+      <button class="view-btn filter-close" style="display:none;position:absolute;top:12px;right:12px" onclick="closeFilter()">✕</button>
+      <h3>
+        Filters
+        <button onclick="clearAllFilters()">Clear All</button>
+      </h3>
+
+      <!-- Category -->
+      <div class="filter-group" id="fg-subcategory">
+        <div class="filter-group-title" onclick="toggleFG(this)">
+          Subcategory
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-items" id="subcategory-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <div class="filter-group-title" onclick="toggleFG(this)">
+          Price Range
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-items">
+          <div class="price-range-inputs">
+            <input type="number" id="min-price" placeholder="Min" min="0">
+            <span>to</span>
+            <input type="number" id="max-price" placeholder="Max" min="0">
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%" onclick="applyPriceFilter()">Apply</button>
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div class="filter-group">
+        <div class="filter-group-title" onclick="toggleFG(this)">
+          Rating
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-items">
+          <div class="filter-rating">
+            <button class="rating-chip" onclick="setRating(4.5)">★ 4.5+</button>
+            <button class="rating-chip" onclick="setRating(4)">★ 4+</button>
+            <button class="rating-chip" onclick="setRating(3)">★ 3+</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PRODUCTS MAIN -->
+    <main class="products-main">
+      <div class="products-topbar">
+        <div>
+          <h1 id="page-title">All Products</h1>
+          <p class="results-count" id="results-count">Loading...</p>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-outline btn-sm filter-toggle-btn" onclick="openFilter()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filters
+          </button>
+          <select class="sort-select" id="sort-select" onchange="applySort()">
+            <option value="newest">Newest First</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="active-filters" id="active-filters"></div>
+
+      <div class="products-grid" id="products-grid">
+        ${Array(12).fill('<div class="skeleton skeleton-card"></div>').join('')}
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </main>
+  </div>
+</div>
+
+<a href="https://wa.me/91XXXXXXXXXX" target="_blank" class="whatsapp-btn">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+</a>
+
+<footer id="footer"></footer>
+
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+let currentFilters = {
+  category: params.get('cat') || '',
+  subcategory: params.get('sub') || '',
+  search: params.get('search') || '',
+  sort: params.get('sort') || 'newest',
+  minPrice: '',
+  maxPrice: '',
+  rating: '',
+  page: 1
+};
+const PER_PAGE = 20;
+
+function toggleFG(el) {
+  el.closest('.filter-group').classList.toggle('collapsed');
+}
+
+function openFilter() {
+  document.getElementById('filter-sidebar').classList.add('open');
+  document.getElementById('filter-overlay').classList.add('open');
+}
+function closeFilter() {
+  document.getElementById('filter-sidebar').classList.remove('open');
+  document.getElementById('filter-overlay').classList.remove('open');
+}
+
+function clearAllFilters() {
+  currentFilters = { ...currentFilters, subcategory: '', minPrice: '', maxPrice: '', rating: '', page: 1 };
+  document.getElementById('min-price').value = '';
+  document.getElementById('max-price').value = '';
+  document.querySelectorAll('.rating-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-check input').forEach(c => c.checked = false);
+  loadProducts();
+}
+
+function applySort() {
+  currentFilters.sort = document.getElementById('sort-select').value;
+  currentFilters.page = 1;
+  loadProducts();
+}
+
+function applyPriceFilter() {
+  currentFilters.minPrice = document.getElementById('min-price').value;
+  currentFilters.maxPrice = document.getElementById('max-price').value;
+  currentFilters.page = 1;
+  loadProducts();
+}
+
+function setRating(r) {
+  currentFilters.rating = r;
+  document.querySelectorAll('.rating-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  loadProducts();
+}
+
+function renderActiveTags() {
+  const el = document.getElementById('active-filters');
+  const tags = [];
+  if (currentFilters.search) tags.push({ label: `"${currentFilters.search}"`, key: 'search' });
+  if (currentFilters.minPrice || currentFilters.maxPrice)
+    tags.push({ label: `₹${currentFilters.minPrice||0}–₹${currentFilters.maxPrice||'∞'}`, key: 'price' });
+  if (currentFilters.rating) tags.push({ label: `★ ${currentFilters.rating}+`, key: 'rating' });
+  el.innerHTML = tags.map(t => `
+    <span class="filter-tag">
+      ${t.label}
+      <button onclick="removeTag('${t.key}')">×</button>
+    </span>
+  `).join('');
+}
+
+function removeTag(key) {
+  if (key === 'price') { currentFilters.minPrice = ''; currentFilters.maxPrice = ''; }
+  else currentFilters[key] = '';
+  loadProducts();
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / PER_PAGE);
+  const el = document.getElementById('pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentFilters.page - 1})" ${currentFilters.page === 1 ? 'disabled' : ''}>❮</button>`;
+  for (let i = 1; i <= Math.min(pages, 7); i++) {
+    html += `<button class="page-btn ${i === currentFilters.page ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (pages > 7) html += `<span style="padding:0 8px;color:var(--gray-400)">…</span><button class="page-btn" onclick="goPage(${pages})">${pages}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentFilters.page + 1})" ${currentFilters.page === pages ? 'disabled' : ''}>❯</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(p) {
+  currentFilters.page = p;
+  loadProducts();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadSubcategories() {
+  if (!currentFilters.category) return;
+  const cats = await Categories.getAll().catch(() => []);
+  const cat = cats.find(c => c.slug === currentFilters.category);
+  if (!cat?.subcategories?.length) {
+    document.getElementById('fg-subcategory').style.display = 'none';
+    return;
+  }
+  document.getElementById('subcategory-list').innerHTML = cat.subcategories.map(sub => `
+    <label class="filter-check">
+      <input type="checkbox" value="${sub.slug}" ${currentFilters.subcategory === sub.slug ? 'checked' : ''}
+        onchange="setSubcat(this.value, this.checked)">
+      ${sub.name}
+    </label>
+  `).join('');
+}
+
+function setSubcat(slug, checked) {
+  currentFilters.subcategory = checked ? slug : '';
+  currentFilters.page = 1;
+  loadProducts();
+}
+
+async function loadProducts() {
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = Array(8).fill('<div class="skeleton skeleton-card"></div>').join('');
+  renderActiveTags();
+
+  try {
+    let q = sb.from('products').select('*, categories(name, slug)', { count: 'exact' }).eq('active', true);
+    if (currentFilters.category) q = q.eq('category_slug', currentFilters.category);
+    if (currentFilters.subcategory) q = q.eq('subcategory_slug', currentFilters.subcategory);
+    if (currentFilters.search) q = q.ilike('name', `%${currentFilters.search}%`);
+    if (currentFilters.minPrice) q = q.gte('price', currentFilters.minPrice);
+    if (currentFilters.maxPrice) q = q.lte('price', currentFilters.maxPrice);
+    if (currentFilters.rating) q = q.gte('rating', currentFilters.rating);
+    if (currentFilters.sort === 'price_asc') q = q.order('price', { ascending: true });
+    else if (currentFilters.sort === 'price_desc') q = q.order('price', { ascending: false });
+    else if (currentFilters.sort === 'rating') q = q.order('rating', { ascending: false });
+    else q = q.order('created_at', { ascending: false });
+
+    const from = (currentFilters.page - 1) * PER_PAGE;
+    q = q.range(from, from + PER_PAGE - 1);
+
+    const { data, count, error } = await q;
+    if (error) throw error;
+
+    document.getElementById('results-count').textContent = `Showing ${data.length} of ${count} results`;
+    grid.innerHTML = data.length
+      ? data.map(p => UI.productCard(p)).join('')
+      : '<div class="empty-state"><p>No products found. Try adjusting your filters.</p></div>';
+    Wishlist.refreshButtons();
+    renderPagination(count);
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state"><p>Could not load products. Please try again.</p></div>';
+  }
+}
+
+async function init() {
+  await UI.renderNav(currentFilters.category);
+  UI.renderFooter();
+  document.getElementById('sort-select').value = currentFilters.sort;
+
+  // Set page title
+  if (currentFilters.search) {
+    document.getElementById('page-title').textContent = `Results for "${currentFilters.search}"`;
+    document.getElementById('breadcrumb-cat').textContent = `Search: ${currentFilters.search}`;
+  } else if (currentFilters.category) {
+    // Try to get category name
+    const cats = await Categories.getAll().catch(() => []);
+    const cat = cats.find(c => c.slug === currentFilters.category);
+    if (cat) {
+      document.getElementById('page-title').textContent = cat.name;
+      document.getElementById('breadcrumb-cat').textContent = cat.name;
+      document.title = `${cat.name} – Aquanics`;
+    }
+  }
+
+  loadSubcategories();
+  loadProducts();
+}
+
+init();
+</script>
+</body>
+</html>

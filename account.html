@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .account-layout{display:grid;grid-template-columns:240px 1fr;gap:28px;padding:32px 0 64px;align-items:start;}
+    .account-sidebar{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(26,122,110,0.08);position:sticky;top:100px;}
+    .acc-user{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--gray-200);margin-bottom:16px;}
+    .acc-avatar{width:48px;height:48px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0;}
+    .acc-name{font-weight:700;font-size:15px;}
+    .acc-phone{font-size:12px;color:var(--gray-400);}
+    .acc-nav{list-style:none;}
+    .acc-nav li a,.acc-nav li button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;color:var(--text);width:100%;text-align:left;background:none;border:none;font-family:var(--font-body);cursor:pointer;transition:var(--transition);}
+    .acc-nav li a:hover,.acc-nav li button:hover{background:var(--gray-100);}
+    .acc-nav li.active a,.acc-nav li.active button{background:var(--gray-100);color:var(--teal);font-weight:600;}
+    .acc-main{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:0 2px 12px rgba(26,122,110,0.08);}
+    .acc-main h2{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--gray-100);}
+    .order-card{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:14px;transition:var(--transition);}
+    .order-card:hover{border-color:var(--teal);box-shadow:var(--shadow);}
+    .order-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+    .order-id{font-size:12px;font-weight:700;color:var(--gray-600);}
+    .order-items-preview{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+    .order-item-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--gray-100);}
+    .order-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+    .order-total{font-weight:700;font-size:15px;color:var(--ocean);}
+    .order-date{font-size:12px;color:var(--gray-400);}
+    @media(max-width:768px){.account-layout{grid-template-columns:1fr;}.account-sidebar{position:static;}}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header id="navbar"></header>
+<div class="container">
+  <div id="account-content"></div>
+</div>
+<footer id="footer"></footer>
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+async function init() {
+  await UI.renderNav();
+  UI.renderFooter();
+
+  if (!Auth.isLoggedIn()) { window.location.href = '/login.html?redirect=/account.html'; return; }
+
+  const user = Auth.getUser();
+  const initial = (user.name || 'U')[0].toUpperCase();
+
+  const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+
+  document.getElementById('account-content').innerHTML = `
+    <div class="account-layout">
+      <aside class="account-sidebar">
+        <div class="acc-user">
+          <div class="acc-avatar">${initial}</div>
+          <div><div class="acc-name">${user.name}</div><div class="acc-phone">+91 ${user.phone}</div></div>
+        </div>
+        <ul class="acc-nav">
+          <li class="active"><a href="/account.html">📦 My Orders</a></li>
+          <li><a href="/wishlist.html">❤️ Wishlist</a></li>
+          <li><button onclick="Auth.logout()">🚪 Logout</button></li>
+        </ul>
+      </aside>
+      <main class="acc-main">
+        <h2>My Orders (${(orders||[]).length})</h2>
+        ${!(orders||[]).length ? '<div class="empty-state"><p>No orders yet.</p><a href="/products.html" class="btn btn-primary" style="margin-top:16px">Start Shopping</a></div>' :
+          (orders||[]).map(o => `
+            <div class="order-card">
+              <div class="order-card-top">
+                <div>
+                  <div class="order-id">Order #${(o.id||'').slice(0,8).toUpperCase()}</div>
+                  <div class="order-date">${fmt.date(o.created_at)}</div>
+                </div>
+                <span class="badge badge-${o.status}">${o.status?.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
+              </div>
+              <div class="order-items-preview">
+                ${(o.items||[]).slice(0,4).map(item => `<img class="order-item-thumb" src="${item.image_url||''}" onerror="this.style.display='none'" alt="${item.name}">`).join('')}
+                ${(o.items||[]).length > 4 ? `<div style="width:48px;height:48px;border-radius:6px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gray-400)">+${o.items.length-4}</div>` : ''}
+              </div>
+              <div class="order-footer">
+                <span class="order-total">${fmt.price(o.total)}</span>
+                <a href="/order-success.html?id=${o.id}" class="btn btn-outline btn-sm">Track Order →</a>
+              </div>
+            </div>
+          `).join('')}
+      </main>
+    </div>
+  `;
+}
+init();
+</script>
+</body>
+</html>

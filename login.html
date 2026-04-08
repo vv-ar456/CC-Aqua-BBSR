@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Register – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body{background:linear-gradient(135deg,#082f3a 0%,#0d4a5c 40%,#1a7a6e 100%);min-height:100vh;}
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.3);}
+    .auth-logo{display:flex;justify-content:center;margin-bottom:28px;}
+    .auth-logo img{height:44px;}
+    .auth-tabs{display:flex;border:2px solid var(--gray-200);border-radius:10px;margin-bottom:28px;overflow:hidden;}
+    .auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;background:none;border:none;font-family:var(--font-body);color:var(--gray-400);transition:var(--transition);}
+    .auth-tab.active{background:var(--teal);color:#fff;}
+    .auth-panel{display:none;}
+    .auth-panel.active{display:block;}
+    .field{margin-bottom:15px;}
+    .field label{display:block;font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.3px;}
+    .field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:14px;font-family:var(--font-body);color:var(--text);outline:none;transition:var(--transition);}
+    .field input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,122,110,0.1);}
+    .phone-row{display:flex;gap:8px;}
+    .ph-prefix{padding:11px 14px;background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:8px;font-size:14px;color:var(--gray-600);white-space:nowrap;display:flex;align-items:center;}
+    .otp-wrap{display:none;}
+    .otp-wrap.show{display:block;}
+    .otp-boxes{display:flex;gap:10px;justify-content:center;margin:14px 0;}
+    .otp-box{width:50px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--gray-200);border-radius:10px;font-family:var(--font-display);outline:none;transition:var(--transition);color:var(--ocean);}
+    .otp-box:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,122,110,0.15);}
+    .otp-timer{text-align:center;font-size:13px;color:var(--gray-400);margin-bottom:14px;}
+    .otp-timer .resend{color:var(--teal);cursor:pointer;font-weight:600;}
+    .otp-timer .resend:hover{text-decoration:underline;}
+    .back-link{background:none;border:none;color:var(--teal);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
+    .back-link:hover{text-decoration:underline;}
+    .btn-block{width:100%;justify-content:center;margin-top:4px;}
+    .terms{font-size:12px;color:var(--gray-400);text-align:center;margin-top:14px;line-height:1.6;}
+    .terms a{color:var(--teal);}
+    .step1{}
+    .step2{display:none;}
+    .step2.show{display:block;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo"><a href="/index.html"><img src="/logo.png" alt="Aquanics"></a></div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="auth-msg"></div>
+
+    <!-- ===== LOGIN ===== -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="step1" id="login-s1">
+        <div class="field">
+          <label>Mobile Number</label>
+          <div class="phone-row">
+            <span class="ph-prefix">🇮🇳 +91</span>
+            <input type="tel" id="login-phone" placeholder="10-digit number" maxlength="10" inputmode="numeric"
+              onkeydown="if(event.key==='Enter') sendOTP('login')">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" id="login-send-btn" onclick="sendOTP('login')">Send OTP</button>
+      </div>
+
+      <div class="step2" id="login-s2">
+        <button class="back-link" onclick="backToPhone('login')">← Change number</button>
+        <p style="font-size:14px;color:var(--gray-600);text-align:center;margin-bottom:4px">
+          OTP sent to <strong id="login-phone-show"></strong>
+        </p>
+        <div class="otp-boxes" id="login-otp">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'login-otp')">
+        </div>
+        <div class="otp-timer" id="login-timer"></div>
+        <button class="btn btn-primary btn-lg btn-block" id="login-verify-btn" onclick="verifyOTP('login')">Verify & Login</button>
+      </div>
+    </div>
+
+    <!-- ===== REGISTER ===== -->
+    <div class="auth-panel" id="panel-register">
+      <div class="step1" id="reg-s1">
+        <div class="field">
+          <label>Full Name *</label>
+          <input type="text" id="reg-name" placeholder="Your full name">
+        </div>
+        <div class="field">
+          <label>Email <span style="font-weight:400;text-transform:none">(optional)</span></label>
+          <input type="email" id="reg-email" placeholder="your@email.com">
+        </div>
+        <div class="field">
+          <label>Mobile Number *</label>
+          <div class="phone-row">
+            <span class="ph-prefix">🇮🇳 +91</span>
+            <input type="tel" id="reg-phone" placeholder="10-digit number" maxlength="10" inputmode="numeric">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" id="reg-send-btn" onclick="sendOTP('register')">Send OTP</button>
+      </div>
+
+      <div class="step2" id="reg-s2">
+        <button class="back-link" onclick="backToPhone('register')">← Go back</button>
+        <p style="font-size:14px;color:var(--gray-600);text-align:center;margin-bottom:4px">
+          OTP sent to <strong id="reg-phone-show"></strong>
+        </p>
+        <div class="otp-boxes" id="reg-otp">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+          <input class="otp-box" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,'reg-otp')">
+        </div>
+        <div class="otp-timer" id="reg-timer"></div>
+        <button class="btn btn-primary btn-lg btn-block" id="reg-verify-btn" onclick="verifyOTP('register')">Verify & Create Account</button>
+      </div>
+    </div>
+
+    <p class="terms">By continuing you agree to our
+      <a href="/policies.html">Terms</a> &amp; <a href="/policies.html#privacy">Privacy Policy</a>
+    </p>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script>
+// If already logged in, bounce away
+if (Auth.isLoggedIn()) {
+  window.location.href = new URLSearchParams(location.search).get('redirect') || '/index.html';
+}
+
+// State
+let loginSessId = null, regSessId = null;
+let loginPhone  = '',    regPhone  = '';
+let regName = '', regEmail = '';
+let timerInterval = {};
+
+// ── Tab switch ──────────────────────────────
+function switchTab(t) {
+  ['login','register'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===t);
+    document.getElementById('panel-'+x).classList.toggle('active', x===t);
+  });
+  showMsg('');
+}
+
+// ── Message banner ──────────────────────────
+function showMsg(msg, type='error') {
+  document.getElementById('auth-msg').innerHTML = msg
+    ? `<div class="alert alert-${type}" style="margin-bottom:14px">${msg}</div>` : '';
+}
+
+// ── OTP box keyboard nav ────────────────────
+function otpKey(input, containerId) {
+  const boxes = [...document.getElementById(containerId).querySelectorAll('.otp-box')];
+  const idx   = boxes.indexOf(input);
+  if (input.value && idx < boxes.length - 1) boxes[idx+1].focus();
+  if (event.key === 'Backspace' && !input.value && idx > 0) boxes[idx-1].focus();
+  const otp = boxes.map(b => b.value).join('');
+  if (otp.length === 6) {
+    if (containerId === 'login-otp') verifyOTP('login');
+    else verifyOTP('register');
+  }
+}
+
+function getOTP(containerId) {
+  return [...document.getElementById(containerId).querySelectorAll('.otp-box')].map(b=>b.value).join('');
+}
+
+// ── Timer ───────────────────────────────────
+function startTimer(prefix, resendFn) {
+  clearInterval(timerInterval[prefix]);
+  let secs = 30;
+  const el = document.getElementById(prefix+'-timer');
+  const tick = () => {
+    el.innerHTML = `Resend OTP in <strong>${secs}s</strong>`;
+    if (--secs < 0) {
+      clearInterval(timerInterval[prefix]);
+      el.innerHTML = `<span class="resend" onclick="${resendFn}">Resend OTP</span>`;
+    }
+  };
+  tick();
+  timerInterval[prefix] = setInterval(tick, 1000);
+}
+
+// ── Show step 2 ─────────────────────────────
+function showStep2(prefix, phone) {
+  document.getElementById(prefix+'-s1').style.display = 'none';
+  const s2 = document.getElementById(prefix+'-s2');
+  s2.classList.add('show');
+  document.getElementById(prefix+'-phone-show').textContent = '+91 ' + phone;
+  document.getElementById(prefix+'-otp').querySelectorAll('.otp-box').forEach(b=>b.value='');
+  document.getElementById(prefix+'-otp').querySelector('.otp-box').focus();
+  const resendCall = prefix==='login' ? "sendOTP('login')" : "sendOTP('register')";
+  startTimer(prefix, resendCall);
+}
+
+function backToPhone(prefix) {
+  document.getElementById(prefix+'-s1').style.display = '';
+  document.getElementById(prefix+'-s2').classList.remove('show');
+  clearInterval(timerInterval[prefix]);
+  showMsg('');
+}
+
+// ── SEND OTP ────────────────────────────────
+async function sendOTP(mode) {
+  showMsg('');
+
+  if (mode === 'login') {
+    loginPhone = document.getElementById('login-phone').value.trim();
+    if (!/^[6-9]\d{9}$/.test(loginPhone)) { showMsg('Enter a valid 10-digit mobile number'); return; }
+
+    const btn = document.getElementById('login-send-btn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      loginSessId = await OTP.send(loginPhone);
+      showStep2('login', loginPhone);
+    } catch(e) { showMsg('Could not send OTP: ' + e.message); }
+    btn.disabled = false; btn.textContent = 'Send OTP';
+
+  } else {
+    regName  = document.getElementById('reg-name').value.trim();
+    regEmail = document.getElementById('reg-email').value.trim();
+    regPhone = document.getElementById('reg-phone').value.trim();
+
+    if (!regName)                          { showMsg('Please enter your name'); return; }
+    if (!/^[6-9]\d{9}$/.test(regPhone))   { showMsg('Enter a valid 10-digit mobile number'); return; }
+
+    // Check duplicate before sending OTP
+    const { data: existing } = await sb.from('users').select('id').eq('phone', regPhone).maybeSingle();
+    if (existing) { showMsg('Account already exists with this number. Please login.'); switchTab('login'); return; }
+
+    const btn = document.getElementById('reg-send-btn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      regSessId = await OTP.send(regPhone);
+      showStep2('reg', regPhone);
+    } catch(e) { showMsg('Could not send OTP: ' + e.message); }
+    btn.disabled = false; btn.textContent = 'Send OTP';
+  }
+}
+
+// ── VERIFY OTP & complete auth ───────────────
+async function verifyOTP(mode) {
+  showMsg('');
+
+  if (mode === 'login') {
+    const otp = getOTP('login-otp');
+    if (otp.length < 6) { showMsg('Enter all 6 digits'); return; }
+
+    const btn = document.getElementById('login-verify-btn');
+    btn.disabled = true; btn.textContent = 'Verifying…';
+
+    try {
+      await OTP.verify(loginSessId, otp);
+
+      // Fetch user from DB
+      const { data: user, error } = await sb.from('users').select('*').eq('phone', loginPhone).maybeSingle();
+      if (!user) {
+        showMsg('No account found for this number. Please register first.');
+        btn.disabled = false; btn.textContent = 'Verify & Login';
+        return;
+      }
+
+      // Create session row in DB
+      const token = crypto.randomUUID();
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+      await sb.from('sessions').insert([{ token, user_id: user.id, expires_at: expires }]);
+
+      Auth.setSession(user, token);
+      showMsg('Login successful! Redirecting…', 'success');
+      setTimeout(() => {
+        window.location.href = new URLSearchParams(location.search).get('redirect') || '/index.html';
+      }, 800);
+
+    } catch(e) {
+      showMsg('Verification failed: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Verify & Login';
+    }
+
+  } else {
+    const otp = getOTP('reg-otp');
+    if (otp.length < 6) { showMsg('Enter all 6 digits'); return; }
+
+    const btn = document.getElementById('reg-verify-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+
+    try {
+      await OTP.verify(regSessId, otp);
+
+      // Create user in Supabase
+      const { data: user, error } = await sb.from('users').insert([{
+        phone:      regPhone,
+        name:       regName,
+        email:      regEmail || null,
+        created_at: new Date().toISOString()
+      }]).select().single();
+
+      if (error) throw new Error(error.message);
+
+      // Create session in DB
+      const token   = crypto.randomUUID();
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await sb.from('sessions').insert([{ token, user_id: user.id, expires_at: expires }]);
+
+      Auth.setSession(user, token);
+      showMsg('Account created! Redirecting…', 'success');
+      setTimeout(() => {
+        window.location.href = new URLSearchParams(location.search).get('redirect') || '/index.html';
+      }, 800);
+
+    } catch(e) {
+      showMsg('Could not create account: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Verify & Create Account';
+    }
+  }
+}
+</script>
+</body>
+</html>

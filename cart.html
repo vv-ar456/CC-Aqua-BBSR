@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart & Checkout – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+      padding: 32px 0 64px;
+      align-items: start;
+    }
+
+    /* STEPS */
+    .checkout-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 28px;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      color: var(--gray-400);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step.active .step-num { background: var(--teal); color: #fff; }
+    .step.done .step-num { background: #22a898; color: #fff; }
+    .step-label { font-size: 13px; font-weight: 600; color: var(--gray-400); }
+    .step.active .step-label, .step.done .step-label { color: var(--text); }
+    .step-sep { flex: 1; height: 2px; background: var(--gray-200); max-width: 60px; }
+    .step.done + .step-sep { background: var(--teal); }
+
+    /* CART ITEMS */
+    .cart-section {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+    }
+    .cart-section h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-img {
+      width: 80px; height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--gray-100);
+    }
+    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .cart-item-price { font-size: 15px; font-weight: 700; color: var(--ocean); }
+
+    .item-qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .iq-btn {
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--gray-200);
+      background: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .iq-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .iq-num {
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .item-remove {
+      font-size: 12px;
+      color: #e05;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      margin-top: 4px;
+    }
+    .item-remove:hover { text-decoration: underline; }
+
+    .cart-item-total {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ocean);
+      text-align: right;
+    }
+
+    /* ADDRESS */
+    .address-section {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+      margin-top: 20px;
+    }
+    .address-section h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .address-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .address-form .field { margin-bottom: 0; }
+    .address-form .field.full { grid-column: 1 / -1; }
+    .address-form input, .address-form select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: var(--transition);
+    }
+    .address-form input:focus { border-color: var(--teal); }
+    .address-form label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 5px;
+    }
+
+    /* ORDER SUMMARY */
+    .order-summary {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+      position: sticky;
+      top: 100px;
+    }
+    .order-summary h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .summary-row.total {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      border-top: 2px solid var(--gray-100);
+      margin-top: 8px;
+      padding-top: 14px;
+      color: var(--ocean);
+    }
+    .summary-row .label { color: var(--gray-600); }
+    .summary-row .val { font-weight: 600; }
+    .summary-row.discount .val { color: var(--teal); }
+
+    .promo-row {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .promo-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+    }
+    .promo-row input:focus { border-color: var(--teal); }
+
+    .pay-btn {
+      width: 100%;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      cursor: pointer;
+      margin-top: 20px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .pay-btn:hover { background: var(--teal-dark); }
+    .pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 12px;
+    }
+
+    .payment-logos {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .pay-logo {
+      background: var(--gray-100);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .empty-cart h3 { font-size: 20px; margin-bottom: 8px; }
+    .empty-cart p { color: var(--gray-400); font-size: 14px; margin-bottom: 24px; }
+
+    @media (max-width: 900px) {
+      .checkout-layout { grid-template-columns: 1fr; }
+      .order-summary { position: static; }
+      .address-form { grid-template-columns: 1fr; }
+      .address-form .field.full { grid-column: 1; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+<header id="navbar"></header>
+
+<div class="container">
+  <!-- STEPS -->
+  <div class="checkout-steps">
+    <div class="step done" id="step-cart">
+      <div class="step-num">1</div>
+      <span class="step-label">Cart</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step active" id="step-delivery">
+      <div class="step-num">2</div>
+      <span class="step-label">Delivery</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step" id="step-payment">
+      <div class="step-num">3</div>
+      <span class="step-label">Payment</span>
+    </div>
+  </div>
+
+  <div id="cart-content"></div>
+</div>
+
+<footer id="footer"></footer>
+
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+const DELIVERY_FEE_THRESHOLD = 599;
+const DELIVERY_FEE = 49;
+let appliedPromo = null;
+
+function getDeliveryFee(subtotal) {
+  return subtotal >= DELIVERY_FEE_THRESHOLD ? 0 : DELIVERY_FEE;
+}
+
+function getDiscount(subtotal) {
+  if (!appliedPromo) return 0;
+  if (appliedPromo.type === 'percent') return Math.round(subtotal * appliedPromo.value / 100);
+  return appliedPromo.value;
+}
+
+function renderCart() {
+  const items = Cart.get();
+  const contentEl = document.getElementById('cart-content');
+
+  if (!items.length) {
+    contentEl.innerHTML = `
+      <div class="empty-cart">
+        <div style="font-size:60px;margin-bottom:16px">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Add some items to get started</p>
+        <a href="/products.html" class="btn btn-primary btn-lg">Browse Products</a>
+      </div>
+    `;
+    return;
+  }
+
+  const subtotal = Cart.total();
+  const delivery = getDeliveryFee(subtotal);
+  const discount = getDiscount(subtotal);
+  const total = subtotal + delivery - discount;
+
+  contentEl.innerHTML = `
+    <div class="checkout-layout">
+      <div>
+        <!-- CART ITEMS -->
+        <div class="cart-section">
+          <h2>🛒 Cart (${Cart.count()} items)</h2>
+          ${items.map(item => `
+            <div class="cart-item">
+              <div class="cart-item-img">
+                <img src="${item.image_url || '/assets/placeholder.jpg'}" alt="${item.name}">
+              </div>
+              <div>
+                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-price">${fmt.price(item.price)}</div>
+                <div class="item-qty-ctrl">
+                  <button class="iq-btn" onclick="updateQty(${item.id}, ${item.qty - 1})">−</button>
+                  <span class="iq-num">${item.qty}</span>
+                  <button class="iq-btn" onclick="updateQty(${item.id}, ${item.qty + 1})">+</button>
+                  <button class="item-remove" onclick="removeItem(${item.id})">Remove</button>
+                </div>
+              </div>
+              <div class="cart-item-total">${fmt.price(item.price * item.qty)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- ADDRESS -->
+        <div class="address-section">
+          <h2>📍 Delivery Address</h2>
+          <div class="address-form">
+            <div class="field">
+              <label>Full Name *</label>
+              <input type="text" id="addr-name" placeholder="Recipient name" value="${Auth.getUser()?.name || ''}">
+            </div>
+            <div class="field">
+              <label>Phone *</label>
+              <input type="tel" id="addr-phone" placeholder="10-digit number" maxlength="10" inputmode="numeric" value="${Auth.getUser()?.phone || ''}">
+            </div>
+            <div class="field full">
+              <label>House / Flat / Building *</label>
+              <input type="text" id="addr-line1" placeholder="House no., flat, building name">
+            </div>
+            <div class="field full">
+              <label>Street / Area / Locality *</label>
+              <input type="text" id="addr-line2" placeholder="Street, area, locality">
+            </div>
+            <div class="field">
+              <label>City *</label>
+              <input type="text" id="addr-city" placeholder="City">
+            </div>
+            <div class="field">
+              <label>State *</label>
+              <select id="addr-state">
+                <option value="">Select State</option>
+                ${['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir'].map(s => `<option>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field">
+              <label>PIN Code *</label>
+              <input type="text" id="addr-pin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="order-summary">
+        <h2>Order Summary</h2>
+        <div class="summary-row">
+          <span class="label">Subtotal (${Cart.count()} items)</span>
+          <span class="val">${fmt.price(subtotal)}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Delivery Fee</span>
+          <span class="val ${delivery === 0 ? '' : ''}">${delivery === 0 ? '<span style="color:var(--teal)">FREE</span>' : fmt.price(delivery)}</span>
+        </div>
+        ${discount ? `
+          <div class="summary-row discount">
+            <span class="label">Discount (${appliedPromo.code})</span>
+            <span class="val">−${fmt.price(discount)}</span>
+          </div>
+        ` : ''}
+        ${delivery > 0 ? `<p style="font-size:11px;color:var(--teal);text-align:right;margin-top:-4px">Add ${fmt.price(DELIVERY_FEE_THRESHOLD - subtotal)} more for free delivery</p>` : ''}
+
+        <div class="promo-row">
+          <input type="text" id="promo-input" placeholder="Promo code" style="text-transform:uppercase">
+          <button class="btn btn-outline btn-sm" onclick="applyPromo()">Apply</button>
+        </div>
+        <div id="promo-msg"></div>
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>${fmt.price(total)}</span>
+        </div>
+
+        <button class="pay-btn" onclick="proceedToPayment()">
+          🔒 Pay ${fmt.price(total)}
+        </button>
+
+        <div class="secure-badge">
+          🛡️ Safe & Secure Checkout
+        </div>
+
+        <div class="payment-logos">
+          <span class="pay-logo">VISA</span>
+          <span class="pay-logo">Mastercard</span>
+          <span class="pay-logo">UPI</span>
+          <span class="pay-logo">Net Banking</span>
+          <span class="pay-logo">Razorpay</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function updateQty(id, qty) {
+  Cart.updateQty(id, qty);
+  renderCart();
+}
+
+function removeItem(id) {
+  Cart.remove(id);
+  renderCart();
+}
+
+async function applyPromo() {
+  const code = document.getElementById('promo-input').value.trim().toUpperCase();
+  if (!code) return;
+  const msgEl = document.getElementById('promo-msg');
+
+  try {
+    const { data, error } = await sb.from('promo_codes').select('*').eq('code', code).eq('active', true).single();
+    if (error || !data) { msgEl.innerHTML = '<div class="alert alert-error">Invalid promo code</div>'; return; }
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      msgEl.innerHTML = '<div class="alert alert-error">This promo code has expired</div>'; return;
+    }
+    appliedPromo = data;
+    msgEl.innerHTML = `<div class="alert alert-success">✓ Promo applied: ${data.description}</div>`;
+    renderCart();
+  } catch(e) {
+    msgEl.innerHTML = '<div class="alert alert-error">Could not apply promo code</div>';
+  }
+}
+
+function getAddress() {
+  return {
+    name: document.getElementById('addr-name')?.value?.trim(),
+    phone: document.getElementById('addr-phone')?.value?.trim(),
+    line1: document.getElementById('addr-line1')?.value?.trim(),
+    line2: document.getElementById('addr-line2')?.value?.trim(),
+    city: document.getElementById('addr-city')?.value?.trim(),
+    state: document.getElementById('addr-state')?.value,
+    pin: document.getElementById('addr-pin')?.value?.trim(),
+  };
+}
+
+function validateAddress(addr) {
+  if (!addr.name) return 'Please enter recipient name';
+  if (!/^[6-9]\d{9}$/.test(addr.phone)) return 'Please enter a valid phone number';
+  if (!addr.line1) return 'Please enter your address';
+  if (!addr.city) return 'Please enter city';
+  if (!addr.state) return 'Please select state';
+  if (!/^\d{6}$/.test(addr.pin)) return 'Please enter a valid 6-digit PIN code';
+  return null;
+}
+
+async function proceedToPayment() {
+  if (!Auth.isLoggedIn()) {
+    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+    return;
+  }
+
+  const addr = getAddress();
+  const err = validateAddress(addr);
+  if (err) { alert(err); return; }
+
+  const items = Cart.get();
+  const subtotal = Cart.total();
+  const delivery = getDeliveryFee(subtotal);
+  const discount = getDiscount(subtotal);
+  const total = subtotal + delivery - discount;
+
+  const user = Auth.getUser();
+
+  const options = {
+    key: RAZORPAY_KEY,
+    amount: total * 100, // paise
+    currency: 'INR',
+    name: 'Aquanics',
+    description: `Order (${items.length} items)`,
+    image: '/logo.png',
+    prefill: {
+      name: addr.name,
+      contact: '+91' + addr.phone,
+      email: user?.email || ''
+    },
+    theme: { color: '#1a7a6e' },
+    handler: async function(response) {
+      await handlePaymentSuccess(response, items, addr, total);
+    },
+    modal: {
+      ondismiss: function() {
+        document.querySelector('.pay-btn').disabled = false;
+        document.querySelector('.pay-btn').innerHTML = `🔒 Pay ${fmt.price(total)}`;
+      }
+    }
+  };
+
+  document.querySelector('.pay-btn').disabled = true;
+  document.querySelector('.pay-btn').textContent = 'Opening payment…';
+
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+async function handlePaymentSuccess(response, items, addr, total) {
+  try {
+    const user = Auth.getUser();
+    const { data: order, error } = await sb.from('orders').insert([{
+      user_id: user.id,
+      items: items,
+      address: addr,
+      subtotal: Cart.total(),
+      delivery_fee: getDeliveryFee(Cart.total()),
+      discount: getDiscount(Cart.total()),
+      total: total,
+      payment_id: response.razorpay_payment_id,
+      payment_status: 'paid',
+      status: 'confirmed',
+      promo_code: appliedPromo?.code || null,
+      created_at: new Date().toISOString()
+    }]).select().single();
+
+    if (error) throw error;
+
+    // Update sales count
+    for (const item of items) {
+      await sb.rpc('increment_sales', { product_id: item.id, qty: item.qty });
+    }
+
+    Cart.clear();
+    window.location.href = `/order-success.html?id=${order.id}`;
+  } catch(e) {
+    alert('Payment received but order saving failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+  }
+}
+
+async function init() {
+  await UI.renderNav();
+  UI.renderFooter();
+  renderCart();
+}
+
+init();
+</script>
+</body>
+</html>

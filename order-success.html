@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .success-hero {
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+      padding: 32px 0;
+      text-align: center;
+      color: #fff;
+    }
+    .success-hero h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .success-hero p { font-size: 14px; opacity: 0.85; }
+
+    .progress-steps {
+      display: flex;
+      background: var(--teal-dark);
+      padding: 16px 24px;
+      max-width: 700px;
+      margin: 0 auto;
+      gap: 0;
+    }
+    .prog-step {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      position: relative;
+      padding-top: 28px;
+    }
+    .prog-step::before {
+      content: attr(data-n);
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .prog-step.done::before { background: #fff; color: var(--teal); content: '✓'; }
+    .prog-step.done { color: rgba(255,255,255,0.9); }
+    .prog-step.active::before { background: var(--gold); color: #fff; content: attr(data-n); }
+    .prog-step.active { color: #fff; }
+
+    .order-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      padding: 32px 0 64px;
+      align-items: start;
+    }
+
+    .order-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+      margin-bottom: 20px;
+    }
+    .order-card h3 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+
+    /* TRACKING TIMELINE */
+    .track-timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+    .track-timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--gray-200);
+    }
+    .track-event {
+      position: relative;
+      padding: 0 0 20px;
+    }
+    .track-event::before {
+      content: '';
+      position: absolute;
+      left: -26px; top: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      border: 2.5px solid #fff;
+    }
+    .track-event.done::before { background: var(--teal); }
+    .track-event.active::before { background: var(--gold); box-shadow: 0 0 0 4px rgba(200,136,58,0.2); }
+    .track-event-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .track-event:not(.done):not(.active) .track-event-title { color: var(--gray-400); }
+    .track-event-time { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+    .track-event-desc { font-size: 13px; color: var(--gray-600); margin-top: 4px; }
+
+    /* ORDER ITEMS */
+    .order-item {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .order-item:last-child { border-bottom: none; }
+    .order-item-img {
+      width: 56px; height: 56px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--gray-100);
+      flex-shrink: 0;
+    }
+    .order-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .order-item-name { font-size: 13.5px; font-weight: 500; }
+    .order-item-qty { font-size: 12px; color: var(--gray-400); }
+    .order-item-price { font-weight: 700; font-size: 14px; color: var(--ocean); margin-left: auto; }
+
+    /* SIDEBAR */
+    .order-status-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+      margin-bottom: 20px;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .status-badge.confirmed { background: #e8f5f2; color: var(--teal-dark); }
+    .status-badge.processing { background: #fff8e6; color: #b8860b; }
+    .status-badge.dispatched { background: #e8f0f5; color: var(--ocean); }
+    .status-badge.delivered { background: #e8f5f2; color: var(--teal-dark); }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .lbl { color: var(--gray-600); }
+    .info-row .val { font-weight: 600; text-align: right; }
+
+    .address-block {
+      background: var(--gray-100);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--gray-600);
+    }
+
+    .support-section {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+    }
+    .support-section h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .support-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .support-input:focus { border-color: var(--teal); }
+
+    @media (max-width: 900px) {
+      .order-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header id="navbar"></header>
+
+<!-- SUCCESS BANNER -->
+<div class="success-hero" id="success-banner" style="display:none">
+  <h1 id="success-title">🎉 Order Confirmed!</h1>
+  <p id="success-sub">Thank you for your purchase!</p>
+  <div class="progress-steps">
+    <div class="prog-step done" data-n="1">Cart</div>
+    <div class="prog-step done" data-n="2">Delivery</div>
+    <div class="prog-step done" data-n="3">Payment</div>
+    <div class="prog-step active" data-n="4">Track Order</div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="order-content" style="padding:40px 0">
+    <div class="skeleton" style="height:400px;border-radius:16px"></div>
+  </div>
+</div>
+
+<footer id="footer"></footer>
+
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+const orderId = new URLSearchParams(window.location.search).get('id');
+
+function getStatusClass(status) {
+  const map = { confirmed: 'confirmed', processing: 'processing', dispatched: 'dispatched', delivered: 'delivered' };
+  return map[status] || 'confirmed';
+}
+
+function getTrackEvents(order) {
+  const statusOrder = ['confirmed', 'processing', 'dispatched', 'out_for_delivery', 'delivered'];
+  const labels = {
+    confirmed: 'Order Confirmed',
+    processing: 'Processing',
+    dispatched: 'Dispatched',
+    out_for_delivery: 'Out for Delivery',
+    delivered: 'Delivered'
+  };
+  const descs = {
+    confirmed: 'Your order has been placed and confirmed.',
+    processing: 'Your order is being packed.',
+    dispatched: 'Your order is on its way!',
+    out_for_delivery: 'Our delivery agent is nearby.',
+    delivered: 'Delivered successfully!'
+  };
+  const currentIdx = statusOrder.indexOf(order.status);
+  return statusOrder.map((s, i) => ({
+    label: labels[s],
+    desc: descs[s],
+    time: i <= currentIdx ? fmt.date(order.created_at) : '',
+    state: i < currentIdx ? 'done' : i === currentIdx ? 'active' : ''
+  }));
+}
+
+function renderOrder(order) {
+  const user = Auth.getUser();
+  document.getElementById('success-banner').style.display = 'block';
+  document.getElementById('success-title').textContent = `🎉 Order Confirmed!`;
+  document.getElementById('success-sub').textContent = `Thank you, ${order.address?.name || user?.name || 'Customer'}! Order #${order.id.slice(0,8).toUpperCase()}`;
+
+  const events = getTrackEvents(order);
+  const subtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0);
+
+  document.getElementById('order-content').innerHTML = `
+    <div class="order-layout">
+      <div>
+        <!-- TRACKING -->
+        <div class="order-card">
+          <h3>📦 Order Tracking</h3>
+          <div class="track-timeline">
+            ${events.map(e => `
+              <div class="track-event ${e.state}">
+                <div class="track-event-title">${e.label}</div>
+                ${e.time ? `<div class="track-event-time">${e.time}</div>` : ''}
+                ${e.state ? `<div class="track-event-desc">${e.desc}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- ITEMS -->
+        <div class="order-card">
+          <h3>🛒 Items in Your Order</h3>
+          ${order.items.map(item => `
+            <div class="order-item">
+              <div class="order-item-img">
+                <img src="${item.image_url || '/assets/placeholder.jpg'}" alt="${item.name}">
+              </div>
+              <div>
+                <div class="order-item-name">${item.name}</div>
+                <div class="order-item-qty">Qty: ${item.qty}</div>
+              </div>
+              <div class="order-item-price">${fmt.price(item.price * item.qty)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- DELIVERY ADDRESS -->
+        <div class="order-card">
+          <h3>📍 Delivery Address</h3>
+          <div class="address-block">
+            <strong>${order.address.name}</strong><br>
+            ${order.address.line1}<br>
+            ${order.address.line2 || ''}<br>
+            ${order.address.city}, ${order.address.state} – ${order.address.pin}<br>
+            📞 +91 ${order.address.phone}
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div>
+        <div class="order-status-card">
+          <span class="status-badge ${getStatusClass(order.status)}">
+            ● ${order.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+          </span>
+          <div class="info-row">
+            <span class="lbl">Order ID</span>
+            <span class="val">#${order.id.slice(0,8).toUpperCase()}</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Placed On</span>
+            <span class="val">${fmt.date(order.created_at)}</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Payment ID</span>
+            <span class="val" style="font-size:11px">${order.payment_id || '—'}</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Subtotal</span>
+            <span class="val">${fmt.price(subtotal)}</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Delivery</span>
+            <span class="val">${order.delivery_fee === 0 ? 'FREE' : fmt.price(order.delivery_fee)}</span>
+          </div>
+          ${order.discount ? `
+            <div class="info-row">
+              <span class="lbl">Discount</span>
+              <span class="val" style="color:var(--teal)">−${fmt.price(order.discount)}</span>
+            </div>
+          ` : ''}
+          <div class="info-row" style="font-weight:800;font-size:16px">
+            <span>Total Paid</span>
+            <span style="color:var(--ocean)">${fmt.price(order.total)}</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
+            <a href="/account.html" class="btn btn-primary" style="justify-content:center">View All Orders</a>
+            <a href="/products.html" class="btn btn-outline" style="justify-content:center">Continue Shopping</a>
+          </div>
+        </div>
+
+        <!-- SUPPORT -->
+        <div class="support-section">
+          <h4>🎧 Customer Support</h4>
+          <p style="font-size:13px;color:var(--gray-600);margin-bottom:12px">Have an issue with your order?</p>
+          <textarea class="support-input" rows="3" placeholder="Describe your issue…"></textarea>
+          <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="submitIssue()">Submit Issue</button>
+          <p style="font-size:12px;color:var(--gray-400);margin-top:10px;text-align:center">
+            Or <a href="https://wa.me/91XXXXXXXXXX" style="color:var(--teal)">WhatsApp us</a> for instant help
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function submitIssue() {
+  const msg = document.querySelector('.support-input').value.trim();
+  if (!msg) return;
+  const user = Auth.getUser();
+  await sb.from('support_tickets').insert([{ order_id: orderId, user_id: user?.id, message: msg }]);
+  alert('Issue submitted! Our team will contact you shortly.');
+  document.querySelector('.support-input').value = '';
+}
+
+async function init() {
+  await UI.renderNav();
+  UI.renderFooter();
+
+  if (!orderId) {
+    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/index.html" class="btn btn-primary" style="margin-top:16px">Go Home</a></div>';
+    return;
+  }
+
+  try {
+    const { data: order, error } = await sb.from('orders').select('*').eq('id', orderId).single();
+    if (error || !order) throw new Error('Order not found');
+    renderOrder(order);
+  } catch(e) {
+    document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/account.html" class="btn btn-primary" style="margin-top:16px">My Orders</a></div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

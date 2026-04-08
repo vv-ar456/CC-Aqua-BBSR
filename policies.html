@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Policies – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .policy-wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px;}
+    .policy-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px;}
+    .policy-nav a{padding:7px 16px;border:1.5px solid var(--gray-200);border-radius:20px;font-size:13px;font-weight:600;color:var(--text);transition:var(--transition);}
+    .policy-nav a:hover{border-color:var(--teal);color:var(--teal);}
+    .policy-section{margin-bottom:48px;scroll-margin-top:120px;}
+    .policy-section h2{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--ocean-dark);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--gray-200);}
+    .policy-section h3{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--text);}
+    .policy-section p,.policy-section li{font-size:14px;line-height:1.8;color:var(--gray-600);margin-bottom:10px;}
+    .policy-section ul{padding-left:20px;}
+    .highlight-box{background:var(--gray-100);border-left:4px solid var(--teal);border-radius:0 8px 8px 0;padding:14px 18px;margin:16px 0;}
+    .highlight-box p{margin:0;color:var(--text);}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header id="navbar"></header>
+<div class="policy-wrap">
+  <h1 style="font-family:var(--font-display);font-size:30px;font-weight:800;margin-bottom:8px;color:var(--ocean-dark)">Policies & Terms</h1>
+  <p style="color:var(--gray-400);font-size:14px;margin-bottom:28px">Last updated: January 2025</p>
+
+  <nav class="policy-nav">
+    <a href="#doa">DOA Policy</a>
+    <a href="#returns">Returns</a>
+    <a href="#shipping">Shipping</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#terms">Terms</a>
+  </nav>
+
+  <section class="policy-section" id="doa">
+    <h2>🐠 Dead on Arrival (DOA) Policy</h2>
+    <div class="highlight-box"><p>We guarantee the safe delivery of all live fish and animals. If your order arrives with dead livestock, we will replace it — no questions asked.</p></div>
+    <h3>What qualifies as DOA?</h3>
+    <ul>
+      <li>Fish/animals that are dead upon opening the package</li>
+      <li>Fish that die within 24 hours of delivery due to transit stress</li>
+      <li>Animals that arrive visibly sick or injured from shipping</li>
+    </ul>
+    <h3>How to claim DOA</h3>
+    <ul>
+      <li>Take a clear photo/video of the dead fish in the unopened bag within 2 hours of delivery</li>
+      <li>Contact us via WhatsApp or email within 24 hours of delivery</li>
+      <li>Share your Order ID, photo, and a brief description</li>
+      <li>We will ship a replacement at no additional cost within 3–5 business days</li>
+    </ul>
+    <h3>What is NOT covered</h3>
+    <ul>
+      <li>Death due to improper tank conditions (wrong pH, temperature, ammonia spikes)</li>
+      <li>Death after 24 hours of delivery</li>
+      <li>Damage caused by improper acclimatisation</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" id="returns">
+    <h2>↩️ Returns & Refunds</h2>
+    <div class="highlight-box"><p>We accept returns on non-living products within 7 days of delivery if they are unused and in original packaging.</p></div>
+    <h3>Eligible for return</h3>
+    <ul>
+      <li>Aquarium equipment (filters, pumps, lights) — unused and in original packaging</li>
+      <li>Pet food — unopened, undamaged packaging</li>
+      <li>Accessories and toys — unused, with tags</li>
+    </ul>
+    <h3>Not eligible for return</h3>
+    <ul>
+      <li>Live fish, birds, and animals (see DOA policy for livestock)</li>
+      <li>Opened food or medicine</li>
+      <li>Custom or personalised items</li>
+      <li>Items damaged by the customer</li>
+    </ul>
+    <h3>Refund timeline</h3>
+    <p>Once we receive and inspect the returned item, refunds are processed within 5–7 business days to your original payment method.</p>
+  </section>
+
+  <section class="policy-section" id="shipping">
+    <h2>🚚 Shipping Policy</h2>
+    <div class="highlight-box"><p>Free delivery on orders above ₹599. Standard delivery fee of ₹49 for orders below ₹599.</p></div>
+    <h3>Delivery timelines</h3>
+    <ul>
+      <li><strong>Regular products:</strong> 3–7 business days</li>
+      <li><strong>Live fish &amp; animals:</strong> 1–3 business days (we use specialised live fish transport)</li>
+      <li><strong>Metro cities:</strong> usually 1–2 days faster</li>
+    </ul>
+    <h3>Live fish shipping</h3>
+    <ul>
+      <li>Fish are packed in oxygen-filled bags with thermal insulation</li>
+      <li>We ship live fish Monday–Friday to avoid weekend delays at courier hubs</li>
+      <li>Tracking details will be shared via WhatsApp/email once dispatched</li>
+    </ul>
+    <h3>Areas we ship to</h3>
+    <p>We currently ship to all major cities and towns across India. Some remote PIN codes may have extended delivery times.</p>
+  </section>
+
+  <section class="policy-section" id="privacy">
+    <h2>🔒 Privacy Policy</h2>
+    <p>Aquanics by Coreconics is committed to protecting your personal data. This policy explains what we collect and how we use it.</p>
+    <h3>What we collect</h3>
+    <ul>
+      <li>Name, mobile number, and email (optional) at registration</li>
+      <li>Delivery address when you place an order</li>
+      <li>Order history and payment confirmation IDs</li>
+    </ul>
+    <h3>How we use your data</h3>
+    <ul>
+      <li>To process and deliver your orders</li>
+      <li>To send order updates via SMS/WhatsApp</li>
+      <li>To improve our products and services</li>
+    </ul>
+    <h3>What we never do</h3>
+    <ul>
+      <li>We never store your card or payment details (handled entirely by Razorpay)</li>
+      <li>We never sell your data to third parties</li>
+      <li>We never store plaintext passwords — login is OTP-only</li>
+    </ul>
+    <h3>Data security</h3>
+    <p>All data is stored in Supabase (hosted on AWS), protected with row-level security policies. Sessions are token-based and expire automatically.</p>
+    <h3>Contact for data requests</h3>
+    <p>To request deletion of your data, email us at <a href="mailto:support@aquanics.in" style="color:var(--teal)">support@aquanics.in</a></p>
+  </section>
+
+  <section class="policy-section" id="terms">
+    <h2>📋 Terms of Service</h2>
+    <p>By using Aquanics, you agree to the following terms:</p>
+    <ul>
+      <li>You must be 18 years or older to make purchases</li>
+      <li>You are responsible for providing accurate delivery address details</li>
+      <li>Prices are listed in Indian Rupees (INR) and include GST where applicable</li>
+      <li>We reserve the right to cancel orders in case of pricing errors or stock unavailability</li>
+      <li>Aquanics is not liable for delays caused by courier partners or natural events</li>
+      <li>All intellectual property on this site belongs to Coreconics</li>
+    </ul>
+    <p style="margin-top:20px">For any disputes, the jurisdiction shall be Bhubaneswar, Odisha, India.</p>
+  </section>
+</div>
+<a href="https://wa.me/91XXXXXXXXXX" target="_blank" class="whatsapp-btn">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+</a>
+<footer id="footer"></footer>
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+async function init() { await UI.renderNav(); UI.renderFooter(); }
+init();
+
+// Smooth scroll offset fix
+document.querySelectorAll('.policy-nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior:'smooth' });
+  });
+});
+</script>
+</body>
+</html>

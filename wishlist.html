@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist – Aquanics</title>
+  <link rel="icon" href="/logo.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header id="navbar"></header>
+<div class="container" style="padding:32px 24px 64px">
+  <h1 style="font-family:var(--font-display);font-size:24px;font-weight:800;margin-bottom:24px">❤️ My Wishlist</h1>
+  <div class="products-grid" id="wish-grid">
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+  </div>
+</div>
+<footer id="footer"></footer>
+<script src="/js/config.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+async function init() {
+  await UI.renderNav();
+  UI.renderFooter();
+  const ids = Wishlist.get();
+  const grid = document.getElementById('wish-grid');
+  if (!ids.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div style="font-size:56px;margin-bottom:16px">❤️</div>
+      <h3>Your wishlist is empty</h3>
+      <p style="color:var(--gray-400);margin-bottom:20px">Save items you love and find them here</p>
+      <a href="/products.html" class="btn btn-primary">Browse Products</a>
+    </div>`;
+    return;
+  }
+  try {
+    const { data } = await sb.from('products').select('*, categories(name,slug)').in('id', ids).eq('active', true);
+    if (!data?.length) { grid.innerHTML = '<p style="color:var(--gray-400)">No products found.</p>'; return; }
+    grid.innerHTML = data.map(p => UI.productCard(p)).join('');
+    Wishlist._refreshBtns();
+  } catch(e) {
+    grid.innerHTML = '<p style="color:var(--gray-400)">Could not load wishlist.</p>';
+  }
+}
+init();
+</script>
+</body>
+</html>
