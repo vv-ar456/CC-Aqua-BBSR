@@ -605,8 +605,8 @@ async function handlePaymentSuccess(response, items, addr, total) {
 }
 
 async function init() {
-  await UI.renderNav();
-  UI.renderFooter();
+  await UI.nav();
+  UI.footer();
   renderCart();
 }
 

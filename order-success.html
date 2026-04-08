@@ -385,8 +385,8 @@ async function submitIssue() {
 }
 
 async function init() {
-  await UI.renderNav();
-  UI.renderFooter();
+  await UI.nav();
+  UI.footer();
 
   if (!orderId) {
     document.getElementById('order-content').innerHTML = '<div class="empty-state"><h3>Order not found</h3><a href="/index.html" class="btn btn-primary" style="margin-top:16px">Go Home</a></div>';

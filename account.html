@@ -42,8 +42,8 @@
 <script src="/js/ui.js"></script>
 <script>
 async function init() {
-  await UI.renderNav();
-  UI.renderFooter();
+  await UI.nav();
+  UI.footer();
 
   if (!Auth.isLoggedIn()) { window.location.href = '/login.html?redirect=/account.html'; return; }
 

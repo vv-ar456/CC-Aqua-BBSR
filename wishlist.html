@@ -24,8 +24,8 @@
 <script src="/js/ui.js"></script>
 <script>
 async function init() {
-  await UI.renderNav();
-  UI.renderFooter();
+  await UI.nav();
+  UI.footer();
   const ids = Wishlist.get();
   const grid = document.getElementById('wish-grid');
   if (!ids.length) {

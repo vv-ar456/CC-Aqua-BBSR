@@ -2,295 +2,589 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aquanics – Premium Aquarium Fish, Pets & Supplies</title>
-  <meta name="description" content="Shop premium aquarium fish, birds, pets and all their supplies at Aquanics by Coreconics. Quality assured, ethically sourced.">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aquanics – Premium Fish, Birds & Pet Supplies</title>
+  <meta name="description" content="Shop premium aquarium fish, birds, pets and all their supplies. Quality assured, ethically sourced.">
   <link rel="icon" href="/logo.png">
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/home.css">
+  <style>
+/* ── HERO ─────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 92vh;
+  min-height: 600px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+/* animated ocean background */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 50%, rgba(0,168,130,.25) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 80% at 20% 30%, rgba(0,90,180,.2) 0%, transparent 60%),
+    linear-gradient(160deg, #020e18 0%, #051c2c 40%, #0a2d44 70%, #0f3d5c 100%);
+  z-index: 0;
+}
+
+/* moving wave SVG at bottom */
+.hero-waves {
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  z-index: 2; pointer-events: none;
+}
+
+/* floating bubbles */
+.bubbles {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  overflow: hidden;
+}
+.bubble {
+  position: absolute;
+  bottom: -80px;
+  border-radius: 50%;
+  background: rgba(0,212,170,.15);
+  border: 1px solid rgba(0,212,170,.3);
+  animation: bubbleUp linear infinite;
+}
+@keyframes bubbleUp {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity:.6; }
+  50%  { transform: translateY(-40vh) translateX(20px) scale(1.05); opacity:.4; }
+  100% { transform: translateY(-100vh) translateX(-10px) scale(.9); opacity:0; }
+}
+
+/* hero slider */
+.hero-slides { position: absolute; inset: 0; z-index: 1; }
+.hero-slide {
+  position: absolute; inset: 0;
+  opacity: 0; transform: scale(1.04);
+  transition: opacity .9s ease, transform .9s ease;
+  pointer-events: none;
+}
+.hero-slide.active {
+  opacity: 1; transform: none;
+  pointer-events: auto;
+}
+
+/* hero content */
+.hero-content {
+  position: relative; z-index: 3;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.hero-text { max-width: 580px; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,212,170,.12);
+  border: 1px solid rgba(0,212,170,.25);
+  color: var(--teal);
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 20px;
+  backdrop-filter: blur(8px);
+  animation: fadeSlideUp .6s .1s both;
+}
+.hero-eyebrow::before { content:''; width:6px;height:6px;border-radius:50%;background:var(--teal); }
+
+.hero-title {
+  font-family: var(--fd);
+  font-size: clamp(38px, 5.5vw, 72px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.08;
+  margin-bottom: 20px;
+  animation: fadeSlideUp .7s .2s both;
+}
+.hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--teal), #00ffcc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: rgba(255,255,255,.65);
+  line-height: 1.7;
+  margin-bottom: 36px;
+  max-width: 460px;
+  animation: fadeSlideUp .7s .35s both;
+}
+
+.hero-btns {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  animation: fadeSlideUp .7s .45s both;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* hero visual */
+.hero-visual {
+  position: relative;
+  width: 380px; height: 380px;
+  flex-shrink: 0;
+  animation: heroVisualIn .9s .3s both;
+}
+@keyframes heroVisualIn {
+  from { opacity:0; transform:translateX(40px) scale(.9); }
+  to   { opacity:1; transform:none; }
+}
+.hero-orb {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(0,212,170,.2), rgba(5,28,44,.4));
+  border: 1px solid rgba(0,212,170,.2);
+  animation: orbPulse 4s ease-in-out infinite;
+}
+@keyframes orbPulse {
+  0%,100% { transform:scale(1); box-shadow:0 0 40px rgba(0,212,170,.15); }
+  50%      { transform:scale(1.04); box-shadow:0 0 80px rgba(0,212,170,.25); }
+}
+.hero-emoji {
+  position: absolute;
+  top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  font-size: 110px;
+  animation: fishFloat 3.5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(0,212,170,.4));
+  line-height:1;
+}
+@keyframes fishFloat {
+  0%,100% { transform:translate(-50%,-50%) rotate(-4deg) translateY(0); }
+  50%      { transform:translate(-50%,-50%) rotate(4deg) translateY(-18px); }
+}
+.hero-stat {
+  position: absolute;
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 12px 18px;
+  animation: floatStat 4s ease-in-out infinite;
+}
+@keyframes floatStat {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-8px); }
+}
+.hero-stat:nth-child(3) { top:8%; right:-10%; animation-delay:.5s; }
+.hero-stat:nth-child(4) { bottom:14%; left:-8%; animation-delay:1.2s; }
+.hero-stat strong { display:block; font-family:var(--fd); font-size:22px; font-weight:700; color:#fff; }
+.hero-stat span   { font-size:11px; color:rgba(255,255,255,.5); letter-spacing:.5px; }
+
+/* slider nav */
+.hero-nav-btns {
+  position: absolute;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex; gap: 10px;
+}
+.hero-dot {
+  width: 8px; height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.3);
+  border: none; cursor: pointer;
+  transition: all .3s var(--ease);
+  padding: 0;
+}
+.hero-dot.active { width:28px; background:var(--teal); }
+
+/* ── CATEGORIES ──────────────────────────────────────── */
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 16px;
+}
+.cat-card {
+  background: #fff;
+  border-radius: var(--r2);
+  padding: 20px 12px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all .3s var(--spring);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.cat-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(0,212,170,.06), rgba(0,168,130,.06));
+  opacity:0; transition:opacity .3s;
+}
+.cat-card:hover::before { opacity:1; }
+.cat-card:hover {
+  border-color: var(--teal);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0,212,170,.15);
+}
+.cat-card .emoji { font-size: 36px; margin-bottom: 10px; display:block; transition:transform .3s var(--spring); }
+.cat-card:hover .emoji { transform: scale(1.2) rotate(-5deg); }
+.cat-card h3 { font-family:var(--fd); font-size:13px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.cat-card span { font-size:11px; color:var(--gray3); }
+
+/* ── MARQUEE BANNER ──────────────────────────────────── */
+.marquee-bar {
+  background: linear-gradient(90deg, var(--teal3), var(--teal2), var(--teal3));
+  padding: 12px 0;
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex;
+  gap: 48px;
+  animation: marquee 25s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state:paused; }
+@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.marquee-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: #fff;
+  white-space: nowrap;
+}
+.marquee-dot { width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.5); }
+
+/* ── PROMO SECTION ───────────────────────────────────── */
+.promo-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+.promo-card {
+  border-radius: var(--r3);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  display: flex;
+  align-items: flex-end;
+  transition: transform .3s var(--ease);
+}
+.promo-card:hover { transform: scale(1.01); }
+.promo-card h3 { font-family:var(--fd); font-size:26px; font-weight:700; color:#fff; margin-bottom:8px; line-height:1.2; }
+.promo-card p  { font-size:14px; color:rgba(255,255,255,.7); margin-bottom:16px; }
+.promo-ocean {
+  background: linear-gradient(135deg, var(--ocean) 0%, #0a3d5e 60%, #1a6680 100%);
+}
+.promo-teal {
+  background: linear-gradient(135deg, #005a44 0%, var(--teal3) 50%, var(--teal2) 100%);
+}
+.promo-art {
+  position:absolute; top:-10%; right:-5%; font-size:120px;
+  opacity:.18; transform:rotate(-15deg);
+  animation: promoFloat 5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes promoFloat {
+  0%,100%{transform:rotate(-15deg) translateY(0);}
+  50%{transform:rotate(-10deg) translateY(-12px);}
+}
+.promo-shine {
+  position:absolute;
+  top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
+  animation:shine 4s 1s infinite;
+}
+@keyframes shine{0%{left:-100%}50%,100%{left:150%}}
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <!-- NAVBAR -->
-<header id="navbar"></header>
+<div id="navbar"></div>
 
-<!-- HERO CAROUSEL -->
+<!-- ════════════════ HERO ════════════════ -->
 <section class="hero">
-  <div class="hero-slider" id="hero-slider">
-    <div class="hero-slide active" style="background:linear-gradient(135deg, #082f3a 0%, #0d4a5c 40%, #1a7a6e 100%)">
-      <div class="hero-content container">
-        <div class="hero-text">
-          <span class="hero-tag">🐠 New Arrivals</span>
-          <h1>Explore the <em>Ocean</em> in Your Home</h1>
-          <p>Hundreds of exotic freshwater & marine fish, tanks, and accessories — delivered to your door.</p>
-          <div class="hero-btns">
-            <a href="/products.html?cat=live-fish" class="btn btn-primary btn-lg">Shop Live Fish</a>
-            <a href="/products.html?cat=aquariums" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,0.5)">Browse Aquariums</a>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="hero-bubble b1"></div>
-          <div class="hero-bubble b2"></div>
-          <div class="hero-bubble b3"></div>
-          <div class="hero-fish">🐠</div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-slide" style="background:linear-gradient(135deg, #1a2e2c 0%, #1a7a6e 60%, #22a898 100%)">
-      <div class="hero-content container">
-        <div class="hero-text">
-          <span class="hero-tag">🐦 Birds & Supplies</span>
-          <h1>Beautiful <em>Birds</em>, Happy Homes</h1>
-          <p>Find parrots, finches, canaries and all their cages, food, and accessories.</p>
-          <div class="hero-btns">
-            <a href="/products.html?cat=birds" class="btn btn-primary btn-lg">Shop Birds</a>
-            <a href="/products.html?cat=bird-supplies" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,0.5)">Bird Supplies</a>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="hero-fish" style="font-size:80px">🦜</div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-slide" style="background:linear-gradient(135deg, #2a1a0a 0%, #8a5020 50%, #c8883a 100%)">
-      <div class="hero-content container">
-        <div class="hero-text">
-          <span class="hero-tag">🐾 Pets & Supplies</span>
-          <h1>Everything Your <em>Pet</em> Needs</h1>
-          <p>Premium food, toys, beds, healthcare & accessories for dogs, cats and more.</p>
-          <div class="hero-btns">
-            <a href="/products.html?cat=dogs" class="btn btn-gold btn-lg">Shop Dogs</a>
-            <a href="/products.html?cat=cats" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,0.5)">Shop Cats</a>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="hero-fish" style="font-size:80px">🐶</div>
-        </div>
-      </div>
-    </div>
+  <div class="hero-bg"></div>
+
+  <!-- bubbles -->
+  <div class="bubbles" id="bubbles"></div>
+
+  <!-- slides -->
+  <div class="hero-slides">
+    <div class="hero-slide active" data-emoji="🐠" data-eye="New Arrivals" data-title="Explore the <em>Ocean</em> in Your Home" data-sub="Hundreds of exotic freshwater & marine fish, premium tanks and accessories — delivered to your door." data-btn1="Shop Live Fish" data-link1="/products.html?cat=live-fish" data-btn2="Browse Aquariums" data-link2="/products.html?cat=aquariums"></div>
+    <div class="hero-slide" data-emoji="🦜" data-eye="Birds & Supplies" data-title="Beautiful <em>Birds</em>, Happy Homes" data-sub="Parrots, finches, canaries — find your perfect feathered friend along with cages, food & accessories." data-btn1="Shop Birds" data-link1="/products.html?cat=birds" data-btn2="Bird Supplies" data-link2="/products.html?cat=bird-supplies"></div>
+    <div class="hero-slide" data-emoji="🐶" data-eye="Pets & Supplies" data-title="Everything Your <em>Pet</em> Needs" data-sub="Premium food, beds, toys and healthcare products for dogs, cats and all your beloved pets." data-btn1="Shop Dogs" data-link1="/products.html?cat=dogs" data-btn2="Shop Cats" data-link2="/products.html?cat=cats"></div>
   </div>
-  <button class="hero-nav hero-prev" onclick="heroNav(-1)">❮</button>
-  <button class="hero-nav hero-next" onclick="heroNav(1)">❯</button>
-  <div class="hero-dots" id="hero-dots"></div>
+
+  <!-- rendered hero -->
+  <div class="hero-content container" id="hero-rendered"></div>
+
+  <!-- wave -->
+  <svg class="hero-waves" viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#f4f8f7"/>
+  </svg>
+
+  <!-- dots -->
+  <div class="hero-nav-btns" id="hero-dots"></div>
 </section>
 
-<!-- TRUST BAR -->
+<!-- ════════════════ TRUST BAR ════════════════ -->
 <div class="trust-bar">
   <div class="container">
     <div class="trust-items">
-      <div class="trust-item">
-        <span class="trust-icon">🚚</span>
-        <div>
-          <strong>Free Delivery</strong>
-          <span>On orders above ₹599</span>
-        </div>
-      </div>
-      <div class="trust-item">
-        <span class="trust-icon">🛡️</span>
-        <div>
-          <strong>DOA Policy</strong>
-          <span>Dead on Arrival replacement</span>
-        </div>
-      </div>
-      <div class="trust-item">
-        <span class="trust-icon">✅</span>
-        <div>
-          <strong>Quality Assured</strong>
-          <span>Ethically sourced products</span>
-        </div>
-      </div>
-      <div class="trust-item">
-        <span class="trust-icon">💬</span>
-        <div>
-          <strong>Expert Support</strong>
-          <span>WhatsApp & call support</span>
-        </div>
-      </div>
+      <div class="trust-item"><span class="trust-icon">🚚</span><div><strong>Free Delivery</strong><span>Orders above ₹599</span></div></div>
+      <div class="trust-item"><span class="trust-icon">🐠</span><div><strong>DOA Policy</strong><span>Live fish guaranteed</span></div></div>
+      <div class="trust-item"><span class="trust-icon">✅</span><div><strong>Quality Assured</strong><span>Ethically sourced</span></div></div>
+      <div class="trust-item"><span class="trust-icon">🔒</span><div><strong>Secure Payments</strong><span>Razorpay protected</span></div></div>
+      <div class="trust-item"><span class="trust-icon">💬</span><div><strong>Expert Support</strong><span>WhatsApp & call</span></div></div>
     </div>
   </div>
 </div>
 
-<!-- FEATURED CATEGORIES -->
+<!-- ════════════════ CATEGORIES ════════════════ -->
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Shop by Category</h2>
-    <div class="cat-grid" id="cat-grid">
-      <!-- Injected by JS; fallback static below -->
-      <a href="/products.html?cat=live-fish" class="cat-card" style="--cat-color:#0d4a5c">
-        <div class="cat-emoji">🐠</div>
-        <h3>Live Fish</h3>
-        <span>Freshwater & Marine</span>
-      </a>
-      <a href="/products.html?cat=aquariums" class="cat-card" style="--cat-color:#1a7a6e">
-        <div class="cat-emoji">🐟</div>
-        <h3>Aquariums & Tanks</h3>
-        <span>Tanks, Filters, Decor</span>
-      </a>
-      <a href="/products.html?cat=birds" class="cat-card" style="--cat-color:#22a898">
-        <div class="cat-emoji">🦜</div>
-        <h3>Birds</h3>
-        <span>Parrots, Finches & More</span>
-      </a>
-      <a href="/products.html?cat=dogs" class="cat-card" style="--cat-color:#c8883a">
-        <div class="cat-emoji">🐶</div>
-        <h3>Dogs</h3>
-        <span>Food, Toys, Accessories</span>
-      </a>
-      <a href="/products.html?cat=cats" class="cat-card" style="--cat-color:#8a5020">
-        <div class="cat-emoji">🐱</div>
-        <h3>Cats</h3>
-        <span>Food, Litter, Toys</span>
-      </a>
-      <a href="/products.html?cat=accessories" class="cat-card" style="--cat-color:#145f56">
-        <div class="cat-emoji">🛒</div>
-        <h3>Accessories</h3>
-        <span>All Pet Supplies</span>
-      </a>
+    <div class="section-head reveal">
+      <h2>Shop by <span>Category</span></h2>
+    </div>
+    <div class="cats-grid" id="cats-grid">
+      <!-- populated by JS -->
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
+      <div class="skeleton" style="height:130px;border-radius:20px"></div>
     </div>
   </div>
 </section>
 
-<!-- BESTSELLERS -->
-<section class="section" style="background:#fff; padding:48px 0">
+<!-- ════════════════ MARQUEE ════════════════ -->
+<div class="marquee-bar">
+  <div class="marquee-track" id="marquee-track">
+    <!-- cloned by JS -->
+  </div>
+</div>
+
+<!-- ════════════════ BESTSELLERS ════════════════ -->
+<section class="section" style="background:#fff">
   <div class="container">
-    <h2 class="section-title">⭐ Bestsellers</h2>
-    <div class="products-grid" id="bestsellers-grid">
-      <div class="loading-grid" style="display:contents" id="bestsellers-loading">
-        ${Array(8).fill('<div class="skeleton skeleton-card"></div>').join('')}
-      </div>
+    <div class="section-head reveal">
+      <h2>⭐ <span>Bestsellers</span></h2>
+      <a href="/products.html?sort=bestsellers" class="view-all">View All →</a>
+    </div>
+    <div class="products-grid" id="best-grid">
+      <!-- populated by JS -->
     </div>
   </div>
 </section>
 
-<!-- PROMO BANNER -->
+<!-- ════════════════ PROMO BANNERS ════════════════ -->
 <section class="section">
   <div class="container">
-    <div class="promo-banner">
-      <div class="promo-content">
-        <h2>🐠 DOA Policy — Your Fish, Guaranteed</h2>
-        <p>If your fish arrive dead on arrival, we replace them — no questions asked. Shop live fish with confidence.</p>
-        <a href="/policies.html#doa" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.6)">Learn More</a>
-      </div>
-      <div class="promo-art">
-        <span style="font-size:80px">🐠</span>
-        <span style="font-size:60px;margin-left:-20px">🐡</span>
-        <span style="font-size:50px;margin-left:-10px">🐟</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- NEW ARRIVALS -->
-<section class="section">
-  <div class="container">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-      <h2 class="section-title" style="margin-bottom:0;flex:1">🆕 New Arrivals</h2>
-      <a href="/products.html?sort=newest" class="btn btn-outline btn-sm">View All</a>
-    </div>
-    <div class="products-grid" id="new-arrivals-grid">
-      ${Array(8).fill('<div class="skeleton skeleton-card"></div>').join('')}
-    </div>
-  </div>
-</section>
-
-<!-- FEATURED CATEGORIES BANNERS -->
-<section class="section" style="background:#fff;padding:48px 0">
-  <div class="container">
-    <h2 class="section-title">Explore Our World</h2>
-    <div class="feature-banners">
-      <a href="/products.html?cat=aquariums" class="feat-banner feat-aquarium">
-        <div class="feat-content">
-          <h3>Aquarium Setup</h3>
-          <p>Complete kits, filters & decor</p>
-          <span class="btn btn-sm btn-primary">Shop Now →</span>
+    <div class="promo-grid reveal">
+      <a href="/policies.html#doa" class="promo-card promo-ocean">
+        <div class="promo-shine"></div>
+        <div class="promo-art">🐠</div>
+        <div>
+          <h3>DOA Policy —<br>Your Fish, Guaranteed</h3>
+          <p>Dead on Arrival? We replace it — no questions asked.</p>
+          <span class="btn btn-primary btn-sm">Learn More →</span>
         </div>
       </a>
-      <div class="feat-small">
-        <a href="/products.html?cat=live-fish" class="feat-banner feat-fish">
-          <div class="feat-content">
-            <h3>Exotic Live Fish</h3>
-            <span class="btn btn-sm btn-primary">Explore →</span>
-          </div>
-        </a>
-        <a href="/products.html?cat=birds" class="feat-banner feat-birds">
-          <div class="feat-content">
-            <h3>Birds & Cages</h3>
-            <span class="btn btn-sm btn-primary">Explore →</span>
-          </div>
-        </a>
+      <a href="/products.html?cat=aquariums" class="promo-card promo-teal">
+        <div class="promo-shine"></div>
+        <div class="promo-art">🐟</div>
+        <div>
+          <h3>Complete Aquarium<br>Setup Kits</h3>
+          <p>Everything you need in one package.</p>
+          <span class="btn btn-ocean btn-sm">Shop Kits →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ NEW ARRIVALS ════════════════ -->
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>🆕 New <span>Arrivals</span></h2>
+      <a href="/products.html?sort=newest" class="view-all">View All →</a>
+    </div>
+    <div class="products-grid" id="new-grid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ STATS STRIP ════════════════ -->
+<section style="background:linear-gradient(135deg,var(--ocean),var(--ocean2));padding:60px 0">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center">
+      <div class="reveal reveal-delay-1">
+        <div style="font-family:var(--fd);font-size:44px;font-weight:700;color:var(--teal)" id="counter-fish">500+</div>
+        <div style="color:rgba(255,255,255,.6);font-size:14px;margin-top:4px">Fish Species</div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div style="font-family:var(--fd);font-size:44px;font-weight:700;color:var(--teal)" id="counter-orders">10K+</div>
+        <div style="color:rgba(255,255,255,.6);font-size:14px;margin-top:4px">Orders Delivered</div>
+      </div>
+      <div class="reveal reveal-delay-3">
+        <div style="font-family:var(--fd);font-size:44px;font-weight:700;color:var(--teal)">4.8★</div>
+        <div style="color:rgba(255,255,255,.6);font-size:14px;margin-top:4px">Average Rating</div>
+      </div>
+      <div class="reveal reveal-delay-4">
+        <div style="font-family:var(--fd);font-size:44px;font-weight:700;color:var(--teal)">15+</div>
+        <div style="color:rgba(255,255,255,.6);font-size:14px;margin-top:4px">Years of Passion</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHATSAPP CHAT -->
-<a href="https://wa.me/91XXXXXXXXXX" target="_blank" class="whatsapp-btn" title="Chat with us on WhatsApp">
+<!-- WHATSAPP -->
+<a href="https://wa.me/919999999999" target="_blank" class="wa-float" title="WhatsApp Chat">
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
 </a>
 
-<footer id="footer"></footer>
+<div id="footer"></div>
 
 <script src="/js/config.js"></script>
 <script src="/js/ui.js"></script>
 <script>
-// =============================================
-// HERO SLIDER
-// =============================================
-let heroIdx = 0;
-const slides = document.querySelectorAll('.hero-slide');
-const dotsEl = document.getElementById('hero-dots');
+// ── Hero Slider ───────────────────────────────────────
+const slides  = document.querySelectorAll('.hero-slide');
+const dotsEl  = document.getElementById('hero-dots');
+let heroIdx   = 0, heroTimer;
 
-slides.forEach((_, i) => {
-  const dot = document.createElement('button');
-  dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-  dot.onclick = () => goHero(i);
-  dotsEl.appendChild(dot);
-});
+function renderSlide(idx) {
+  const d   = slides[idx].dataset;
+  const rendered = document.getElementById('hero-rendered');
+  rendered.innerHTML = `
+    <div class="hero-text">
+      <div class="hero-eyebrow">${d.eye}</div>
+      <h1 class="hero-title">${d.title}</h1>
+      <p class="hero-sub">${d.sub}</p>
+      <div class="hero-btns">
+        <a href="${d.link1}" class="btn btn-primary btn-lg">${d.btn1}</a>
+        <a href="${d.link2}" class="btn btn-ghost btn-lg" style="color:rgba(255,255,255,.8);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)">${d.btn2}</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-orb"></div>
+      <div class="hero-emoji">${d.emoji}</div>
+      <div class="hero-stat"><strong>500+</strong><span>SPECIES</span></div>
+      <div class="hero-stat"><strong>4.8★</strong><span>RATING</span></div>
+    </div>`;
+}
 
-function goHero(n) {
+function goSlide(n) {
   slides[heroIdx].classList.remove('active');
-  document.querySelectorAll('.hero-dot')[heroIdx].classList.remove('active');
+  dotsEl.children[heroIdx]?.classList.remove('active');
   heroIdx = (n + slides.length) % slides.length;
   slides[heroIdx].classList.add('active');
-  document.querySelectorAll('.hero-dot')[heroIdx].classList.add('active');
+  dotsEl.children[heroIdx]?.classList.add('active');
+  renderSlide(heroIdx);
+  clearInterval(heroTimer);
+  heroTimer = setInterval(() => goSlide(heroIdx + 1), 5000);
 }
 
-function heroNav(dir) { goHero(heroIdx + dir); }
-setInterval(() => goHero(heroIdx + 1), 5000);
+slides.forEach((_, i) => {
+  const d = document.createElement('button');
+  d.className = 'hero-dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goSlide(i);
+  dotsEl.appendChild(d);
+});
+renderSlide(0);
+heroTimer = setInterval(() => goSlide(heroIdx + 1), 5000);
 
-// =============================================
-// LOAD PRODUCTS
-// =============================================
-async function loadBestsellers() {
-  const grid = document.getElementById('bestsellers-grid');
-  try {
-    const products = await Products.getBestsellers(8);
-    grid.innerHTML = products.map(p => UI.productCard(p)).join('');
-    Wishlist.refreshButtons();
-  } catch(e) {
-    grid.innerHTML = '<p style="color:var(--gray-400);padding:20px">Could not load products.</p>';
-  }
+// swipe on mobile
+let tx = 0;
+document.querySelector('.hero').addEventListener('touchstart', e => tx = e.touches[0].clientX, {passive:true});
+document.querySelector('.hero').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if(Math.abs(dx) > 50) goSlide(heroIdx + (dx < 0 ? 1 : -1));
+}, {passive:true});
+
+// ── Bubbles ───────────────────────────────────────────
+const bEl = document.getElementById('bubbles');
+for (let i = 0; i < 18; i++) {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const size = 10 + Math.random() * 30;
+  b.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random() * 100}%;
+    animation-duration:${6 + Math.random() * 10}s;
+    animation-delay:${Math.random() * 8}s;
+  `;
+  bEl.appendChild(b);
 }
 
-async function loadNewArrivals() {
-  const grid = document.getElementById('new-arrivals-grid');
-  try {
-    const products = await Products.getAll({ sort: 'newest' });
-    grid.innerHTML = products.slice(0, 8).map(p => UI.productCard(p)).join('');
-    Wishlist.refreshButtons();
-  } catch(e) {
-    grid.innerHTML = '<p style="color:var(--gray-400);padding:20px">Could not load products.</p>';
-  }
+// ── Marquee ───────────────────────────────────────────
+const items = ['🚚 Free Delivery Above ₹599','🐠 500+ Fish Species','🛡️ DOA Policy Guaranteed','⭐ 4.8★ Rated Store','🦜 Exotic Birds Available','🔒 100% Secure Payments','🐶 Premium Pet Supplies','🌿 Ethically Sourced'];
+const track = document.getElementById('marquee-track');
+const doubled = [...items,...items];
+track.innerHTML = doubled.map(t=>`<span class="marquee-item">${t}</span><span class="marquee-dot"></span>`).join('');
+
+// ── Categories ────────────────────────────────────────
+async function loadCats() {
+  const grid = document.getElementById('cats-grid');
+  const cats  = await DB.cats().catch(()=>[]);
+
+  const fallback = [
+    {slug:'live-fish',   emoji:'🐠', name:'Live Fish',       desc:'Freshwater & Marine'},
+    {slug:'aquariums',   emoji:'🐟', name:'Aquariums',       desc:'Tanks, Filters, Decor'},
+    {slug:'birds',       emoji:'🦜', name:'Birds',           desc:'Parrots, Finches & More'},
+    {slug:'dogs',        emoji:'🐶', name:'Dogs',            desc:'Food, Toys, Accessories'},
+    {slug:'cats',        emoji:'🐱', name:'Cats',            desc:'Food, Litter, Toys'},
+    {slug:'other-pets',  emoji:'🐾', name:'Other Pets',      desc:'All Animals'},
+    {slug:'accessories', emoji:'🛒', name:'Accessories',     desc:'All Pet Supplies'},
+  ];
+
+  const list = cats.length ? cats : fallback;
+  grid.innerHTML = list.slice(0,7).map((c,i) => `
+    <a href="/products.html?cat=${c.slug}" class="cat-card reveal reveal-delay-${Math.min(i+1,4)}">
+      <span class="emoji">${c.emoji||'📦'}</span>
+      <h3>${c.name}</h3>
+      <span>${c.description||c.desc||''}</span>
+    </a>`).join('');
+  initReveal();
 }
 
+// ── Products ──────────────────────────────────────────
+async function loadBest() {
+  const grid = document.getElementById('best-grid');
+  grid.innerHTML = UI.skels(8);
+  const data = await DB.bestsellers(8).catch(()=>[]);
+  if (!data.length) { grid.innerHTML='<p style="color:var(--gray3);padding:20px">No products yet.</p>'; return; }
+  grid.innerHTML = data.map(p => UI.card(p)).join('');
+  initReveal();
+}
+
+async function loadNew() {
+  const grid = document.getElementById('new-grid');
+  grid.innerHTML = UI.skels(8);
+  const data = await DB.latest(8).catch(()=>[]);
+  if (!data.length) { grid.innerHTML='<p style="color:var(--gray3);padding:20px">No products yet.</p>'; return; }
+  grid.innerHTML = data.map(p => UI.card(p)).join('');
+  initReveal();
+}
+
+// ── Init ──────────────────────────────────────────────
 async function init() {
-  await UI.renderNav();
-  UI.renderFooter();
-  loadBestsellers();
-  loadNewArrivals();
+  await UI.nav();
+  UI.footer();
+  loadCats();
+  loadBest();
+  loadNew();
+  initReveal();
 }
-
 init();
 </script>
 </body>
