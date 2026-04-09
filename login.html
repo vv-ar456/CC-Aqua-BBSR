@@ -1,213 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login – Aquanics</title>
-  <link rel="icon" href="logo.png">
-  
-  <style>
-    body{background:linear-gradient(160deg,#020e18 0%,#051c2c 35%,#0a2d44 65%,#0f3d5c 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-    .card{background:rgba(255,255,255,.04);backdrop-filter:blur(32px);border:1px solid rgba(0,212,170,.15);border-radius:28px;padding:44px;width:100%;max-width:440px;box-shadow:0 32px 80px rgba(0,0,0,.4);}
-    .logo-wrap{display:flex;justify-content:center;margin-bottom:32px;}
-    .logo-wrap img{height:46px;filter:brightness(0)invert(1);}
-    .tabs{display:flex;background:rgba(255,255,255,.06);border-radius:12px;padding:4px;margin-bottom:28px;gap:4px;}
-    .tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;border:none;background:none;font-family:var(--fb);color:rgba(255,255,255,.5);border-radius:9px;transition:all .2s;}
-    .tab.on{background:var(--teal);color:var(--ocean);}
-    .panel{display:none;}.panel.on{display:block;}
-    .step2{display:none;}.step2.on{display:block;}
-    .field{margin-bottom:16px;}
-    .field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);margin-bottom:6px;}
-    .field input{width:100%;padding:12px 16px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;font-size:14px;font-family:var(--fb);outline:none;transition:all .2s;}
-    .field input:focus{border-color:var(--teal);background:rgba(255,255,255,.1);box-shadow:0 0 0 3px rgba(0,212,170,.12);}
-    .field input::placeholder{color:rgba(255,255,255,.25);}
-    .phone-row{display:flex;gap:8px;}
-    .pfx{padding:12px 14px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.6);font-size:14px;white-space:nowrap;}
-    .otp-boxes{display:flex;gap:10px;justify-content:center;margin:16px 0;}
-    .obox{width:50px;height:58px;text-align:center;font-size:24px;font-weight:700;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-family:var(--fd);outline:none;transition:all .2s;}
-    .obox:focus{border-color:var(--teal);background:rgba(0,212,170,.08);box-shadow:0 0 0 3px rgba(0,212,170,.15);}
-    .timer{text-align:center;font-size:13px;color:rgba(255,255,255,.4);margin-bottom:14px;}
-    .timer .rs{color:var(--teal);cursor:pointer;font-weight:600;}
-    .timer .rs:hover{text-decoration:underline;}
-    .back-btn{background:none;border:none;color:var(--teal);font-size:13px;cursor:pointer;font-family:var(--fb);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
-    .back-btn:hover{text-decoration:underline;}
-    .btn-full{width:100%;justify-content:center;}
-    .terms{font-size:12px;color:rgba(255,255,255,.3);text-align:center;margin-top:16px;line-height:1.6;}
-    .terms a{color:var(--teal);}
-    #msg{margin-bottom:12px;}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login / Register – Aquanics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --teal:#00d4aa;--teal2:#00a882;--ocean:#031520;--ocean2:#062035;
+  --gold:#f0a843;--off:#f5f9f8;--g1:#edf4f2;--g3:#7fa9a3;
+  --R:'Syne',sans-serif;--B:'DM Sans',sans-serif;
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:var(--B);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background: linear-gradient(160deg,#020c16 0%,#031520 30%,#062035 60%,#0a2d4a 100%);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── CARD ── */
+.card{
+  background:rgba(255,255,255,.045);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border:1px solid rgba(0,212,170,.15);
+  border-radius:28px;
+  padding:40px 36px;
+  width:100%;
+  max-width:430px;
+  box-shadow:0 32px 80px rgba(0,0,0,.45);
+}
+.logo-wrap{display:flex;justify-content:center;margin-bottom:28px;}
+.logo-wrap img{height:44px;filter:brightness(0)invert(1);}
+
+/* ── STEP INDICATOR ── */
+.steps{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;margin-bottom:28px;
+}
+.step-dot{
+  width:8px;height:8px;border-radius:4px;
+  background:rgba(255,255,255,.18);
+  transition:all .35s var(--spring);
+}
+.step-dot.active{width:24px;background:var(--teal);}
+.step-dot.done{background:rgba(0,212,170,.4);}
+
+/* ── STEP PANELS ── */
+.step{display:none;}
+.step.show{display:block;animation:slideIn .32s var(--spring);}
+@keyframes slideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── LABELS ── */
+.step-label{
+  font-family:var(--R);
+  font-size:20px;font-weight:800;color:#fff;
+  margin-bottom:6px;
+}
+.step-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:22px;line-height:1.5;}
+.step-sub strong{color:rgba(255,255,255,.75);}
+
+/* ── FIELDS ── */
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;
+  color:rgba(255,255,255,.4);margin-bottom:6px;
+}
+.field input{
+  width:100%;
+  padding:12px 16px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  color:#fff;
+  font-size:14px;
+  font-family:var(--B);
+  outline:none;
+  transition:all .2s;
+}
+.field input::placeholder{color:rgba(255,255,255,.22);}
+.field input:focus{
+  border-color:var(--teal);
+  background:rgba(255,255,255,.1);
+  box-shadow:0 0 0 3px rgba(0,212,170,.12);
+}
+.optional-badge{
+  font-size:10px;font-weight:400;
+  color:rgba(255,255,255,.3);
+  text-transform:none;letter-spacing:0;
+  margin-left:4px;
+}
+.phone-row{display:flex;gap:8px;}
+.pfx{
+  padding:12px 14px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  color:rgba(255,255,255,.55);
+  font-size:14px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* ── OTP BOXES ── */
+.otp-row{display:flex;gap:8px;justify-content:center;margin:18px 0 14px;}
+.obox{
+  width:48px;height:56px;
+  text-align:center;
+  font-size:22px;font-weight:700;
+  background:rgba(255,255,255,.07);
+  border:2px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  color:#fff;
+  font-family:var(--R);
+  outline:none;
+  transition:all .2s;
+  -webkit-appearance:none;
+}
+.obox:focus{
+  border-color:var(--teal);
+  background:rgba(0,212,170,.1);
+  box-shadow:0 0 0 3px rgba(0,212,170,.15);
+}
+.obox.filled{border-color:rgba(0,212,170,.35);}
+
+/* ── TIMER ── */
+.timer{
+  text-align:center;font-size:13px;
+  color:rgba(255,255,255,.35);
+  margin-bottom:16px;
+}
+.timer .resend{color:var(--teal);cursor:pointer;font-weight:600;}
+.timer .resend:hover{text-decoration:underline;}
+
+/* ── BUTTONS ── */
+.btn-primary{
+  width:100%;
+  padding:14px;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  color:var(--ocean);
+  border:none;border-radius:13px;
+  font-size:15px;font-weight:700;
+  font-family:var(--R);
+  cursor:pointer;
+  transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,212,170,.35);}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-ghost{
+  width:100%;padding:12px;
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.65);
+  border:1.5px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  font-size:14px;font-weight:600;
+  font-family:var(--B);cursor:pointer;
+  transition:all .2s;margin-top:10px;
+}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+/* ── BACK LINK ── */
+.back-link{
+  background:none;border:none;
+  color:rgba(0,212,170,.8);
+  font-size:13px;cursor:pointer;
+  font-family:var(--B);
+  display:flex;align-items:center;gap:5px;
+  margin-bottom:14px;
+  padding:0;
+}
+.back-link:hover{color:var(--teal);}
+
+/* ── ALERTS ── */
+.alert{
+  padding:12px 16px;border-radius:11px;
+  font-size:13.5px;margin-bottom:14px;
+  display:flex;align-items:flex-start;gap:8px;
+  line-height:1.5;
+}
+.alert-error{background:rgba(240,80,80,.12);color:#ff9090;border:1px solid rgba(240,80,80,.25);}
+.alert-success{background:rgba(0,212,170,.1);color:var(--teal);border:1px solid rgba(0,212,170,.22);}
+.alert-info{background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.12);}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin:18px 0;color:rgba(255,255,255,.2);font-size:12px;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1);}
+
+/* ── TERMS ── */
+.terms{
+  font-size:11.5px;color:rgba(255,255,255,.25);
+  text-align:center;margin-top:20px;line-height:1.7;
+}
+.terms a{color:rgba(0,212,170,.6);}
+.terms a:hover{color:var(--teal);}
+
+/* ── SPINNER ── */
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite;display:inline-block;}
+
+@media(max-width:480px){
+  .card{padding:32px 24px;}
+  .obox{width:42px;height:50px;font-size:20px;}
+  .otp-row{gap:6px;}
+}
+</style>
 </head>
 <body>
+
 <div class="card">
-  <div class="logo-wrap"><a href="index.html"><img src="logo.png" alt="Aquanics"></a></div>
-  <div class="tabs">
-    <button class="tab on" onclick="swTab('login')">Login</button>
-    <button class="tab"    onclick="swTab('reg')">Register</button>
+  <div class="logo-wrap">
+    <a href="index.html"><img src="logo.png" alt="Aquanics"></a>
   </div>
+
+  <!-- Step dots (1=phone, 2=otp, 3=profile for new users) -->
+  <div class="steps">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- Alert area -->
   <div id="msg"></div>
 
-  <!-- LOGIN -->
-  <div class="panel on" id="p-login">
-    <div id="ls1">
-      <div class="field"><label>Mobile Number</label>
-        <div class="phone-row">
-          <span class="pfx">🇮🇳 +91</span>
-          <input type="tel" id="l-ph" placeholder="10-digit number" maxlength="10" inputmode="numeric"
-            onkeydown="if(event.key==='Enter')sendOTP('l')">
-        </div>
+  <!-- ═══ STEP 1: Enter Phone ═══ -->
+  <div class="step show" id="step-phone">
+    <div class="step-label">Welcome to Aquanics</div>
+    <div class="step-sub">Enter your mobile number to login or create an account.</div>
+    <div class="field">
+      <label>Mobile Number</label>
+      <div class="phone-row">
+        <span class="pfx">🇮🇳 +91</span>
+        <input type="tel" id="phone-input" placeholder="10-digit number"
+          maxlength="10" inputmode="numeric"
+          onkeydown="if(event.key==='Enter')onSendOTP()">
       </div>
-      <button id="l-send" class="btn btn-primary btn-lg btn-full" onclick="sendOTP('l')">Send OTP</button>
     </div>
-    <div id="ls2" class="step2">
-      <button class="back-btn" onclick="back('l')">← Change number</button>
-      <p style="font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:4px">OTP sent to <strong id="l-show" style="color:#fff"></strong></p>
-      <div class="otp-boxes" id="l-otp">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'l-otp','l')">
-      </div>
-      <div class="timer" id="l-timer"></div>
-      <button id="l-verify" class="btn btn-primary btn-lg btn-full" onclick="verifyOTP('l')">Verify & Login</button>
-    </div>
+    <button class="btn-primary" id="send-btn" onclick="onSendOTP()">
+      Continue
+    </button>
+    <p class="terms">
+      By continuing, you agree to our
+      <a href="policies.html">Terms</a> &amp;
+      <a href="policies.html#privacy">Privacy Policy</a>
+    </p>
   </div>
 
-  <!-- REGISTER -->
-  <div class="panel" id="p-reg">
-    <div id="rs1">
-      <div class="field"><label>Full Name *</label><input type="text" id="r-name" placeholder="Your full name"></div>
-      <div class="field"><label>Email (optional)</label><input type="email" id="r-email" placeholder="you@email.com"></div>
-      <div class="field"><label>Mobile Number *</label>
-        <div class="phone-row">
-          <span class="pfx">🇮🇳 +91</span>
-          <input type="tel" id="r-ph" placeholder="10-digit number" maxlength="10" inputmode="numeric">
-        </div>
-      </div>
-      <button id="r-send" class="btn btn-primary btn-lg btn-full" onclick="sendOTP('r')">Send OTP</button>
+  <!-- ═══ STEP 2: OTP Verification ═══ -->
+  <div class="step" id="step-otp">
+    <button class="back-link" onclick="goBack('step-phone',1)">← Change number</button>
+    <div class="step-label">Verify your number</div>
+    <div class="step-sub">
+      6-digit OTP sent to <strong id="phone-display"></strong>
     </div>
-    <div id="rs2" class="step2">
-      <button class="back-btn" onclick="back('r')">← Go back</button>
-      <p style="font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:4px">OTP sent to <strong id="r-show" style="color:#fff"></strong></p>
-      <div class="otp-boxes" id="r-otp">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-        <input class="obox" maxlength="1" inputmode="numeric" onkeyup="onk(this,'r-otp','r')">
-      </div>
-      <div class="timer" id="r-timer"></div>
-      <button id="r-verify" class="btn btn-primary btn-lg btn-full" onclick="verifyOTP('r')">Verify & Create Account</button>
+    <div class="otp-row" id="otp-boxes">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,0)">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,1)">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,2)">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,3)">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,4)">
+      <input class="obox" maxlength="1" inputmode="numeric" onkeyup="otpKey(this,5)">
     </div>
+    <div class="timer" id="otp-timer"></div>
+    <button class="btn-primary" id="verify-btn" onclick="onVerifyOTP()">
+      Verify OTP
+    </button>
   </div>
-  <p class="terms">By continuing, you agree to our <a href="policies.html">Terms</a> & <a href="policies.html#privacy">Privacy Policy</a></p>
-</div>
 
-<script src="js/app.js"></script>
+  <!-- ═══ STEP 3: Profile (new users only) ═══ -->
+  <div class="step" id="step-profile">
+    <div class="step-label">Almost done! 🎉</div>
+    <div class="step-sub">
+      Tell us your name so we can personalise your experience.
+    </div>
+    <div class="field">
+      <label>Full Name *</label>
+      <input type="text" id="profile-name" placeholder="Your full name"
+        onkeydown="if(event.key==='Enter')onCreateAccount()">
+    </div>
+    <div class="field">
+      <label>Email <span class="optional-badge">(optional — for order notifications)</span></label>
+      <input type="email" id="profile-email" placeholder="you@email.com"
+        onkeydown="if(event.key==='Enter')onCreateAccount()">
+    </div>
+    <button class="btn-primary" id="create-btn" onclick="onCreateAccount()">
+      Create Account
+    </button>
+  </div>
+
+</div><!-- /card -->
+
 <script>
-if(Auth.isLoggedIn()){ location.href=new URLSearchParams(location.search).get('redirect')||'/index.html'; }
+// ── CONFIG ────────────────────────────────────────────
+const SUPABASE_URL  = 'https://dwfbqgkhefdzljewatvx.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3ZmJxZ2toZWZkemxqZXdhdHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDQ3NjYsImV4cCI6MjA5MTAyMDc2Nn0.tiZ7786a6J41geK9HZs-nFMe00cPlXDX1ptYQ-EQ1B4';
+const TWOFACTOR_KEY = '2503bcf6-237e-11f1-bcb0-0200cd936042';
 
-let sessions={l:null,r:null}, phones={l:'',r:''}, rname='', remail='', timers={};
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function swTab(t){
-  document.querySelectorAll('.tab').forEach((x,i)=>x.classList.toggle('on',(i===0)===(t==='login')));
-  document.getElementById('p-login').classList.toggle('on',t==='login');
-  document.getElementById('p-reg').classList.toggle('on',t==='reg');
-  msg('');
+// Auth helpers (minimal, no app.js dependency)
+const Auth = {
+  set(user, token) { localStorage.setItem('aq_sess', JSON.stringify({ user, token })); },
+  isLoggedIn()     { try { return !!JSON.parse(localStorage.getItem('aq_sess')); } catch { return false; } }
+};
+
+// If already logged in, redirect immediately
+if (Auth.isLoggedIn()) {
+  location.href = new URLSearchParams(location.search).get('redirect') || 'index.html';
 }
 
-function msg(m,type='error'){
-  document.getElementById('msg').innerHTML=m?`<div class="alert alert-${type}">${m}</div>`:'';
+// ── STATE ─────────────────────────────────────────────
+let currentPhone  = '';   // phone without +91
+let otpSessionId  = null; // 2Factor session ID
+let verifiedPhone = '';   // phone that was successfully OTP-verified
+let timerInterval = null;
+
+// ── HELPERS ───────────────────────────────────────────
+const getRedirect = () => new URLSearchParams(location.search).get('redirect') || 'index.html';
+
+function showMsg(text, type = 'error') {
+  const el = document.getElementById('msg');
+  el.innerHTML = text
+    ? `<div class="alert alert-${type}"><span>${text}</span></div>`
+    : '';
 }
 
-function onk(inp,cid,mode){
-  const bs=[...document.getElementById(cid).querySelectorAll('.obox')];
-  const i=bs.indexOf(inp);
-  if(inp.value&&i<bs.length-1)bs[i+1].focus();
-  if(event.key==='Backspace'&&!inp.value&&i>0)bs[i-1].focus();
-  const otp=bs.map(b=>b.value).join('');
-  if(otp.length===6)verifyOTP(mode);
-}
-function getotp(cid){return[...document.getElementById(cid).querySelectorAll('.obox')].map(b=>b.value).join('');}
-
-function startTimer(p,fn){
-  clearInterval(timers[p]);
-  let s=30; const el=document.getElementById(p+'-timer');
-  const tick=()=>{ el.innerHTML=`Resend in <strong>${s}s</strong>`; if(--s<0){clearInterval(timers[p]);el.innerHTML=`<span class="rs" onclick="${fn}">Resend OTP</span>`;} };
-  tick(); timers[p]=setInterval(tick,1000);
+function setLoading(btnId, loading, text = '') {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  if (text) btn.innerHTML = loading
+    ? `<span class="spin">↻</span> ${text}`
+    : text;
 }
 
-function showStep2(p,phone){
-  document.getElementById(p+'s1').style.display='none';
-  document.getElementById(p+'s2').classList.add('on');
-  document.getElementById(p+'-show').textContent='+91 '+phone;
-  document.getElementById(p+'-otp').querySelectorAll('.obox').forEach(b=>b.value='');
-  document.getElementById(p+'-otp').querySelector('.obox').focus();
-  startTimer(p,p==='l'?"sendOTP('l')":"sendOTP('r')");
+function goToStep(stepId, dotNum) {
+  // Hide all steps
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('show'));
+  // Show target
+  document.getElementById(stepId).classList.add('show');
+  // Update dots
+  const dots = [
+    document.getElementById('dot1'),
+    document.getElementById('dot2'),
+    document.getElementById('dot3'),
+  ];
+  dots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i + 1 < dotNum)  d.classList.add('done');
+    if (i + 1 === dotNum) d.classList.add('active');
+  });
+  showMsg('');
 }
-function back(p){document.getElementById(p+'s1').style.display='';document.getElementById(p+'s2').classList.remove('on');msg('');}
 
-async function sendOTP(p){
-  msg('');
-  if(p==='l'){
-    phones.l=document.getElementById('l-ph').value.trim();
-    if(!/^[6-9]\d{9}$/.test(phones.l)){msg('Enter a valid 10-digit mobile number');return;}
-    const btn=document.getElementById('l-send'); btn.disabled=true; btn.textContent='Sending…';
-    try{ sessions.l=await OTP.send(phones.l); showStep2('l',phones.l); }
-    catch(e){ msg('Could not send OTP: '+e.message); }
-    btn.disabled=false; btn.textContent='Send OTP';
-  } else {
-    rname=document.getElementById('r-name').value.trim();
-    remail=document.getElementById('r-email').value.trim();
-    phones.r=document.getElementById('r-ph').value.trim();
-    if(!rname){msg('Please enter your name');return;}
-    if(!/^[6-9]\d{9}$/.test(phones.r)){msg('Enter a valid mobile number');return;}
-    const {data:ex}=await sb.from('users').select('id').eq('phone',phones.r).maybeSingle();
-    if(ex){msg('Account exists. Please login.');swTab('login');return;}
-    const btn=document.getElementById('r-send'); btn.disabled=true; btn.textContent='Sending…';
-    try{ sessions.r=await OTP.send(phones.r); showStep2('r',phones.r); }
-    catch(e){ msg('Could not send OTP: '+e.message); }
-    btn.disabled=false; btn.textContent='Send OTP';
+function goBack(stepId, dotNum) {
+  clearInterval(timerInterval);
+  goToStep(stepId, dotNum);
+}
+
+// ── OTP BOX KEYBOARD NAVIGATION ──────────────────────
+function otpKey(input, idx) {
+  const boxes = document.getElementById('otp-boxes').querySelectorAll('.obox');
+  const val   = input.value;
+
+  // Highlight filled boxes
+  input.classList.toggle('filled', !!val);
+
+  // Move forward
+  if (val && idx < boxes.length - 1) boxes[idx + 1].focus();
+
+  // Move back on delete
+  if (event.key === 'Backspace' && !val && idx > 0) {
+    boxes[idx - 1].focus();
+  }
+
+  // Paste handling - if pasting 6 digits
+  const full = [...boxes].map(b => b.value).join('');
+  if (full.length === 6) {
+    // Small delay so last digit renders, then verify
+    setTimeout(() => onVerifyOTP(), 120);
   }
 }
 
-async function verifyOTP(p){
-  msg('');
-  if(p==='l'){
-    const otp=getotp('l-otp');
-    if(otp.length<6){msg('Enter all 6 digits');return;}
-    const btn=document.getElementById('l-verify'); btn.disabled=true; btn.textContent='Verifying…';
-    try{
-      await OTP.verify(sessions.l,otp);
-      const {data:user}=await sb.from('users').select('*').eq('phone',phones.l).maybeSingle();
-      if(!user){msg('No account found. Please register.');swTab('reg');btn.disabled=false;btn.textContent='Verify & Login';return;}
-      const token=crypto.randomUUID(), exp=new Date(Date.now()+30*24*60*60*1000).toISOString();
-      await sb.from('sessions').insert([{token,user_id:user.id,expires_at:exp}]);
-      Auth.setSession(user,token);
-      msg('Login successful! Redirecting…','success');
-      setTimeout(()=>location.href=new URLSearchParams(location.search).get('redirect')||'/index.html',700);
-    }catch(e){ msg('Failed: '+e.message); btn.disabled=false; btn.textContent='Verify & Login'; }
-  } else {
-    const otp=getotp('r-otp');
-    if(otp.length<6){msg('Enter all 6 digits');return;}
-    const btn=document.getElementById('r-verify'); btn.disabled=true; btn.textContent='Creating account…';
-    try{
-      await OTP.verify(sessions.r,otp);
-      const {data:user,error}=await sb.from('users').insert([{phone:phones.r,name:rname,email:remail||null,created_at:new Date().toISOString()}]).select().single();
-      if(error)throw error;
-      const token=crypto.randomUUID(), exp=new Date(Date.now()+30*24*60*60*1000).toISOString();
-      await sb.from('sessions').insert([{token,user_id:user.id,expires_at:exp}]);
-      Auth.setSession(user,token);
-      msg('Account created! Redirecting…','success');
-      setTimeout(()=>location.href=new URLSearchParams(location.search).get('redirect')||'/index.html',700);
-    }catch(e){ msg('Failed: '+e.message); btn.disabled=false; btn.textContent='Verify & Create Account'; }
+function getOTPValue() {
+  return [...document.getElementById('otp-boxes').querySelectorAll('.obox')]
+    .map(b => b.value).join('');
+}
+
+function clearOTPBoxes() {
+  document.getElementById('otp-boxes').querySelectorAll('.obox')
+    .forEach(b => { b.value = ''; b.classList.remove('filled'); });
+}
+
+// ── OTP TIMER ─────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  let secs = 30;
+  const el = document.getElementById('otp-timer');
+  const tick = () => {
+    if (secs > 0) {
+      el.innerHTML = `Resend OTP in <strong>${secs}s</strong>`;
+      secs--;
+    } else {
+      clearInterval(timerInterval);
+      el.innerHTML = `<span class="resend" onclick="onResendOTP()">Resend OTP</span>`;
+    }
+  };
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+// ── 2FACTOR OTP ───────────────────────────────────────
+async function sendOTP(phone) {
+  const res  = await fetch(
+    `https://2factor.in/API/V1/${TWOFACTOR_KEY}/SMS/+91${phone}/AUTOGEN/OTP1`
+  );
+  const data = await res.json();
+  if (data.Status !== 'Success') throw new Error(data.Details || 'Failed to send OTP');
+  return data.Details; // session ID
+}
+
+async function verifyOTP(sessionId, otp) {
+  const res  = await fetch(
+    `https://2factor.in/API/V1/${TWOFACTOR_KEY}/SMS/VERIFY/${sessionId}/${otp}`
+  );
+  const data = await res.json();
+  if (data.Status !== 'Success') throw new Error('Incorrect OTP. Please try again.');
+  return true;
+}
+
+// ── STEP 1: SEND OTP ──────────────────────────────────
+async function onSendOTP() {
+  showMsg('');
+  const phone = document.getElementById('phone-input').value.trim();
+
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    showMsg('Please enter a valid 10-digit Indian mobile number.');
+    return;
   }
+
+  currentPhone = phone;
+  setLoading('send-btn', true, 'Sending OTP…');
+
+  try {
+    otpSessionId = await sendOTP(phone);
+
+    // Show OTP step
+    document.getElementById('phone-display').textContent = '+91 ' + phone;
+    clearOTPBoxes();
+    goToStep('step-otp', 2);
+    startTimer();
+    // Focus first OTP box after animation
+    setTimeout(() => {
+      document.getElementById('otp-boxes').querySelector('.obox')?.focus();
+    }, 350);
+  } catch(e) {
+    showMsg('Could not send OTP: ' + e.message);
+  }
+
+  setLoading('send-btn', false, 'Continue');
+}
+
+// ── RESEND OTP ────────────────────────────────────────
+async function onResendOTP() {
+  showMsg('');
+  try {
+    otpSessionId = await sendOTP(currentPhone);
+    clearOTPBoxes();
+    startTimer();
+    showMsg('OTP resent successfully!', 'success');
+    document.getElementById('otp-boxes').querySelector('.obox')?.focus();
+  } catch(e) {
+    showMsg('Could not resend OTP: ' + e.message);
+  }
+}
+
+// ── STEP 2: VERIFY OTP ────────────────────────────────
+// This is the ONLY place OTP verification happens.
+// After verification, we check if user exists:
+//   - Existing user → create session → redirect
+//   - New user      → show profile form (Step 3) → create user there
+async function onVerifyOTP() {
+  showMsg('');
+
+  const otp = getOTPValue();
+  if (otp.length < 6) {
+    showMsg('Please enter all 6 digits of the OTP.');
+    return;
+  }
+
+  // Prevent double-call (auto-trigger + button click)
+  const btn = document.getElementById('verify-btn');
+  if (btn.disabled) return;
+
+  setLoading('verify-btn', true, 'Verifying…');
+
+  try {
+    // ── Verify OTP (called ONCE here) ─────────────────
+    await verifyOTP(otpSessionId, otp);
+    // Mark phone as verified — Step 3 will use this
+    verifiedPhone = currentPhone;
+    clearInterval(timerInterval);
+
+    // ── Check if user already registered ──────────────
+    const { data: existingUser, error: lookupErr } = await sb
+      .from('users')
+      .select('*')
+      .eq('phone', currentPhone)
+      .maybeSingle();
+
+    if (lookupErr) throw lookupErr;
+
+    if (existingUser) {
+      // ── EXISTING USER: Login directly ─────────────────
+      const token   = crypto.randomUUID();
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await sb.from('sessions').insert([{
+        token,
+        user_id:    existingUser.id,
+        expires_at: expires,
+      }]);
+      Auth.set(existingUser, token);
+      showMsg('Welcome back, ' + (existingUser.name || 'Customer') + '! Redirecting…', 'success');
+      setTimeout(() => { location.href = getRedirect(); }, 700);
+
+    } else {
+      // ── NEW USER: Go to profile step ──────────────────
+      goToStep('step-profile', 3);
+      document.getElementById('profile-name').focus();
+    }
+
+  } catch(e) {
+    // Reset OTP boxes on wrong OTP
+    clearOTPBoxes();
+    document.getElementById('otp-boxes').querySelector('.obox')?.focus();
+    showMsg(e.message || 'Verification failed.');
+    setLoading('verify-btn', false, 'Verify OTP');
+  }
+
+  setLoading('verify-btn', false, 'Verify OTP');
+}
+
+// ── STEP 3: CREATE ACCOUNT (new users only) ───────────
+// OTP has already been verified in Step 2. This just
+// saves the user's name/email and creates the session.
+async function onCreateAccount() {
+  showMsg('');
+
+  // Guard: phone must be verified
+  if (!verifiedPhone) {
+    goToStep('step-phone', 1);
+    showMsg('Session expired. Please start again.');
+    return;
+  }
+
+  const name  = document.getElementById('profile-name').value.trim();
+  const email = document.getElementById('profile-email').value.trim();
+
+  if (!name) {
+    showMsg('Please enter your name.');
+    document.getElementById('profile-name').focus();
+    return;
+  }
+
+  setLoading('create-btn', true, 'Creating account…');
+
+  try {
+    // ── Check one more time for duplicates (race condition guard) ──
+    const { data: alreadyExists } = await sb
+      .from('users')
+      .select('*')
+      .eq('phone', verifiedPhone)
+      .maybeSingle();
+
+    let user = alreadyExists;
+
+    if (!user) {
+      // Insert new user
+      const { data: newUser, error: insertErr } = await sb
+        .from('users')
+        .insert([{
+          phone:      verifiedPhone,
+          name:       name,
+          email:      email || null,
+          created_at: new Date().toISOString(),
+        }])
+        .select()
+        .single();
+
+      if (insertErr) throw insertErr;
+      user = newUser;
+    }
+
+    // Create session
+    const token   = crypto.randomUUID();
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    await sb.from('sessions').insert([{
+      token,
+      user_id:    user.id,
+      expires_at: expires,
+    }]);
+
+    Auth.set(user, token);
+    showMsg('Account created! Welcome to Aquanics 🎉', 'success');
+    setTimeout(() => { location.href = getRedirect(); }, 800);
+
+  } catch(e) {
+    showMsg('Could not create account: ' + e.message);
+  }
+
+  setLoading('create-btn', false, 'Create Account');
 }
 </script>
-<script src="js/chat-widget.js"></script>
 </body>
 </html>
