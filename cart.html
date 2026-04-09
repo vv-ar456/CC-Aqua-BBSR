@@ -293,6 +293,59 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ── ORDER SCHEDULING NOTICE ── */
+.schedule-notice {
+  background: linear-gradient(135deg, #fff8e6, #fffbf0);
+  border: 1.5px solid #f0a843;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.schedule-notice.scheduled {
+  background: linear-gradient(135deg, #e6f7f5, #f0fbf8);
+  border-color: #00a882;
+}
+.schedule-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.schedule-text h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a5200;
+  margin-bottom: 4px;
+}
+.schedule-notice.scheduled .schedule-text h4 { color: #007a60; }
+.schedule-text p {
+  font-size: 13px;
+  color: #a07030;
+  line-height: 1.5;
+  margin: 0;
+}
+.schedule-notice.scheduled .schedule-text p { color: #3d6b64; }
+.schedule-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0a843;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+}
+.schedule-notice.scheduled .schedule-tag {
+  background: #00a882;
+}
+</style>
 </head>
 <body>
 <header id="navbar"></header>
@@ -344,6 +397,7 @@ function renderCart() {
 
   if (!items.length) {
     contentEl.innerHTML = `
+        <div id='schedule-notice' class='schedule-notice'></div>
       <div class="empty-cart">
         <div style="font-size:60px;margin-bottom:16px">🛒</div>
         <h3>Your cart is empty</h3>
@@ -477,6 +531,7 @@ function renderCart() {
 function updateQty(id, qty) {
   Cart.updateQty(id, qty);
   renderCart();
+  renderScheduleNotice();
 }
 
 function removeItem(id) {
@@ -614,5 +669,80 @@ async function init() {
 
 init();
 </script>
+
+<script>
+// ── ORDER Scheduling (IST 8:30 PM – 9:00 AM) ──────────
+function getISTTime() {
+  const now = new Date();
+  // IST = UTC + 5:30
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const ist = new Date(utc + (5.5 * 3600000));
+  return { h: ist.getHours(), m: ist.getMinutes(), full: ist };
+}
+
+function isAfterCutoff() {
+  const { h, m } = getISTTime();
+  // After 8:30 PM (20:30) OR before 9:00 AM (09:00)
+  if (h > 20) return true;
+  if (h === 20 && m >= 30) return true;
+  if (h < 9) return true;
+  return false;
+}
+
+function getScheduledDeliveryText() {
+  const { h, m, full } = getISTTime();
+  const tomorrow = new Date(full);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dayName = days[tomorrow.getDay()];
+  const dateStr = `${tomorrow.getDate()} ${months[tomorrow.getMonth()]}`;
+  return { dayName, dateStr };
+}
+
+function renderScheduleNotice() {
+  const el = document.getElementById('schedule-notice');
+  if (!el) return;
+
+  const late = isAfterCutoff();
+
+  if (late) {
+    const { dayName, dateStr } = getScheduledDeliveryText();
+    el.className = 'schedule-notice scheduled';
+    el.innerHTML = `
+      <span class="schedule-icon">📅</span>
+      <div class="schedule-text">
+        <h4>Order Scheduled for Tomorrow</h4>
+        <p>Orders placed after 8:30 PM or before 9:00 AM (IST) are automatically scheduled.<br>
+        Your order will be dispatched on <strong>${dayName}, ${dateStr}</strong> after 9:00 AM.</p>
+        <span class="schedule-tag">🕘 Dispatch: ${dateStr} after 9:00 AM IST</span>
+      </div>`;
+    // Store scheduled flag for order
+    window._orderScheduled = true;
+    window._scheduledDate = `${dayName}, ${dateStr}`;
+  } else {
+    const { h, m } = getISTTime();
+    const cutoffH = 20, cutoffM = 30;
+    const totalMinsLeft = (cutoffH * 60 + cutoffM) - (h * 60 + m);
+    const hLeft = Math.floor(totalMinsLeft / 60);
+    const mLeft = totalMinsLeft % 60;
+    const timeLeft = hLeft > 0 ? `${hLeft}h ${mLeft}m` : `${mLeft} min`;
+
+    el.className = 'schedule-notice';
+    el.innerHTML = `
+      <span class="schedule-icon">⚡</span>
+      <div class="schedule-text">
+        <h4>Order Now for Same-Day Processing</h4>
+        <p>Place your order before <strong>8:30 PM IST</strong> for same-day processing.
+        You have <strong>${timeLeft}</strong> left!</p>
+        <span class="schedule-tag">⏰ Cutoff: 8:30 PM IST Today</span>
+      </div>`;
+    window._orderScheduled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', renderScheduleNotice);
+</script>
+<script src="js/chat-widget.js"></script>
 </body>
 </html>

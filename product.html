@@ -1,199 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Product – Aquanics</title>
-  <link rel="icon" href="logo.png">
-  
-  <style>
-    .prod-layout{display:grid;grid-template-columns:1fr 1fr;gap:52px;padding:32px 0 60px;align-items:start;}
-    /* Gallery */
-    .gallery{position:sticky;top:90px;}
-    .gallery-main{aspect-ratio:1;background:var(--gray1);border-radius:var(--r3);overflow:hidden;margin-bottom:12px;cursor:zoom-in;position:relative;}
-    .gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease);}
-    .gallery-main:hover img{transform:scale(1.06);}
-    .gallery-zoom{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
-    .thumbs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;}
-    .thumbs::-webkit-scrollbar{display:none;}
-    .thumb{width:72px;height:72px;border-radius:12px;overflow:hidden;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;background:var(--gray1);transition:border-color .2s;}
-    .thumb.active{border-color:var(--teal);}
-    .thumb img{width:100%;height:100%;object-fit:cover;}
-    /* Info */
-    .prod-info{}
-    .prod-cat-tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--teal2);margin-bottom:10px;display:block;}
-    .prod-title{font-family:var(--fd);font-size:32px;font-weight:700;line-height:1.15;color:var(--ocean);margin-bottom:14px;}
-    .prod-rating{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-    .stars-big{font-size:18px;color:var(--gold);}
-    .rating-score{font-weight:700;font-size:16px;}
-    .rating-cnt{color:var(--gray3);font-size:13px;}
-    .stock-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
-    .in-stock{background:#e6faf5;color:#007a60;}
-    .out-stock{background:#fdf0f0;color:#c0392b;}
-    .price-row{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
-    .prod-price{font-family:var(--fd);font-size:40px;font-weight:700;color:var(--ocean);}
-    .prod-mrp{font-size:20px;color:var(--gray3);text-decoration:line-through;}
-    .prod-disc{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;}
-    .highlights{background:linear-gradient(135deg,#f0fbf8,#e6faf5);border-radius:var(--r);padding:18px;margin-bottom:22px;}
-    .highlights h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray4);margin-bottom:12px;}
-    .highlights li{font-size:13.5px;padding:5px 0;list-style:none;display:flex;gap:8px;align-items:flex-start;color:var(--text);}
-    .highlights li::before{content:'✓';color:var(--teal2);font-weight:700;flex-shrink:0;}
-    .qty-row{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
-    .qty-label{font-size:14px;font-weight:600;}
-    .qty-ctrl{display:flex;align-items:center;border:2px solid var(--gray1);border-radius:12px;overflow:hidden;}
-    .qty-btn{width:40px;height:40px;border:none;background:var(--gray1);font-size:20px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;}
-    .qty-btn:hover{background:var(--gray2);}
-    .qty-val{width:52px;height:40px;text-align:center;border:none;border-left:2px solid var(--gray1);border-right:2px solid var(--gray1);font-size:16px;font-family:var(--fb);font-weight:600;outline:none;}
-    .prod-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;}
-    .prod-actions .btn{flex:1;min-width:140px;justify-content:center;}
-    .btn-wish{background:#fff;border:2px solid var(--gray1);color:var(--text);padding:12px 16px;border-radius:12px;font-family:var(--fb);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
-    .btn-wish:hover,.btn-wish.wished{border-color:#ee0055;color:#ee0055;}
-    .delivery-strip{background:var(--off);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px;margin-bottom:22px;}
-    .delivery-strip span{display:flex;align-items:center;gap:8px;}
-    /* Tabs */
-    .tabs{}
-    .tab-nav{display:flex;border-bottom:2px solid var(--gray1);overflow-x:auto;scrollbar-width:none;}
-    .tab-nav::-webkit-scrollbar{display:none;}
-    .tab-btn{padding:12px 20px;font-size:14px;font-weight:600;color:var(--gray3);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;font-family:var(--fb);transition:all .2s;}
-    .tab-btn.on{color:var(--teal2);border-bottom-color:var(--teal2);}
-    .tab-pane{display:none;padding:20px 0;}
-    .tab-pane.on{display:block;}
-    .spec-table{width:100%;border-collapse:collapse;}
-    .spec-table tr:nth-child(even) td{background:var(--off);}
-    .spec-table td{padding:10px 14px;font-size:13.5px;border-radius:4px;}
-    .spec-table td:first-child{font-weight:600;color:var(--gray4);width:40%;}
-    /* Reviews */
-    .rev-summary{display:flex;gap:32px;margin-bottom:24px;flex-wrap:wrap;}
-    .rev-big{text-align:center;min-width:90px;}
-    .rev-big .num{font-family:var(--fd);font-size:52px;font-weight:800;color:var(--ocean);line-height:1;}
-    .rev-big .stars{font-size:18px;color:var(--gold);}
-    .rev-big small{font-size:11px;color:var(--gray3);display:block;margin-top:4px;}
-    .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px;}
-    .bar-track{flex:1;height:8px;background:var(--gray1);border-radius:4px;overflow:hidden;}
-    .bar-fill{height:100%;background:var(--gold);border-radius:4px;transition:width .6s var(--ease);}
-    @media(max-width:900px){.prod-layout{grid-template-columns:1fr;}.gallery{position:static;}.prod-title{font-size:24px;}.prod-price{font-size:32px;}}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product – Aquanics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.prod-layout{display:grid;grid-template-columns:1fr 1fr;gap:52px;padding:28px 0 60px;align-items:start;}
+.gallery{position:sticky;top:90px;}
+.gallery-main{aspect-ratio:1;background:var(--g1);border-radius:24px;overflow:hidden;margin-bottom:12px;cursor:zoom-in;position:relative;}
+.gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease);}
+.gallery-main:hover img{transform:scale(1.05);}
+.gallery-zoom{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border:none;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:background .2s;}
+.gallery-zoom:hover{background:#fff;}
+.thumbs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;}
+.thumbs::-webkit-scrollbar{display:none;}
+.thumb{width:72px;height:72px;border-radius:12px;overflow:hidden;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;background:var(--g1);transition:border-color .2s;}
+.thumb.active{border-color:var(--teal);}
+.thumb img{width:100%;height:100%;object-fit:cover;}
+.prod-cat-tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--teal2);margin-bottom:10px;display:block;}
+.prod-title{font-family:var(--R);font-size:30px;font-weight:800;line-height:1.15;color:var(--ocean);margin-bottom:14px;}
+.prod-rating{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.stars-big{font-size:18px;color:var(--gold);}
+.stock-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.in-stock{background:#e6faf5;color:#007a60;}
+.out-stock{background:#fdf0f0;color:#c0392b;}
+.price-row{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+.big-price{font-family:var(--R);font-size:38px;font-weight:800;color:var(--ocean);}
+.mrp-price{font-size:20px;color:var(--g3);text-decoration:line-through;}
+.disc-pill{background:linear-gradient(135deg,var(--gold),#e08830);color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;}
+.highlights{background:linear-gradient(135deg,#f0fbf8,#e6faf5);border-radius:14px;padding:18px;margin-bottom:22px;}
+.highlights h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g4);margin-bottom:12px;}
+.highlights ul{list-style:none;}
+.highlights li{font-size:13.5px;padding:5px 0;display:flex;gap:8px;align-items:flex-start;color:var(--text);}
+.highlights li::before{content:'✓';color:var(--teal2);font-weight:700;flex-shrink:0;}
+.qty-row{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.qty-label{font-size:14px;font-weight:600;}
+.qty-ctrl{display:flex;align-items:center;border:2px solid var(--g1);border-radius:12px;overflow:hidden;}
+.qty-btn{width:40px;height:40px;border:none;background:var(--g1);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.qty-btn:hover{background:var(--g2);}
+.qty-val{width:52px;height:40px;text-align:center;border:none;border-left:2px solid var(--g1);border-right:2px solid var(--g1);font-size:16px;font-family:var(--B);font-weight:600;outline:none;}
+.prod-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.prod-actions .btn{flex:1;min-width:130px;justify-content:center;}
+.btn-wish-inline{background:#fff;border:2px solid var(--g1);color:var(--text);padding:12px 16px;border-radius:12px;font-family:var(--B);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.btn-wish-inline:hover,.btn-wish-inline.on{border-color:#ee0055;color:#ee0055;}
+.delivery-strip{background:var(--off);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px;margin-bottom:22px;border:1px solid var(--g1);}
+.delivery-strip span{display:flex;align-items:center;gap:8px;}
+
+/* MEDIA REQUEST BOX */
+.mrb{background:linear-gradient(135deg,#062035 0%,#0a2d4a 100%);border-radius:18px;padding:22px;margin-bottom:22px;position:relative;overflow:hidden;border:1px solid rgba(0,212,170,.2);}
+.mrb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 20%,rgba(0,212,170,.12),transparent);pointer-events:none;}
+.mrb-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;position:relative;}
+.mrb-icon{font-size:32px;animation:camb 3s ease-in-out infinite;flex-shrink:0;}
+@keyframes camb{0%,100%{transform:rotate(-5deg) scale(1);}50%{transform:rotate(5deg) scale(1.08);}}
+.mrb-title{font-family:var(--R);font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;}
+.mrb-sub{font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.5;}
+.mrb-note{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(0,212,170,.2);border-radius:10px;color:#fff;font-size:13px;font-family:var(--B);padding:10px 14px;resize:none;outline:none;transition:border-color .2s;margin-bottom:12px;display:block;}
+.mrb-note::placeholder{color:rgba(255,255,255,.3);}
+.mrb-note:focus{border-color:var(--teal);}
+.mrb-btn{background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);border:none;padding:11px 22px;border-radius:10px;font-size:13.5px;font-weight:700;font-family:var(--B);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .25s var(--ease);position:relative;}
+.mrb-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,170,.3);}
+.mrb-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
+.mrb-ok{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.25);border-radius:10px;font-size:13px;color:var(--teal);margin-top:4px;line-height:1.5;}
+.mrb-ok a{color:var(--teal);font-weight:700;text-decoration:underline;}
+.mrb-err{font-size:12.5px;color:#f87171;margin-top:8px;display:flex;align-items:center;gap:6px;}
+
+/* TABS */
+.tab-nav{display:flex;border-bottom:2px solid var(--g1);overflow-x:auto;scrollbar-width:none;}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{padding:11px 18px;font-size:14px;font-weight:600;color:var(--g3);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;font-family:var(--B);transition:all .2s;}
+.tab-btn.on{color:var(--teal2);border-bottom-color:var(--teal2);}
+.tab-pane{display:none;padding:20px 0;}
+.tab-pane.on{display:block;}
+.spec-table{width:100%;border-collapse:collapse;}
+.spec-table tr:nth-child(even) td{background:var(--off);}
+.spec-table td{padding:10px 14px;font-size:13.5px;border-radius:4px;}
+.spec-table td:first-child{font-weight:600;color:var(--g4);width:40%;}
+.rev-summary{display:flex;gap:32px;margin-bottom:24px;flex-wrap:wrap;}
+.rev-big{text-align:center;min-width:90px;}
+.rnum{font-family:var(--R);font-size:52px;font-weight:800;color:var(--ocean);line-height:1;}
+.rstars{font-size:18px;color:var(--gold);}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px;}
+.bar-track{flex:1;height:8px;background:var(--g1);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--gold);border-radius:4px;}
+
+/* Lightbox */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
+.lb.open{display:flex;}
+.lb img,.lb video{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain;}
+.lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.lb-close:hover{background:rgba(255,255,255,.25);}
+
+@media(max-width:900px){
+  .prod-layout{grid-template-columns:1fr;gap:24px;padding:16px 0 48px;}
+  .gallery{position:static;}
+  .prod-title{font-size:22px;}
+  .big-price{font-size:28px;}
+}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
-<div id="navbar"></div>
+<div id="nav"></div>
 
 <div class="container">
   <div class="breadcrumb" id="bc">
-    <a href="index.html">Home</a>
-    <span class="breadcrumb-sep">›</span>
-    <a href="products.html" id="bc-cat">Products</a>
-    <span class="breadcrumb-sep">›</span>
+    <a href="index.html">Home</a><span class="breadcrumb-sep">›</span>
+    <a href="products.html" id="bc-cat">Products</a><span class="breadcrumb-sep">›</span>
     <span id="bc-name">Loading…</span>
   </div>
-
-  <div id="prod-layout">
+  <div id="prod-wrap">
     <div class="prod-layout">
-      <div class="skeleton" style="aspect-ratio:1;border-radius:28px"></div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        ${[80,60,40,40,100,80,60].map(w=>`<div class="skeleton" style="height:22px;width:${w}%;border-radius:8px"></div>`).join('')}
+      <div class="skel" style="aspect-ratio:1;border-radius:24px"></div>
+      <div style="display:flex;flex-direction:column;gap:14px;padding-top:8px">
+        <div class="skel" style="height:14px;width:30%;border-radius:6px"></div>
+        <div class="skel" style="height:36px;width:90%;border-radius:8px"></div>
+        <div class="skel" style="height:36px;width:70%;border-radius:8px"></div>
+        <div class="skel" style="height:20px;width:40%;border-radius:6px;margin-top:8px"></div>
+        <div class="skel" style="height:48px;width:50%;border-radius:8px"></div>
+        <div class="skel" style="height:100px;border-radius:12px;margin-top:8px"></div>
+        <div class="skel" style="height:52px;border-radius:12px"></div>
+        <div class="skel" style="height:120px;border-radius:18px"></div>
       </div>
     </div>
   </div>
-
   <div id="related-wrap" style="display:none;padding-bottom:60px">
-    <div class="section-head"><h2>Related <span>Products</span></h2></div>
-    <div class="products-grid" id="related-grid"></div>
+    <div class="sec-head" style="margin-bottom:24px"><h2>Related <em>Products</em></h2></div>
+    <div class="prod-grid" id="related-grid"></div>
   </div>
 </div>
 
-<a href="https://wa.me/919999999999" target="_blank" class="wa-float">
+<div class="lb" id="lb" onclick="closeLb(event)">
+  <button class="lb-close" onclick="closeLb()">✕</button>
+  <div id="lb-content"></div>
+</div>
+
+<a href="https://wa.me/919999999999" target="_blank" class="wa-btn" aria-label="WhatsApp">
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
 </a>
-<div id="footer"></div>
+<div id="footer-wrap"></div>
 
-<script src="js/app.js"></script>
 <script src="js/app.js"></script>
 <script>
-let prod=null, qty=1;
-const id = new URLSearchParams(location.search).get('id');
+const prodId = new URLSearchParams(location.search).get('id');
+let currentProd = null, qty = 1;
 
-function switchThumb(url,i){
-  document.getElementById('main-img').src=url;
-  document.querySelectorAll('.thumb').forEach((t,j)=>t.classList.toggle('active',i===j));
+function openLb(url, type) {
+  const c = document.getElementById('lb-content');
+  c.innerHTML = type === 'video'
+    ? `<video src="${url}" controls autoplay style="max-width:90vw;max-height:80vh;border-radius:12px"></video>`
+    : `<img src="${url}" style="max-width:90vw;max-height:80vh;border-radius:12px" alt="">`;
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
-function changeQty(d){ qty=Math.max(1,qty+d); document.getElementById('qty-val').value=qty; }
-function switchTab(n){
-  document.querySelectorAll('.tab-btn,.tab-pane').forEach(e=>e.classList.remove('on'));
+function closeLb(e) {
+  if (e && e.target !== document.getElementById('lb') && !e.target.classList.contains('lb-close')) return;
+  document.getElementById('lb').classList.remove('open');
+  document.body.style.overflow = '';
+  const v = document.querySelector('#lb-content video');
+  if (v) v.pause();
+}
+
+function switchThumb(url, i) {
+  document.getElementById('main-img').src = url;
+  document.querySelectorAll('.thumb').forEach((t,j) => t.classList.toggle('active', i===j));
+}
+function changeQty(d) { qty = Math.max(1, qty+d); document.getElementById('qty-val').value = qty; }
+function switchTab(n) {
+  document.querySelectorAll('.tab-btn,.tab-pane').forEach(e => e.classList.remove('on'));
   document.querySelector(`[data-tab="${n}"]`).classList.add('on');
   document.getElementById('tab-'+n).classList.add('on');
 }
-
-function addToCart(){ if(prod) Cart.add({id:prod.id,name:prod.name,price:prod.price,image_url:prod.image_url},qty); }
-function buyNow(){ addToCart(); location.href='cart.html'; }
-
-function toggleWish(){
-  if(!prod)return;
-  const now=WL.toggle(prod.id);
-  const btn=document.getElementById('wish-btn');
-  btn.classList.toggle('wished',now);
-  btn.innerHTML=`<svg viewBox="0 0 24 24" width="17" height="17" fill="${now?'#ee0055':'none'}" stroke="${now?'#ee0055':'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${now?'Wishlisted':'Wishlist'}`;
+function addToCart() {
+  if (currentProd) Cart.add({ id:currentProd.id, name:currentProd.name, price:currentProd.price, image_url:currentProd.image_url }, qty);
+}
+function buyNow() { addToCart(); location.href = 'cart.html'; }
+function toggleWish() {
+  if (!currentProd) return;
+  const now = WL.toggle(currentProd.id);
+  const btn = document.getElementById('wish-btn');
+  btn.classList.toggle('on', now);
+  btn.innerHTML = `<svg viewBox="0 0 24 24" width="17" height="17" fill="${now?'#ee0055':'none'}" stroke="${now?'#ee0055':'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${now?'Wishlisted':'Wishlist'}`;
 }
 
-function render(p){
-  prod=p;
-  const disc=p.mrp&&p.mrp>p.price?Math.round((1-p.price/p.mrp)*100):0;
-  const imgs=[p.image_url,...(p.images||[])].filter(Boolean);
-  const w=WL.has(p.id);
-  const specs=p.specifications||{};
+// ── Media Request ────────────────────────────────────
+async function checkReq(pid) {
+  const user = Auth.getUser();
+  if (!user) return null;
+  const { data } = await sb.from('media_requests').select('id,status')
+    .eq('product_id', pid).eq('user_id', user.id)
+    .order('created_at',{ascending:false}).limit(1);
+  return data?.[0]||null;
+}
 
-  document.title=p.name+' – Aquanics';
-  document.getElementById('bc-cat').textContent=p.categories?.name||'Products';
-  document.getElementById('bc-cat').href='products.html?cat='+(p.category_slug||'');
-  document.getElementById('bc-name').textContent=p.name;
+async function sendMediaReq() {
+  const user = Auth.getUser();
+  if (!user) { showToast('Please login first'); location.href='login.html?redirect='+encodeURIComponent(location.href); return; }
+  const btn  = document.getElementById('mrb-btn');
+  const note = document.getElementById('mrb-note')?.value?.trim() || '';
+  const errEl= document.getElementById('mrb-err');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-18 0"/></svg> Sending…';
+  try {
+    const { error:e1 } = await sb.from('media_requests').insert([{
+      product_id:currentProd.id, product_name:currentProd.name,
+      category:currentProd.category_slug, user_id:user.id,
+      note:note||null
+    }]);
+    if (e1) throw e1;
+    // Create support thread
+    const { data:th } = await sb.from('support_threads').insert([{
+      user_id:user.id, subject:`Live Media Request: ${currentProd.name}`, status:'open'
+    }]).select().single();
+    if (th) {
+      await sb.from('support_messages').insert([{
+        thread_id:th.id, sender:'user',
+        message:`I'd like to see a current live photo/video of: ${currentProd.name}${note?'\n\nNote: '+note:''}`
+      }]);
+    }
+    document.getElementById('mrb-form').innerHTML = `
+      <div class="mrb-ok">
+        <span>✅</span>
+        <span>Request sent! We'll share a live photo/video in your <a href="support.html">chat inbox</a> soon. You'll also receive an email notification.</span>
+      </div>`;
+    showToast('📸 Request sent!');
+  } catch(e) {
+    if (errEl) errEl.textContent = '⚠️ ' + e.message;
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Request Live Photo / Video';
+  }
+}
 
-  document.getElementById('prod-layout').innerHTML=`
+// ── Render ───────────────────────────────────────────
+async function render(p) {
+  currentProd = p;
+  const disc  = p.mrp&&p.mrp>p.price ? Math.round((1-p.price/p.mrp)*100) : 0;
+  const imgs  = [p.image_url,...(p.images||[])].filter(Boolean);
+  const w     = WL.has(p.id);
+  const specs = p.specifications||{};
+  const animalType = p.category_slug?.includes('fish')?'fish':p.category_slug?.includes('bird')?'bird':p.category_slug?.includes('dog')?'dog':p.category_slug?.includes('cat')?'cat':'animal';
+
+  document.title = p.name+' – Aquanics';
+  document.getElementById('bc-cat').textContent = p.categories?.name||'Products';
+  document.getElementById('bc-cat').href = 'products.html?cat='+(p.category_slug||'');
+  document.getElementById('bc-name').textContent = p.name;
+
+  const req = await checkReq(p.id);
+  let mrbInner = '';
+  if (req?.status === 'fulfilled') {
+    mrbInner = `<div class="mrb-ok"><span>✅</span><span>Your request was fulfilled! Check your <a href="support.html">chat inbox</a> for the photo/video.</span></div>`;
+  } else if (req?.status === 'pending') {
+    mrbInner = `<div class="mrb-ok"><span>⏳</span><span>Request pending — we'll share a live photo/video in your <a href="support.html">chat inbox</a> shortly.</span></div>`;
+  } else {
+    mrbInner = `
+      <textarea id="mrb-note" class="mrb-note" rows="2" placeholder="Optional: any specific detail? (e.g. show the fins clearly, close-up of the color…)"></textarea>
+      <button id="mrb-btn" class="mrb-btn" onclick="sendMediaReq()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Request Live Photo / Video
+      </button>
+      <div id="mrb-err" class="mrb-err"></div>`;
+  }
+
+  document.getElementById('prod-wrap').innerHTML = `
   <div class="prod-layout">
     <div class="gallery">
       <div class="gallery-main">
-        <img id="main-img" src="${imgs[0]||''}" onerror="this.src='data:image/svg+xml,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'200\\' height=\\'200\\'><rect width=\\'200\\' height=\\'200\\' fill=\\'%23e4eeec\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-size=\\'48\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>🐠</text></svg>'" alt="${p.name}">
-        <button class="gallery-zoom">⛶</button>
+        <img id="main-img"
+          src="${imgs[0]||''}"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'400\\'><rect width=\\'400\\' height=\\'400\\' fill=\\'%23edf4f2\\'/><text x=\\'50%25\\' y=\\'50%25\\' font-size=\\'80\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>🐠</text></svg>'"
+          alt="${p.name}"
+          onclick="openLb(this.src,'image')">
+        <button class="gallery-zoom" onclick="openLb(document.getElementById('main-img').src,'image')">⛶</button>
       </div>
-      ${imgs.length>1?`<div class="thumbs">${imgs.map((img,i)=>`<div class="thumb${i===0?' active':''}" onclick="switchThumb('${img}',${i})"><img src="${img}" alt=""></div>`).join('')}</div>`:''}
+      ${imgs.length>1?`<div class="thumbs">${imgs.map((img,i)=>`<div class="thumb${i===0?' active':''}" onclick="switchThumb('${img.replace(/'/g,"\\'")}',${i})"><img src="${img}" alt=""></div>`).join('')}</div>`:''}
     </div>
+
     <div class="prod-info">
       <span class="prod-cat-tag">${p.categories?.name||''}</span>
       <h1 class="prod-title">${p.name}</h1>
       <div class="prod-rating">
         <span class="stars-big">${fmt.stars(p.rating||4.5)}</span>
-        <span class="rating-score">${(p.rating||4.5).toFixed(1)}</span>
-        <span class="rating-cnt">(${p.review_count||0} reviews)</span>
-        <span class="stock-pill ${p.in_stock===false?'out-stock':'in-stock'}">${p.in_stock===false?'Out of Stock':'✓ In Stock'}</span>
+        <span style="font-weight:700;font-size:16px">${(p.rating||4.5).toFixed(1)}</span>
+        <span style="color:var(--g3);font-size:13px">(${p.review_count||0} reviews)</span>
+        <span class="stock-pill ${p.in_stock===false?'out-stock':'in-stock'}">${p.in_stock===false?'✕ Out of Stock':'✓ In Stock'}</span>
       </div>
       <div class="price-row">
-        <span class="prod-price">${fmt.price(p.price)}</span>
-        ${p.mrp&&p.mrp>p.price?`<span class="prod-mrp">${fmt.price(p.mrp)}</span>`:''}
-        ${disc?`<span class="prod-disc">${disc}% OFF</span>`:''}
+        <span class="big-price">${fmt.price(p.price)}</span>
+        ${p.mrp&&p.mrp>p.price?`<span class="mrp-price">${fmt.price(p.mrp)}</span>`:''}
+        ${disc?`<span class="disc-pill">${disc}% OFF</span>`:''}
       </div>
-      ${p.highlights?.length?`
-      <div class="highlights">
-        <h4>Key Highlights</h4>
-        <ul>${p.highlights.map(h=>`<li>${h}</li>`).join('')}</ul>
-      </div>`:''}
+      ${p.highlights?.length?`<div class="highlights"><h4>Key Highlights</h4><ul>${p.highlights.map(h=>`<li>${h}</li>`).join('')}</ul></div>`:''}
       <div class="qty-row">
-        <span class="qty-label">Qty:</span>
+        <span class="qty-label">Quantity:</span>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <input class="qty-val" id="qty-val" type="number" value="1" min="1" max="99"
-            onchange="qty=Math.max(1,parseInt(this.value)||1);this.value=qty">
+          <input class="qty-val" id="qty-val" type="number" value="1" min="1" max="99" onchange="qty=Math.max(1,parseInt(this.value)||1);this.value=qty">
           <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
       </div>
       <div class="prod-actions">
-        <button class="btn btn-primary btn-lg" onclick="addToCart()" ${p.in_stock===false?'disabled':''}>
+        <button class="btn btn-teal btn-lg" onclick="addToCart()" ${p.in_stock===false?'disabled':''}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           Add to Cart
         </button>
         <button class="btn btn-ocean btn-lg" onclick="buyNow()" ${p.in_stock===false?'disabled':''}>Buy Now</button>
-        <button class="btn-wish${w?' wished':''}" id="wish-btn" onclick="toggleWish()">
+        <button class="btn-wish-inline ${w?'on':''}" id="wish-btn" onclick="toggleWish()">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="${w?'#ee0055':'none'}" stroke="${w?'#ee0055':'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           ${w?'Wishlisted':'Wishlist'}
         </button>
@@ -203,54 +319,73 @@ function render(p){
         <span>🐠 DOA Policy — Dead on Arrival replacement guaranteed</span>
         <span>↩️ Easy returns within 7 days</span>
       </div>
+
+      <!-- 📸 LIVE MEDIA REQUEST -->
+      <div class="mrb">
+        <div class="mrb-head">
+          <div class="mrb-icon">📸</div>
+          <div>
+            <div class="mrb-title">Request a Live Photo / Video</div>
+            <div class="mrb-sub">Want to see this ${animalType} right now, live? We'll capture and send you a fresh photo or video before you decide to buy.</div>
+          </div>
+        </div>
+        <div id="mrb-form">${mrbInner}</div>
+      </div>
+
+      <!-- TABS -->
       <div class="tabs">
         <div class="tab-nav">
           <button class="tab-btn on" data-tab="desc" onclick="switchTab('desc')">Description</button>
           <button class="tab-btn" data-tab="specs" onclick="switchTab('specs')">Specifications</button>
-          <button class="tab-btn" data-tab="reviews" onclick="switchTab('reviews')">Reviews (${p.review_count||0})</button>
+          <button class="tab-btn" data-tab="rev" onclick="switchTab('rev')">Reviews (${p.review_count||0})</button>
         </div>
         <div class="tab-pane on" id="tab-desc">
-          <p style="font-size:14px;line-height:1.85;color:var(--gray4)">${p.description||'No description available.'}</p>
+          <p style="font-size:14px;line-height:1.85;color:var(--g4)">${p.description||'No description provided.'}</p>
         </div>
         <div class="tab-pane" id="tab-specs">
-          ${Object.keys(specs).length?`<table class="spec-table">${Object.entries(specs).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`:'<p style="color:var(--gray3);font-size:13px">No specifications listed.</p>'}
+          ${Object.keys(specs).length?`<table class="spec-table">${Object.entries(specs).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`:'<p style="color:var(--g3);font-size:13px;padding:8px 0">No specifications listed.</p>'}
         </div>
-        <div class="tab-pane" id="tab-reviews">
+        <div class="tab-pane" id="tab-rev">
           <div class="rev-summary">
             <div class="rev-big">
-              <div class="num">${(p.rating||4.5).toFixed(1)}</div>
-              <div class="stars">${fmt.stars(p.rating||4.5)}</div>
-              <small>${p.review_count||0} reviews</small>
+              <div class="rnum">${(p.rating||4.5).toFixed(1)}</div>
+              <div class="rstars">${fmt.stars(p.rating||4.5)}</div>
+              <small style="font-size:11px;color:var(--g3);display:block;margin-top:4px">${p.review_count||0} reviews</small>
             </div>
             <div style="flex:1">${[5,4,3,2,1].map(n=>{
-              const pct=n===Math.round(p.rating||4.5)?62:n===Math.floor(p.rating||4.5)?25:Math.max(0,(n-1)*5);
-              return `<div class="bar-row"><span style="min-width:24px;text-align:right;color:var(--gray3)">${n}★</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span style="color:var(--gray3);min-width:28px">${pct}%</span></div>`;
+              const r=p.rating||4.5,pct=n===Math.round(r)?62:n===Math.floor(r)?25:Math.max(0,(n-1)*5);
+              return `<div class="bar-row"><span style="min-width:24px;text-align:right;color:var(--g3)">${n}★</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span style="color:var(--g3);min-width:28px">${pct}%</span></div>`;
             }).join('')}</div>
           </div>
-          <p style="color:var(--gray3);font-size:13px;text-align:center;padding:20px">Reviews load from Supabase after products are added.</p>
+          <p style="color:var(--g3);font-size:13px;text-align:center;padding:20px 0">Reviews will appear here once customers start reviewing.</p>
         </div>
       </div>
     </div>
   </div>`;
 }
 
-async function loadRelated(p){
-  const data = await DB.related(p.category_slug,p.id).catch(()=>[]);
-  if(!data.length)return;
-  document.getElementById('related-wrap').style.display='block';
-  document.getElementById('related-grid').innerHTML=data.map(x=>UI.card(x)).join('');
+async function loadRelated(p) {
+  const data = await DB.related(p.category_slug, p.id).catch(()=>[]);
+  if (!data.length) return;
+  document.getElementById('related-wrap').style.display = 'block';
+  document.getElementById('related-grid').innerHTML = data.map(x => prodCard(x)).join('');
 }
 
-async function init(){
-  await UI.nav();
-  UI.footer();
-  if(!id){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
-  const p = await DB.product(id).catch(()=>null);
-  if(!p){ document.getElementById('prod-layout').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-primary" style="margin-top:16px">Browse Products</a></div>'; return; }
-  render(p);
-  loadRelated(p);
+async function init() {
+  await renderNav();
+  renderFooter();
+  if (!prodId) { document.getElementById('prod-wrap').innerHTML='<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-teal" style="margin-top:16px;display:inline-flex">Browse Products</a></div>'; return; }
+  try {
+    const p = await DB.product(prodId);
+    if (!p) throw new Error();
+    await render(p);
+    loadRelated(p);
+  } catch(e) {
+    document.getElementById('prod-wrap').innerHTML = '<div style="padding:60px;text-align:center"><h3>Product not found</h3><a href="products.html" class="btn btn-teal" style="margin-top:16px;display:inline-flex">Browse Products</a></div>';
+  }
 }
 init();
 </script>
+<script src="js/chat-widget.js"></script>
 </body>
 </html>

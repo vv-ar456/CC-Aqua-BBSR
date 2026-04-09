@@ -204,6 +204,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+.schedule-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, #e6f7f5, #f0fbf8);
+  border: 1.5px solid #00a882;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.schedule-banner .ico { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.schedule-banner h4 { font-family: 'Syne',sans-serif; font-size: 14px; font-weight: 700; color: #007a60; margin-bottom: 4px; }
+.schedule-banner p { font-size: 13px; color: #3d6b64; line-height: 1.5; margin: 0; }
+.schedule-banner .tag { display:inline-flex; align-items:center; gap:5px; background:#00a882; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-top:6px; }
+</style>
 </head>
 <body>
 <header id="navbar"></header>
@@ -406,5 +423,52 @@ async function init() {
 
 init();
 </script>
+
+<script>
+function getISTNow() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset()*60000;
+  return new Date(utc + 5.5*3600000);
+}
+function wasLateOrder() {
+  const ist = getISTNow();
+  const h = ist.getHours(), m = ist.getMinutes();
+  return (h > 20) || (h===20&&m>=30) || (h < 9);
+}
+function injectScheduleBanner() {
+  // Try to inject after success banner or at start of order content
+  const target = document.getElementById('success-banner') || document.getElementById('order-content');
+  if (!target) return;
+
+  if (!wasLateOrder()) return; // Only show if late order
+
+  const ist = getISTNow();
+  const tomorrow = new Date(ist);
+  tomorrow.setDate(tomorrow.getDate()+1);
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const ds = `${days[tomorrow.getDay()]}, ${tomorrow.getDate()} ${months[tomorrow.getMonth()]}`;
+
+  const div = document.createElement('div');
+  div.className = 'schedule-banner';
+  div.innerHTML = `
+    <span class="ico">📅</span>
+    <div>
+      <h4>Your Order is Scheduled</h4>
+      <p>This order was placed after 8:30 PM IST. It will be processed and dispatched on <strong>${ds}</strong> after 9:00 AM IST.</p>
+      <span class="tag">🕘 Scheduled Dispatch: ${ds} after 9:00 AM IST</span>
+    </div>`;
+
+  // Insert after the success banner
+  const successEl = document.getElementById('success-banner');
+  if (successEl && successEl.nextSibling) {
+    successEl.parentNode.insertBefore(div, successEl.nextSibling);
+  } else if (target) {
+    target.insertAdjacentElement('afterend', div);
+  }
+}
+document.addEventListener('DOMContentLoaded', injectScheduleBanner);
+</script>
+<script src="js/chat-widget.js"></script>
 </body>
 </html>

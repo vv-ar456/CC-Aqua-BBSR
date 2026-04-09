@@ -204,9 +204,8 @@ button { cursor:pointer; font-family:inherit; }
 /* ═══ HERO ════════════════════════════════════ */
 .hero {
   position: relative;
-  height: 90vh;
-  min-height: 580px;
-  max-height: 840px;
+  height: auto;
+  min-height: 88vh;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -226,11 +225,11 @@ button { cursor:pointer; font-family:inherit; }
   padding: 0 20px;
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   align-items: center;
   gap: 40px;
 }
-.hero-text { max-width: 600px; }
+.hero-text { max-width: 600px; width: 100%; }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(0,212,170,.1);
@@ -344,8 +343,8 @@ button { cursor:pointer; font-family:inherit; }
 }
 .trust-list {
   max-width: 1400px; margin: 0 auto;
-  padding: 0 20px;
-  display: flex; align-items: center;
+  padding: 0 16px;
+  display: flex; align-items: stretch;
   justify-content: center;
   gap: 0;
   flex-wrap: wrap;
@@ -392,7 +391,7 @@ button { cursor:pointer; font-family:inherit; }
 /* ═══ CATEGORY GRID ═══════════════════════════ */
 .cats-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 14px;
 }
 .cat-card {
@@ -457,7 +456,7 @@ button { cursor:pointer; font-family:inherit; }
 /* ═══ PRODUCT GRID ════════════════════════════ */
 .prod-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 22px;
 }
 .prod-card {
@@ -694,7 +693,7 @@ button { cursor:pointer; font-family:inherit; }
   max-width: 1400px; margin: 0 auto;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 40px;
   text-align: center;
   position: relative;
@@ -808,17 +807,17 @@ footer {
 
 /* ═══ RESPONSIVE ══════════════════════════════ */
 @media (max-width: 1100px) {
-  .cats-grid { grid-template-columns: repeat(4, 1fr); }
+  .cats-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .prod-grid  { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 900px) {
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
   .promo-grid  { grid-template-columns: 1fr; }
   .stats-grid  { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-  .hero-inner  { grid-template-columns: 1fr; }
+  .hero-inner  { grid-template-columns: 1fr; display: block; }
   .hero-vis    { display: none; }
   .prod-grid   { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .cats-grid   { grid-template-columns: repeat(4, 1fr); }
+  .cats-grid   { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
 @media (max-width: 600px) {
   .nav-btn span { display: none; }
@@ -827,7 +826,7 @@ footer {
   .footer-grid { grid-template-columns: 1fr; gap: 24px; padding: 40px 20px 24px; }
   .trust-item  { padding: 6px 12px; }
   .trust-item span { display: none; }
-  .hero { height: 85vh; }
+  .hero { height: auto; min-height: 85vh; padding: 60px 0 80px; }
   .promo-card  { padding: 28px; min-height: 190px; }
   .stats-grid  { grid-template-columns: repeat(2, 1fr); }
 }
@@ -1431,5 +1430,6 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+<script src="js/chat-widget.js"></script>
 </body>
 </html>
