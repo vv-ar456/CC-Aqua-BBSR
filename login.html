@@ -304,23 +304,13 @@ body{
 
 </div><!-- /card -->
 
+<script src="js/app.js"></script>
 <script>
-// ── CONFIG ────────────────────────────────────────────
-const SUPABASE_URL  = 'https://dwfbqgkhefdzljewatvx.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3ZmJxZ2toZWZkemxqZXdhdHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDQ3NjYsImV4cCI6MjA5MTAyMDc2Nn0.tiZ7786a6J41geK9HZs-nFMe00cPlXDX1ptYQ-EQ1B4';
-const TWOFACTOR_KEY = '2503bcf6-237e-11f1-bcb0-0200cd936042';
+// Config comes from app.js above
 
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Auth helpers (minimal, no app.js dependency)
-const Auth = {
-  set(user, token) { localStorage.setItem('aq_sess', JSON.stringify({ user, token })); },
-  isLoggedIn()     { try { return !!JSON.parse(localStorage.getItem('aq_sess')); } catch { return false; } }
-};
-
+// Auth.set() and isLoggedIn() come from app.js loaded above
 // If already logged in, redirect immediately
-if (Auth.isLoggedIn()) {
+if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
   location.href = new URLSearchParams(location.search).get('redirect') || 'index.html';
 }
 

@@ -42,7 +42,8 @@ body {
   font-family: var(--B);
   background: var(--off);
   color: var(--text);
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100vw;
   -webkit-font-smoothing: antialiased;
 }
 img { max-width:100%; display:block; }
@@ -204,6 +205,8 @@ button { cursor:pointer; font-family:inherit; }
 /* ═══ HERO ════════════════════════════════════ */
 .hero {
   position: relative;
+  width: 100%;
+  max-width: 100vw;
   height: auto;
   min-height: 88vh;
   overflow: hidden;
@@ -218,7 +221,7 @@ button { cursor:pointer; font-family:inherit; }
     linear-gradient(155deg, #020c16 0%, #031520 30%, #062035 60%, #0a2d4a 100%);
 }
 /* animated particles canvas */
-.hero-canvas { position:absolute; inset:0; z-index:1; pointer-events:none; }
+.hero-canvas { position:absolute; inset:0; z-index:1; pointer-events:none; width:100%; height:100%; }
 .hero-inner {
   position: relative; z-index: 2;
   max-width: 1400px; margin: 0 auto;
@@ -309,8 +312,8 @@ button { cursor:pointer; font-family:inherit; }
   animation: floatCard 4s ease-in-out infinite;
 }
 @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-.hero-float:nth-of-type(1) { top: 10%; right: -5%; animation-delay: 0s; }
-.hero-float:nth-of-type(2) { bottom: 18%; left: -8%; animation-delay: 1.5s; }
+.hero-float:nth-of-type(1) { top: 10%; right: 2%; animation-delay: 0s; }
+.hero-float:nth-of-type(2) { bottom: 18%; left: 2%; animation-delay: 1.5s; }
 .hero-float strong { display:block; font-family:var(--R); font-size:20px; font-weight:700; color:#fff; }
 .hero-float span   { font-size:10px; color:rgba(255,255,255,.45); letter-spacing:.5px; text-transform:uppercase; }
 /* hero slider nav */
@@ -889,7 +892,7 @@ footer {
         <a id="h-btn2" href="products.html?cat=aquariums" class="btn btn-hero-ghost btn-lg">Browse Aquariums</a>
       </div>
     </div>
-    <div class="hero-vis">
+    <div class="hero-vis" style="display:none">
       <div class="hero-ring"></div>
       <div class="hero-ring"></div>
       <div class="hero-ring"></div>
@@ -1428,8 +1431,16 @@ async function init(){
   initReveal();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  // Show hero visual only on wide screens
+  if (window.innerWidth >= 900) {
+    const vis = document.querySelector('.hero-vis');
+    if (vis) vis.style.display = '';
+  }
+  init();
+});
 </script>
 <script src="js/chat-widget.js"></script>
+<script src="js/cart-ai.js"></script>
 </body>
 </html>
