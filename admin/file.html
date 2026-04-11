@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aquanics Admin</title>
+<script src="[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+<style>
+@import url('[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap)');
+:root{--teal:#00d4aa;--teal2:#00a882;--ocean:#031520;--ocean2:#062035;--gold:#f0a843;--off:#f0f4f3;--white:#fff;--text:#0d1e1c;--g1:#edf4f2;--g2:#c8dbd7;--g3:#7fa9a3;--g4:#3d6b64;--danger:#e74c3c;--B:'DM Sans',sans-serif;--R:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--B);background:var(--off);color:var(--text);display:flex;min-height:100vh;}
+.sidebar{width:220px;min-height:100vh;background:var(--ocean);position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;}
+.sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sidebar-logo span{font-family:var(--R);font-size:18px;font-weight:800;color:#fff;display:block;}
+.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.3);margin-top:3px;}
+.sidebar nav{flex:1;padding:14px 10px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;color:rgba(255,255,255,.55);font-weight:500;margin-bottom:3px;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;font-family:var(--B);text-align:left;}
+.nav-link:hover,.nav-link.active{background:rgba(0,212,170,.12);color:var(--teal);}
+.nav-link svg{width:16px;height:16px;flex-shrink:0;}
+.sidebar-bottom{padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+.main{margin-left:220px;flex:1;}
+.topbar{background:#fff;border-bottom:1px solid #e8f0ee;padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(0,0,0,.04);}
+.topbar h1{font-family:var(--R);font-size:18px;font-weight:800;color:var(--ocean);}
+.content{padding:28px;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1.5px solid transparent;transition:border-color .2s;}
+.stat-card:hover{border-color:rgba(0,212,170,.2);}
+.stat-icon{font-size:24px;margin-bottom:10px;}
+.stat-val{font-family:var(--R);font-size:28px;font-weight:800;color:var(--ocean);}
+.stat-lbl{font-size:12px;color:var(--g3);margin-top:2px;}
+.table-wrap{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:24px;}
+.table-head{padding:16px 20px;border-bottom:1px solid #e8f0ee;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.table-head h3{font-family:var(--R);font-size:15px;font-weight:800;color:var(--ocean);}
+table{width:100%;border-collapse:collapse;}
+th{padding:11px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);background:#f7faf9;text-align:left;white-space:nowrap;}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid #f0f5f4;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafcfc;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-confirmed,.badge-delivered,.badge-active{background:#e6faf5;color:#007a60;}
+.badge-processing,.badge-pending{background:#fff8e6;color:#b8860b;}
+.badge-dispatched,.badge-out_for_delivery{background:#e8edf5;color:#0a2d44;}
+.badge-cancelled,.badge-inactive{background:#fdf0f0;color:#c0392b;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;font-family:var(--B);border:none;cursor:pointer;transition:all .2s;}
+.btn-teal{background:var(--teal);color:var(--ocean);}.btn-teal:hover{background:var(--teal2);}
+.btn-ocean{background:var(--ocean);color:#fff;}.btn-ocean:hover{background:var(--ocean2);}
+.btn-danger{background:#fdf0f0;color:var(--danger);border:1px solid #f5c5c5;}.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-ghost{background:rgba(0,212,170,.07);color:var(--teal2);border:1px solid rgba(0,212,170,.18);}.btn-ghost:hover{background:rgba(0,212,170,.15);}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px;}
+.btn-full{width:100%;justify-content:center;}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-tab{padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:600;border:1.5px solid var(--g2);background:#fff;cursor:pointer;transition:all .2s;font-family:var(--B);}
+.filter-tab.active,.filter-tab:hover{background:var(--teal);color:var(--ocean);border-color:var(--teal);}
+.modal-overlay{position:fixed;inset:0;background:rgba(3,21,32,.55);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-head{padding:20px 24px 14px;border-bottom:1px solid #eef2f1;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:2;}
+.modal-head h3{font-family:var(--R);font-size:16px;font-weight:800;color:var(--ocean);}
+.modal-close{width:32px;height:32px;background:#f0f4f3;border:none;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:20px 24px 24px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g4);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--g2);border-radius:9px;font-size:13.5px;font-family:var(--B);color:var(--text);outline:none;transition:all .2s;background:#fff;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,212,170,.08);}
+.field textarea{resize:vertical;min-height:80px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.toggle-wrap{display:flex;align-items:center;gap:8px;font-size:13.5px;}
+.toggle{position:relative;width:40px;height:22px;display:inline-block;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#d0dbd8;border-radius:20px;cursor:pointer;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle input:checked+.toggle-slider{background:var(--teal);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
+.status-select{padding:5px 10px;border:1.5px solid var(--g2);border-radius:7px;font-size:12px;font-family:var(--B);cursor:pointer;outline:none;}
+.alert{padding:11px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;}
+.alert-success{background:#e6faf5;color:#007a60;border:1px solid #b3ead9;}
+.alert-error{background:#fdf0f0;color:#c0392b;border:1px solid #f5c5c5;}
+.search-inp{padding:8px 13px;border:1.5px solid var(--g2);border-radius:9px;font-size:13px;outline:none;font-family:var(--B);}
+.search-inp:focus{border-color:var(--teal);}
+.prod-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--g1);}
+#login-screen{position:fixed;inset:0;background:var(--ocean);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:var(--ocean2);border-radius:20px;padding:40px;width:100%;max-width:360px;border:1px solid rgba(0,212,170,.15);}
+.login-box h2{font-family:var(--R);font-size:22px;font-weight:800;color:#fff;text-align:center;margin-bottom:6px;}
+.login-box p{font-size:13px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:24px;}
+.login-box .field label{color:rgba(255,255,255,.4);}
+.login-box .field input{background:rgba(255,255,255,.07);border-color:rgba(0,212,170,.2);color:#fff;}
+.login-box .field input:focus{border-color:var(--teal);}
+.section-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.order-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.detail-box{background:#f7faf9;border-radius:10px;padding:12px 14px;}
+.detail-box h5{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);margin-bottom:6px;}
+.detail-box p{font-size:13px;line-height:1.8;}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--ocean);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;z-index:9999;transform:translateY(20px);opacity:0;transition:all .3s;box-shadow:0 8px 32px rgba(0,0,0,.3);border:1px solid rgba(0,212,170,.18);pointer-events:none;font-family:var(--B);max-width:300px;}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}.sidebar{width:180px;}.main{margin-left:180px;}}
+@media(max-width:600px){.sidebar{transform:translateX(-100%);}.main{margin-left:0;}.content{padding:16px;}.stats-grid{grid-template-columns:1fr 1fr;}.row2,.row3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>🐠 Aquanics</h2>
+    <p>Admin Panel Login</p>
+    <div class="field"><label>Password</label>
+      <input type="password" id="adm-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <p id="login-err" style="color:#e74c3c;font-size:12.5px;margin-bottom:10px;min-height:16px;"></p>
+    <button class="btn btn-teal btn-full" onclick="doLogin()">Login →</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>🐠 Aquanics</span>
+    <p>Admin Panel</p>
+  </div>
+  <nav>
+    <button class="nav-link active" onclick="showTab('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+    </button>
+    <button class="nav-link" onclick="showTab('orders',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>Orders
+    </button>
+    <button class="nav-link" onclick="showTab('products',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Products
+    </button>
+    <button class="nav-link" onclick="showTab('categories',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Categories
+    </button>
+    <button class="nav-link" onclick="showTab('coupons',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Coupons
+    </button>
+    <button class="nav-link" onclick="showTab('offers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Offers
+    </button>
+    <button class="nav-link" onclick="showTab('customers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customers
+    </button>
+    <button class="nav-link" onclick="showTab('wallet-admin',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg>Wallet
+    </button>
+    <button class="nav-link" onclick="showTab('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="btn btn-danger btn-sm btn-full" onclick="admLogout()">Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main" id="main-wrap" style="display:none;">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <span id="topbar-date" style="font-size:13px;color:var(--g3);"></span>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="s-rev">…</div><div class="stat-lbl">Total Revenue</div></div>
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-ord">…</div><div class="stat-lbl">Total Orders</div></div>
+        <div class="stat-card"><div class="stat-icon">🐠</div><div class="stat-val" id="s-prod">…</div><div class="stat-lbl">Active Products</div></div>
+        <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-val" id="s-cust">…</div><div class="stat-lbl">Customers</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Recent Orders</h3><button class="btn btn-ghost btn-sm" onclick="showTab('orders',null)">View All</button></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="dash-orders-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="filter-tabs" id="order-status-tabs">
+        <button class="filter-tab active" onclick="filterOrders('all',this)">All</button>
+        <button class="filter-tab" onclick="filterOrders('confirmed',this)">Confirmed</button>
+        <button class="filter-tab" onclick="filterOrders('processing',this)">Processing</button>
+        <button class="filter-tab" onclick="filterOrders('dispatched',this)">Dispatched</button>
+        <button class="filter-tab" onclick="filterOrders('out_for_delivery',this)">Out for Delivery</button>
+        <button class="filter-tab" onclick="filterOrders('delivered',this)">Delivered</button>
+        <button class="filter-tab" onclick="filterOrders('cancelled',this)">Cancelled</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>All Orders</h3>
+          <input class="search-inp" type="text" placeholder="Search order / customer…" id="order-search" oninput="renderOrdersTable()">
+        </div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment ID</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="orders-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="tab-panel" id="tab-products">
+      <div class="section-toolbar">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input class="search-inp" type="text" placeholder="Search products…" id="prod-search" oninput="renderProductsTable()">
+          <select class="search-inp" id="prod-cat-filter" onchange="renderProductsTable()"><option value="">All Categories</option></select>
+        </div>
+        <button class="btn btn-teal" onclick="openProdModal()">+ Add Product</button>
+      </div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;"><table><thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Sub-Cat</th><th>Price</th><th>MRP</th><th>Stock</th><th>Featured</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="products-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="tab-panel" id="tab-categories">
+      <div class="section-toolbar">
+        <h3 style="font-family:var(--R);font-size:16px;font-weight:800;">Categories & Sub-Categories</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="openSubCatModal()">+ Sub-Category</button>
+          <button class="btn btn-teal" onclick="openCatModal()">+ Category</button>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-bottom:20px;">
+        <div class="table-head"><h3>Categories</h3></div>
+        <table><thead><tr><th>Emoji</th><th>Name</th><th>Slug</th><th>Sort</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="cats-tbody"></tbody></table>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><h3>Sub-Categories</h3></div>
+        <table><thead><tr><th>Name</th><th>Slug</th><th>Parent Category</th><th>Sort</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="subcats-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- COUPONS -->
+    <div class="tab-panel" id="tab-coupons">
+      <div class="section-toolbar">
+        <div class="filter-tabs" style="margin-bottom:0;">
+          <button class="filter-tab active" onclick="filterCoupons('all',this)">All</button>
+          <button class="filter-tab" onclick="filterCoupons('public',this)">Public</button>
+          <button class="filter-tab" onclick="filterCoupons('private',this)">Private</button>
+          <button class="filter-tab" onclick="filterCoupons('active',this)">Active</button>
+        </div>
+        <button class="btn btn-teal" onclick="openCouponModal()">+ Add Coupon</button>
+      </div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto;"><table><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Visibility</th><th>Uses</th><th>Expires</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="coupons-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- OFFERS -->
+    <div class="tab-panel" id="tab-offers">
+      <div class="section-toolbar">
+        <h3 style="font-family:var(--R);font-size:16px;font-weight:800;">Offers & Banners</h3>
+        <button class="btn btn-teal" onclick="openOfferModal()">+ Add Offer</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Title</th><th>Type</th><th>Description</th><th>Valid Until</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="offers-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="tab-panel" id="tab-customers">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>Customers</h3>
+          <input class="search-inp" type="text" placeholder="Search…" id="cust-search" oninput="renderCustomersTable()">
+        </div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Orders</th><th>Spent</th><th>Wallet</th><th>Joined</th></tr></thead>
+        <tbody id="customers-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- WALLET ADMIN -->
+    <div class="tab-panel" id="tab-wallet-admin">
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3>Wallet Management</h3>
+          <input class="search-inp" type="text" placeholder="Search customer…" id="wallet-search" oninput="renderWalletTable()">
+        </div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>Customer</th><th>Phone</th><th>Balance</th><th>Interest Rate</th><th>Last Updated</th><th>Actions</th></tr></thead>
+        <tbody id="wallet-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="tab-settings">
+      <div style="max-width:520px;">
+        <div class="table-wrap" style="padding:24px;margin-bottom:20px;">
+          <h3 style="font-family:var(--R);font-size:16px;font-weight:800;margin-bottom:18px;">Store Configuration</h3>
+          <div class="field"><label>Store Name</label><input type="text" id="cfg-name" value="Aquanics"></div>
+          <div class="field"><label>WhatsApp Number</label><input type="text" id="cfg-wa" placeholder="+91XXXXXXXXXX"></div>
+          <div class="field"><label>Support Email</label><input type="email" id="cfg-email" placeholder="support@aquanics.in"></div>
+          <div class="field"><label>Free Delivery Above (₹)</label><input type="number" id="cfg-free-del" placeholder="599"></div>
+          <button class="btn btn-teal" onclick="saveConfig()">Save Configuration</button>
+        </div>
+        <div class="table-wrap" style="padding:24px;">
+          <h3 style="font-family:var(--R);font-size:16px;font-weight:800;margin-bottom:18px;">Change Admin Password</h3>
+          <div class="field"><label>Current Password</label><input type="password" id="pw-cur"></div>
+          <div class="field"><label>New Password</label><input type="password" id="pw-new"></div>
+          <div class="field"><label>Confirm Password</label><input type="password" id="pw-cfm"></div>
+          <p id="pw-msg" style="font-size:12.5px;margin-bottom:10px;min-height:16px;"></p>
+          <button class="btn btn-ocean" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="prod-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="prod-modal-title">Add Product</h3><button class="modal-close" onclick="closeModal('prod-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="prod-id">
+      <div class="field"><label>Product Name *</label><input type="text" id="prod-name"></div>
+      <div class="row2">
+        <div class="field"><label>Category *</label><select id="prod-cat-sel" onchange="loadSubcatsForCat(this.value,'prod-subcat-sel')"><option value="">Select…</option></select></div>
+        <div class="field"><label>Sub-Category</label><select id="prod-subcat-sel"><option value="">None</option></select></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Price (₹) *</label><input type="number" id="prod-price" min="0"></div>
+        <div class="field"><label>MRP (₹)</label><input type="number" id="prod-mrp" min="0"></div>
+        <div class="field"><label>Stock *</label><input type="number" id="prod-stock" min="0" value="10"></div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="prod-desc" rows="3"></textarea></div>
+      <div class="field"><label>Image URL</label><input type="url" id="prod-img" placeholder="https://…"></div>
+      <div class="row2">
+        <div class="field"><label>Rating (1–5)</label><input type="number" id="prod-rating" min="1" max="5" step="0.1" value="4.5"></div>
+        <div class="field"><label>Review Count</label><input type="number" id="prod-reviews" min="0" value="0"></div>
+      </div>
+      <div class="row2" style="margin-bottom:14px;">
+        <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="prod-featured"><span class="toggle-slider"></span></label><span>Featured</span></div>
+        <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="prod-active" checked><span class="toggle-slider"></span></label><span>Active</span></div>
+      </div>
+      <div id="prod-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveProd()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="cat-modal-title">Add Category</h3><button class="modal-close" onclick="closeModal('cat-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cat-id">
+      <div class="row2">
+        <div class="field"><label>Name *</label><input type="text" id="cat-name"></div>
+        <div class="field"><label>Emoji</label><input type="text" id="cat-emoji" placeholder="🐠" maxlength="4"></div>
+      </div>
+      <div class="field"><label>Slug * (e.g. live-fish)</label><input type="text" id="cat-slug"></div>
+      <div class="field"><label>Description</label><input type="text" id="cat-desc"></div>
+      <div class="row2">
+        <div class="field"><label>Sort Order</label><input type="number" id="cat-sort" value="0"></div>
+        <div class="toggle-wrap" style="margin-top:20px;"><label class="toggle"><input type="checkbox" id="cat-active" checked><span class="toggle-slider"></span></label><span>Active</span></div>
+      </div>
+      <div id="cat-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveCat()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sub-Category Modal -->
+<div class="modal-overlay" id="subcat-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="subcat-modal-title">Add Sub-Category</h3><button class="modal-close" onclick="closeModal('subcat-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="subcat-id">
+      <div class="field"><label>Parent Category *</label><select id="subcat-parent"><option value="">Select…</option></select></div>
+      <div class="row2">
+        <div class="field"><label>Name *</label><input type="text" id="subcat-name"></div>
+        <div class="field"><label>Slug *</label><input type="text" id="subcat-slug" placeholder="betta-fish"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Sort Order</label><input type="number" id="subcat-sort" value="0"></div>
+        <div class="toggle-wrap" style="margin-top:20px;"><label class="toggle"><input type="checkbox" id="subcat-active" checked><span class="toggle-slider"></span></label><span>Active</span></div>
+      </div>
+      <div id="subcat-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveSubCat()">Save Sub-Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- Coupon Modal -->
+<div class="modal-overlay" id="coupon-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="coupon-modal-title">Add Coupon</h3><button class="modal-close" onclick="closeModal('coupon-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="coupon-id">
+      <div class="row2">
+        <div class="field"><label>Code *</label><input type="text" id="coupon-code" placeholder="SAVE20" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="field"><label>Type *</label>
+          <select id="coupon-type">
+            <option value="percent">Percentage Off (%)</option>
+            <option value="flat">Flat Off (₹)</option>
+            <option value="free_shipping">Free Shipping</option>
+            <option value="wallet_cashback">Wallet Cashback</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Value *</label><input type="number" id="coupon-value" min="0"></div>
+        <div class="field"><label>Max Discount (₹)</label><input type="number" id="coupon-maxdisc" placeholder="Optional"></div>
+        <div class="field"><label>Min Order (₹)</label><input type="number" id="coupon-minord" value="0"></div>
+      </div>
+      <div class="field"><label>Description</label><input type="text" id="coupon-desc"></div>
+      <div class="row2">
+        <div class="field"><label>Usage Limit</label><input type="number" id="coupon-limit" placeholder="Unlimited"></div>
+        <div class="field"><label>Valid Until</label><input type="datetime-local" id="coupon-expiry"></div>
+      </div>
+      <div class="field"><label>Visibility</label>
+        <select id="coupon-private" onchange="togglePrivateUser()">
+          <option value="false">Public (Anyone can use)</option>
+          <option value="true">Private (Specific user)</option>
+        </select>
+      </div>
+      <div class="field" id="coupon-user-wrap" style="display:none;"><label>Assign to User Phone</label><input type="text" id="coupon-user" placeholder="9XXXXXXXXX"></div>
+      <div class="toggle-wrap" style="margin-bottom:14px;"><label class="toggle"><input type="checkbox" id="coupon-active" checked><span class="toggle-slider"></span></label><span>Active</span></div>
+      <div id="coupon-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveCoupon()">Save Coupon</button>
+    </div>
+  </div>
+</div>
+
+<!-- Offer Modal -->
+<div class="modal-overlay" id="offer-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="offer-modal-title">Add Offer</h3><button class="modal-close" onclick="closeModal('offer-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="offer-id">
+      <div class="field"><label>Title *</label><input type="text" id="offer-title"></div>
+      <div class="field"><label>Description</label><textarea id="offer-desc" rows="2"></textarea></div>
+      <div class="row2">
+        <div class="field"><label>Type</label>
+          <select id="offer-type"><option value="banner">Banner</option><option value="popup">Popup</option><option value="category_deal">Category Deal</option></select>
+        </div>
+        <div class="field"><label>Valid Until</label><input type="datetime-local" id="offer-expiry"></div>
+      </div>
+      <div class="field"><label>Image URL</label><input type="url" id="offer-img" placeholder="https://…"></div>
+      <div class="field"><label>Link URL</label><input type="url" id="offer-link" placeholder="https://…"></div>
+      <div class="toggle-wrap" style="margin-bottom:14px;"><label class="toggle"><input type="checkbox" id="offer-active" checked><span class="toggle-slider"></span></label><span>Active</span></div>
+      <div id="offer-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveOffer()">Save Offer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head"><h3 id="ord-modal-title">Order Details</h3><button class="modal-close" onclick="closeModal('order-modal')">✕</button></div>
+    <div class="modal-body" id="ord-modal-body"></div>
+  </div>
+</div>
+
+<!-- Wallet Edit Modal -->
+<div class="modal-overlay" id="wallet-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head"><h3>Edit Wallet</h3><button class="modal-close" onclick="closeModal('wallet-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="wm-user-id">
+      <div id="wm-user-info" style="background:#f7faf9;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;"></div>
+      <div class="field"><label>Adjustment Type</label>
+        <select id="wm-type">
+          <option value="credit">Credit (Add to wallet)</option>
+          <option value="debit">Debit (Deduct from wallet)</option>
+          <option value="admin_adjust">Set Balance (Override)</option>
+        </select>
+      </div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="wm-amount" min="0" step="0.01"></div>
+      <div class="field"><label>Note / Reason</label><input type="text" id="wm-note" placeholder="e.g. Bonus credit"></div>
+      <div id="wm-err" class="alert alert-error" style="display:none;"></div>
+      <button class="btn btn-teal btn-full" onclick="saveWalletEdit()">Update Wallet</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL='[dwfbqgkhefdzljewatvx.supabase.co](https://dwfbqgkhefdzljewatvx.supabase.co)';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3ZmJxZ2toZWZkemxqZXdhdHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDQ3NjYsImV4cCI6MjA5MTAyMDc2Nn0.tiZ7786a6J41geK9HZs-nFMe00cPlXDX1ptYQ-EQ1B4';
+const {createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+const ADM_PW_KEY='aq_adm_pw';
+const DEFAULT_PW='Aquanics@2025';
+
+// ── AUTH ──────────────────────────────────────────────
+function getStoredPw(){return localStorage.getItem(ADM_PW_KEY)||DEFAULT_PW;}
+function doLogin(){
+  const pw=document.getElementById('adm-pw').value;
+  if(pw===getStoredPw()){
+    sessionStorage.setItem('adm_ok','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-wrap').style.display='block';
+    initAdmin();
+  } else {
+    document.getElementById('login-err').textContent='Incorrect password';
+  }
+}
+function admLogout(){sessionStorage.removeItem('adm_ok');location.reload();}
+function changePassword(){
+  const cur=document.getElementById('pw-cur').value;
+  const nw=document.getElementById('pw-new').value;
+  const cfm=document.getElementById('pw-cfm').value;
+  const msg=document.getElementById('pw-msg');
+  if(cur!==getStoredPw()){msg.style.color='#e74c3c';msg.textContent='Current password incorrect.';return;}
+  if(nw.length<6){msg.style.color='#e74c3c';msg.textContent='Min 6 characters required.';return;}
+  if(nw!==cfm){msg.style.color='#e74c3c';msg.textContent='Passwords do not match.';return;}
+  localStorage.setItem(ADM_PW_KEY,nw);
+  msg.style.color='#007a60';msg.textContent='Password updated!';
+  ['pw-cur','pw-new','pw-cfm'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+let _tt;
+function toast(msg,err=false){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.style.background=err?'#c0392b':'#031520';
+  el.style.opacity='1';el.style.transform='none';
+  clearTimeout(_tt);_tt=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(20px)';},2800);
+}
+
+// ── TABS ─────────────────────────────────────────────
+function showTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(a=>a.classList.remove('active'));
+  const p=document.getElementById('tab-'+name);
+  if(p)p.classList.add('active');
+  if(btn)btn.classList.add('active');
+  const titles={dashboard:'Dashboard',orders:'Orders',products:'Products',categories:'Categories',coupons:'Coupons',offers:'Offers',customers:'Customers','wallet-admin':'Wallet Management',settings:'Settings'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+}
+
+// ── MODAL ─────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
+
+// ── FORMAT ────────────────────────────────────────────
+const fmt={
+  price:n=>'₹'+Number(n||0).toLocaleString('en-IN'),
+  date:d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—',
+  dt:d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—',
+};
+
+// ── INIT ─────────────────────────────────────────────
+async function initAdmin(){
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  await Promise.all([loadDashboard(),loadOrders(),loadProducts(),loadCategories(),loadCoupons(),loadOffers(),loadCustomers(),loadWalletAdmin()]);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('adm_ok')==='1'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-wrap').style.display='block';
+    initAdmin();
+  }
+});
+
+// ════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════
+async function loadDashboard(){
+  const[{data:allOrd},{data:prods},{data:users}]=await Promise.all([
+    sb.from('orders').select('id,total,status,created_at,users(name,phone)').order('created_at',{ascending:false}),
+    sb.from('products').select('id').eq('active',true),
+    sb.from('users').select('id'),
+  ]);
+  const rev=(allOrd||[]).filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+  document.getElementById('s-rev').textContent=fmt.price(rev);
+  document.getElementById('s-ord').textContent=(allOrd||[]).length;
+  document.getElementById('s-prod').textContent=(prods||[]).length;
+  document.getElementById('s-cust').textContent=(users||[]).length;
+  const recent=(allOrd||[]).slice(0,5);
+  document.getElementById('dash-orders-tbody').innerHTML=recent.length
+    ?recent.map(o=>`<tr>
+      <td><code style="font-size:11px;">${o.id.slice(0,8)}…</code></td>
+      <td>${o.users?.name||'—'}</td>
+      <td><strong>${fmt.price(o.total)}</strong></td>
+      <td><span class="badge badge-${o.status}">${o.status}</span></td>
+      <td>${fmt.date(o.created_at)}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No orders yet</td></tr>';
+}
+
+// ════════════════════════════════════════════════════
+// ORDERS
+// ════════════════════════════════════════════════════
+let _orders=[],_orderFilter='all';
+async function loadOrders(){
+  const{data}=await sb.from('orders').select('*,users(name,phone,email)').order('created_at',{ascending:false});
+  _orders=data||[];renderOrdersTable();
+}
+function filterOrders(status,btn){
+  _orderFilter=status;
+  document.querySelectorAll('#order-status-tabs .filter-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderOrdersTable();
+}
+function renderOrdersTable(){
+  const q=(document.getElementById('order-search')?.value||'').toLowerCase();
+  let rows=_orders;
+  if(_orderFilter!=='all')rows=rows.filter(o=>o.status===_orderFilter);
+  if(q)rows=rows.filter(o=>o.id.toLowerCase().includes(q)||(o.users?.name||'').toLowerCase().includes(q)||(o.users?.phone||'').includes(q));
+  const statuses=['confirmed','processing','dispatched','out_for_delivery','delivered','cancelled'];
+  document.getElementById('orders-tbody').innerHTML=rows.length
+    ?rows.map(o=>`<tr>
+      <td><code style="font-size:11px;">${o.id.slice(0,8)}…</code></td>
+      <td>${o.users?.name||'—'}</td><td>${o.users?.phone||'—'}</td>
+      <td><strong>${fmt.price(o.total)}</strong></td>
+      <td><code style="font-size:11px;">${o.razorpay_payment_id||'—'}</code></td>
+      <td><select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
+        ${statuses.map(s=>`<option value="${s}"${o.status===s?' selected':''}>${s.replace(/_/g,' ')}</option>`).join('')}
+      </select></td>
+      <td>${fmt.date(o.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">View</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px;">No orders found</td></tr>';
+}
+async function updateOrderStatus(id,status){
+  const{error}=await sb.from('orders').update({status}).eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('✅ Status updated');loadDashboard();}
+}
+async function viewOrder(id){
+  const{data:o}=await sb.from('orders').select('*,users(name,phone,email),order_items(*)').eq('id',id).single();
+  if(!o){toast('Order not found',true);return;}
+  const items=o.order_items||[];
+  let addr='—';
+  try{const a=typeof o.address==='string'?JSON.parse(o.address):o.address;addr=`${a.name||''}<br>${a.line1||a.address||''}<br>${a.city||''} ${a.state||''} ${a.pincode||''}<br>${a.phone||''}`;}catch(e){}
+  document.getElementById('ord-modal-title').textContent='Order #'+o.id.slice(0,8)+'…';
+  document.getElementById('ord-modal-body').innerHTML=`
+    <div class="order-detail-grid">
+      <div class="detail-box"><h5>Customer</h5><p>${o.users?.name||'—'}<br>${o.users?.phone||'—'}<br>${o.users?.email||'—'}</p></div>
+      <div class="detail-box"><h5>Order Info</h5><p>Status: <strong>${o.status}</strong><br>Payment: ${o.payment_method||'Razorpay'}<br>Date: ${fmt.date(o.created_at)}<br>ID: <code style="font-size:11px;">${o.razorpay_payment_id||'—'}</code></p></div>
+      <div class="detail-box"><h5>Delivery Address</h5><p>${addr}</p></div>
+      <div class="detail-box"><h5>Financials</h5><p>Subtotal: ${fmt.price(o.subtotal)}<br>Discount: −${fmt.price(o.discount||0)}<br>Delivery: ${fmt.price(o.delivery_fee||0)}<br>Wallet: −${fmt.price(o.wallet_used||0)}<br><strong>Total: ${fmt.price(o.total)}</strong></p></div>
+    </div>
+    <h4 style="font-family:var(--R);font-size:14px;font-weight:800;margin-bottom:10px;">Items (${items.length})</h4>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="background:#f7faf9;"><th style="padding:8px;text-align:left;">Product</th><th style="padding:8px;text-align:center;">Qty</th><th style="padding:8px;text-align:right;">Price</th><th style="padding:8px;text-align:right;">Total</th></tr></thead>
+      <tbody>${items.map(i=>`<tr>
+        <td style="padding:8px;">${i.name||i.product_name||'—'}</td>
+        <td style="padding:8px;text-align:center;">${i.qty||i.quantity||1}</td>
+        <td style="padding:8px;text-align:right;">${fmt.price(i.price)}</td>
+        <td style="padding:8px;text-align:right;">${fmt.price(Number(i.price)*(i.qty||i.quantity||1))}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  openModal('order-modal');
+}
+
+// ════════════════════════════════════════════════════
+// PRODUCTS
+// ════════════════════════════════════════════════════
+let _products=[],_cats=[];
+async function loadProducts(){
+  const{data}=await sb.from('products').select('*,categories(name,slug),subcategories(name)').order('created_at',{ascending:false});
+  _products=data||[];renderProductsTable();
+  // populate cat filter
+  const sel=document.getElementById('prod-cat-filter');
+  if(sel&&_cats.length){
+    sel.innerHTML='<option value="">All Categories</option>'+_cats.map(c=>`<option value="${c.slug}">${c.name}</option>`).join('');
+  }
+}
+function renderProductsTable(){
+  const q=(document.getElementById('prod-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('prod-cat-filter')?.value||'';
+  let rows=_products;
+  if(q)rows=rows.filter(p=>(p.name||'').toLowerCase().includes(q));
+  if(cat)rows=rows.filter(p=>p.category_slug===cat);
+  const ph=`data:image/svg+xml,<svg xmlns='[w3.org](http://www.w3.org/2000/svg)' width='44' height='44'><rect width='44' height='44' fill='%23edf4f2'/><text x='50%25' y='55%25' font-size='22' text-anchor='middle' dominant-baseline='middle'>🐠</text></svg>`;
+  document.getElementById('products-tbody').innerHTML=rows.length
+    ?rows.map(p=>`<tr>
+      <td><img src="${p.image_url||ph}" class="prod-thumb" onerror="this.src='${ph}'"></td>
+      <td><strong style="font-size:13px;">${p.name}</strong></td>
+      <td>${p.categories?.name||p.category_slug||'—'}</td>
+      <td>${p.subcategories?.name||'—'}</td>
+      <td><strong>${fmt.price(p.price)}</strong></td>
+      <td>${p.mrp?fmt.price(p.mrp):'—'}</td>
+      <td>${p.stock??'—'}</td>
+      <td>${p.featured?'<span class="badge badge-confirmed">✓</span>':'<span style="color:#ccc;">—</span>'}</td>
+      <td><span class="badge ${p.active?'badge-active':'badge-inactive'}">${p.active?'Active':'Off'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editProd(${p.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteProd(${p.id})">Del</button>
+      </td>
+    </tr>`).join('')
+    :'<tr><td colspan="10" style="text-align:center;color:#aaa;padding:20px;">No products</td></tr>';
+}
+function openProdModal(id=null){
+  document.getElementById('prod-modal-title').textContent=id?'Edit Product':'Add Product';
+  document.getElementById('prod-err').style.display='none';
+  // populate cat select
+  const cs=document.getElementById('prod-cat-sel');
+  cs.innerHTML='<option value="">Select…</option>'+_cats.map(c=>`<option value="${c.slug}">${c.emoji||''} ${c.name}</option>`).join('');
+  document.getElementById('prod-subcat-sel').innerHTML='<option value="">None</option>';
+  if(id){
+    const p=_products.find(x=>x.id===id);if(!p)return;
+    document.getElementById('prod-id').value=p.id;
+    document.getElementById('prod-name').value=p.name||'';
+    cs.value=p.category_slug||'';
+    if(p.category_slug)loadSubcatsForCat(p.category_slug,'prod-subcat-sel',p.subcategory_id);
+    document.getElementById('prod-price').value=p.price||'';
+    document.getElementById('prod-mrp').value=p.mrp||'';
+    document.getElementById('prod-stock').value=p.stock??10;
+    document.getElementById('prod-desc').value=p.description||'';
+    document.getElementById('prod-img').value=p.image_url||'';
+    document.getElementById('prod-rating').value=p.rating||4.5;
+    document.getElementById('prod-reviews').value=p.review_count||0;
+    document.getElementById('prod-featured').checked=!!p.featured;
+    document.getElementById('prod-active').checked=!!p.active;
+  } else {
+    document.getElementById('prod-id').value='';
+    ['prod-name','prod-price','prod-mrp','prod-desc','prod-img'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('prod-stock').value=10;
+    document.getElementById('prod-rating').value=4.5;
+    document.getElementById('prod-reviews').value=0;
+    document.getElementById('prod-featured').checked=false;
+    document.getElementById('prod-active').checked=true;
+  }
+  openModal('prod-modal');
+}
+function editProd(id){openProdModal(id);}
+async function loadSubcatsForCat(slug,selId='prod-subcat-sel',selectedId=null){
+  const cat=_cats.find(c=>c.slug===slug);
+  const sel=document.getElementById(selId);
+  if(!cat||!sel){if(sel)sel.innerHTML='<option value="">None</option>';return;}
+  const{data}=await sb.from('subcategories').select('*').eq('category_id',cat.id).eq('active',true).order('sort_order');
+  sel.innerHTML='<option value="">None</option>'+(data||[]).map(s=>`<option value="${s.id}"${selectedId==s.id?' selected':''}>${s.name}</option>`).join('');
+}
+async function saveProd(){
+  const id=document.getElementById('prod-id').value;
+  const name=document.getElementById('prod-name').value.trim();
+  const catSlug=document.getElementById('prod-cat-sel').value;
+  const price=parseFloat(document.getElementById('prod-price').value);
+  const errEl=document.getElementById('prod-err');
+  if(!name||!catSlug||isNaN(price)){errEl.textContent='Name, category and price are required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const mrp=parseFloat(document.getElementById('prod-mrp').value)||null;
+  const subcatId=document.getElementById('prod-subcat-sel').value||null;
+  const payload={
+    name,category_slug:catSlug,price,mrp,
+    stock:parseInt(document.getElementById('prod-stock').value)||0,
+    description:document.getElementById('prod-desc').value||null,
+    image_url:document.getElementById('prod-img').value||null,
+    rating:parseFloat(document.getElementById('prod-rating').value)||4.5,
+    review_count:parseInt(document.getElementById('prod-reviews').value)||0,
+    featured:document.getElementById('prod-featured').checked,
+    active:document.getElementById('prod-active').checked,
+    subcategory_id:subcatId,
+  };
+  const{error}=id?await sb.from('products').update(payload).eq('id',id):await sb.from('products').insert(payload);
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  toast(id?'✅ Product updated':'✅ Product added');
+  closeModal('prod-modal');
+  loadProducts();loadDashboard();
+}
+async function deleteProd(id){
+  if(!confirm('Delete this product? This cannot be undone.'))return;
+  const{error}=await sb.from('products').delete().eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('🗑️ Product deleted');loadProducts();loadDashboard();}
+}
+
+// ════════════════════════════════════════════════════
+// CATEGORIES
+// ════════════════════════════════════════════════════
+let _subcats=[];
+async function loadCategories(){
+  const[{data:cats},{data:subcats}]=await Promise.all([
+    sb.from('categories').select('*').order('sort_order'),
+    sb.from('subcategories').select('*,categories(name)').order('sort_order'),
+  ]);
+  _cats=cats||[];_subcats=subcats||[];
+  renderCatsTable();renderSubcatsTable();
+  // update selects
+  const catSelects=['prod-cat-sel','subcat-parent'];
+  catSelects.forEach(sid=>{
+    const sel=document.getElementById(sid);
+    if(sel){sel.innerHTML='<option value="">Select…</option>'+_cats.map(c=>`<option value="${c.id}">${c.emoji||''} ${c.name}</option>`).join('');}
+  });
+  // prod-cat-filter
+  const pf=document.getElementById('prod-cat-filter');
+  if(pf)pf.innerHTML='<option value="">All Categories</option>'+_cats.map(c=>`<option value="${c.slug}">${c.name}</option>`).join('');
+}
+function renderCatsTable(){
+  document.getElementById('cats-tbody').innerHTML=_cats.length
+    ?_cats.map(c=>`<tr>
+      <td style="font-size:20px;">${c.emoji||'—'}</td>
+      <td><strong>${c.name}</strong></td>
+      <td><code style="font-size:11px;">${c.slug}</code></td>
+      <td>${c.sort_order??0}</td>
+      <td><span class="badge ${c.active?'badge-active':'badge-inactive'}">${c.active?'Active':'Off'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editCat(${c.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteCat(${c.id})">Del</button>
+      </td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No categories</td></tr>';
+}
+function renderSubcatsTable(){
+  document.getElementById('subcats-tbody').innerHTML=_subcats.length
+    ?_subcats.map(s=>`<tr>
+      <td><strong>${s.name}</strong></td>
+      <td><code style="font-size:11px;">${s.slug}</code></td>
+      <td>${s.categories?.name||'—'}</td>
+      <td>${s.sort_order??0}</td>
+      <td><span class="badge ${s.active?'badge-active':'badge-inactive'}">${s.active?'Active':'Off'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editSubCat(${s.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteSubCat(${s.id})">Del</button>
+      </td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No sub-categories</td></tr>';
+}
+function openCatModal(id=null){
+  document.getElementById('cat-modal-title').textContent=id?'Edit Category':'Add Category';
+  document.getElementById('cat-err').style.display='none';
+  if(id){
+    const c=_cats.find(x=>x.id===id);if(!c)return;
+    document.getElementById('cat-id').value=c.id;
+    document.getElementById('cat-name').value=c.name||'';
+    document.getElementById('cat-emoji').value=c.emoji||'';
+    document.getElementById('cat-slug').value=c.slug||'';
+    document.getElementById('cat-desc').value=c.description||'';
+    document.getElementById('cat-sort').value=c.sort_order??0;
+    document.getElementById('cat-active').checked=!!c.active;
+  } else {
+    document.getElementById('cat-id').value='';
+    ['cat-name','cat-emoji','cat-slug','cat-desc'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cat-sort').value=0;
+    document.getElementById('cat-active').checked=true;
+  }
+  openModal('cat-modal');
+}
+function editCat(id){openCatModal(id);}
+async function saveCat(){
+  const id=document.getElementById('cat-id').value;
+  const name=document.getElementById('cat-name').value.trim();
+  const slug=document.getElementById('cat-slug').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const errEl=document.getElementById('cat-err');
+  if(!name||!slug){errEl.textContent='Name and slug are required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const payload={
+    name,slug,
+    emoji:document.getElementById('cat-emoji').value||null,
+    description:document.getElementById('cat-desc').value||null,
+    sort_order:parseInt(document.getElementById('cat-sort').value)||0,
+    active:document.getElementById('cat-active').checked,
+  };
+  const{error}=id?await sb.from('categories').update(payload).eq('id',id):await sb.from('categories').insert(payload);
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  toast(id?'✅ Category updated':'✅ Category added');
+  closeModal('cat-modal');loadCategories();
+}
+async function deleteCat(id){
+  if(!confirm('Delete this category? Products in it may become orphaned.'))return;
+  const{error}=await sb.from('categories').delete().eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('🗑️ Category deleted');loadCategories();}
+}
+function openSubCatModal(id=null){
+  document.getElementById('subcat-modal-title').textContent=id?'Edit Sub-Category':'Add Sub-Category';
+  document.getElementById('subcat-err').style.display='none';
+  const sel=document.getElementById('subcat-parent');
+  sel.innerHTML='<option value="">Select…</option>'+_cats.map(c=>`<option value="${c.id}">${c.emoji||''} ${c.name}</option>`).join('');
+  if(id){
+    const s=_subcats.find(x=>x.id===id);if(!s)return;
+    document.getElementById('subcat-id').value=s.id;
+    sel.value=s.category_id||'';
+    document.getElementById('subcat-name').value=s.name||'';
+    document.getElementById('subcat-slug').value=s.slug||'';
+    document.getElementById('subcat-sort').value=s.sort_order??0;
+    document.getElementById('subcat-active').checked=!!s.active;
+  } else {
+    document.getElementById('subcat-id').value='';
+    ['subcat-name','subcat-slug'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('subcat-sort').value=0;
+    document.getElementById('subcat-active').checked=true;
+  }
+  openModal('subcat-modal');
+}
+function editSubCat(id){openSubCatModal(id);}
+async function saveSubCat(){
+  const id=document.getElementById('subcat-id').value;
+  const catId=document.getElementById('subcat-parent').value;
+  const name=document.getElementById('subcat-name').value.trim();
+  const slug=document.getElementById('subcat-slug').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const errEl=document.getElementById('subcat-err');
+  if(!catId||!name||!slug){errEl.textContent='All fields are required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const payload={
+    category_id:parseInt(catId),name,slug,
+    sort_order:parseInt(document.getElementById('subcat-sort').value)||0,
+    active:document.getElementById('subcat-active').checked,
+  };
+  const{error}=id?await sb.from('subcategories').update(payload).eq('id',id):await sb.from('subcategories').insert(payload);
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  toast(id?'✅ Sub-category updated':'✅ Sub-category added');
+  closeModal('subcat-modal');loadCategories();
+}
+async function deleteSubCat(id){
+  if(!confirm('Delete this sub-category?'))return;
+  const{error}=await sb.from('subcategories').delete().eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('🗑️ Sub-category deleted');loadCategories();}
+}
+
+// ════════════════════════════════════════════════════
+// COUPONS
+// ════════════════════════════════════════════════════
+let _coupons=[],_couponFilter='all';
+async function loadCoupons(){
+  const{data}=await sb.from('coupons').select('*,users(name,phone)').order('created_at',{ascending:false});
+  _coupons=data||[];renderCouponsTable();
+}
+function filterCoupons(type,btn){
+  _couponFilter=type;
+  document.querySelectorAll('#tab-coupons .filter-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderCouponsTable();
+}
+function renderCouponsTable(){
+  let rows=_coupons;
+  if(_couponFilter==='public')rows=rows.filter(c=>!c.is_private);
+  else if(_couponFilter==='private')rows=rows.filter(c=>c.is_private);
+  else if(_couponFilter==='active')rows=rows.filter(c=>c.active&&(!c.valid_until||new Date(c.valid_until)>new Date()));
+  const typeLabel={percent:'% Off',flat:'₹ Flat',free_shipping:'Free Ship',wallet_cashback:'Wallet CB'};
+  document.getElementById('coupons-tbody').innerHTML=rows.length
+    ?rows.map(c=>`<tr>
+      <td><code style="font-size:13px;font-weight:700;letter-spacing:1px;">${c.code}</code></td>
+      <td>${typeLabel[c.type]||c.type}</td>
+      <td><strong>${c.type==='percent'?c.value+'%':fmt.price(c.value)}</strong>${c.max_discount?` <small style="color:var(--g3);">max ${fmt.price(c.max_discount)}</small>`:''}</td>
+      <td>${fmt.price(c.min_order||0)}</td>
+      <td>${c.is_private?`<span class="badge badge-processing">🔒 Private${c.users?` — ${c.users.name}`:''}</span>`:'<span class="badge badge-active">🌐 Public</span>'}</td>
+      <td>${c.uses_count||0}${c.uses_limit?` / ${c.uses_limit}`:' / ∞'}</td>
+      <td>${fmt.date(c.valid_until)}</td>
+      <td><span class="badge ${c.active?'badge-active':'badge-inactive'}">${c.active?'On':'Off'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editCoupon('${c.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteCoupon('${c.id}')">Del</button>
+      </td>
+    </tr>`).join('')
+    :'<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px;">No coupons</td></tr>';
+}
+function togglePrivateUser(){
+  const isPrivate=document.getElementById('coupon-private').value==='true';
+  document.getElementById('coupon-user-wrap').style.display=isPrivate?'block':'none';
+}
+function openCouponModal(id=null){
+  document.getElementById('coupon-modal-title').textContent=id?'Edit Coupon':'Add Coupon';
+  document.getElementById('coupon-err').style.display='none';
+  if(id){
+    const c=_coupons.find(x=>x.id===id);if(!c)return;
+    document.getElementById('coupon-id').value=c.id;
+    document.getElementById('coupon-code').value=c.code||'';
+    document.getElementById('coupon-type').value=c.type||'percent';
+    document.getElementById('coupon-value').value=c.value||'';
+    document.getElementById('coupon-maxdisc').value=c.max_discount||'';
+    document.getElementById('coupon-minord').value=c.min_order||0;
+    document.getElementById('coupon-desc').value=c.description||'';
+    document.getElementById('coupon-limit').value=c.uses_limit||'';
+    document.getElementById('coupon-expiry').value=c.valid_until?c.valid_until.slice(0,16):'';
+    document.getElementById('coupon-private').value=c.is_private?'true':'false';
+    document.getElementById('coupon-user').value=c.users?.phone||'';
+    document.getElementById('coupon-active').checked=!!c.active;
+    togglePrivateUser();
+  } else {
+    document.getElementById('coupon-id').value='';
+    ['coupon-code','coupon-value','coupon-maxdisc','coupon-desc','coupon-limit','coupon-expiry','coupon-user'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('coupon-minord').value=0;
+    document.getElementById('coupon-type').value='percent';
+    document.getElementById('coupon-private').value='false';
+    document.getElementById('coupon-active').checked=true;
+    document.getElementById('coupon-user-wrap').style.display='none';
+  }
+  openModal('coupon-modal');
+}
+function editCoupon(id){openCouponModal(id);}
+async function saveCoupon(){
+  const id=document.getElementById('coupon-id').value;
+  const code=document.getElementById('coupon-code').value.trim().toUpperCase();
+  const value=parseFloat(document.getElementById('coupon-value').value);
+  const errEl=document.getElementById('coupon-err');
+  if(!code||isNaN(value)){errEl.textContent='Code and value are required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const isPrivate=document.getElementById('coupon-private').value==='true';
+  let assignedUserId=null;
+  if(isPrivate){
+    const phone=document.getElementById('coupon-user').value.trim();
+    if(phone){
+      const{data:u}=await sb.from('users').select('id').eq('phone',phone).single();
+      if(!u){errEl.textContent='User not found with this phone number.';errEl.style.display='block';return;}
+      assignedUserId=u.id;
+    }
+  }
+  const lim=parseInt(document.getElementById('coupon-limit').value)||null;
+  const exp=document.getElementById('coupon-expiry').value||null;
+  const payload={
+    code,
+    type:document.getElementById('coupon-type').value,
+    value,
+    max_discount:parseFloat(document.getElementById('coupon-maxdisc').value)||null,
+    min_order:parseFloat(document.getElementById('coupon-minord').value)||0,
+    description:document.getElementById('coupon-desc').value||null,
+    uses_limit:lim,
+    valid_until:exp,
+    is_private:isPrivate,
+    assigned_user_id:assignedUserId,
+    active:document.getElementById('coupon-active').checked,
+  };
+  const{error}=id?await sb.from('coupons').update(payload).eq('id',id):await sb.from('coupons').insert(payload);
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  toast(id?'✅ Coupon updated':'✅ Coupon added');
+  closeModal('coupon-modal');loadCoupons();
+}
+async function deleteCoupon(id){
+  if(!confirm('Delete this coupon?'))return;
+  const{error}=await sb.from('coupons').delete().eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('🗑️ Coupon deleted');loadCoupons();}
+}
+
+// ════════════════════════════════════════════════════
+// OFFERS
+// ════════════════════════════════════════════════════
+let _offers=[];
+async function loadOffers(){
+  const{data}=await sb.from('offers').select('*').order('created_at',{ascending:false});
+  _offers=data||[];renderOffersTable();
+}
+function renderOffersTable(){
+  document.getElementById('offers-tbody').innerHTML=_offers.length
+    ?_offers.map(o=>`<tr>
+      <td><strong>${o.title}</strong></td>
+      <td><span class="badge badge-processing">${o.type}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.description||'—'}</td>
+      <td>${fmt.date(o.valid_until)}</td>
+      <td><span class="badge ${o.active?'badge-active':'badge-inactive'}">${o.active?'On':'Off'}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="editOffer('${o.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteOffer('${o.id}')">Del</button>
+      </td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No offers</td></tr>';
+}
+function openOfferModal(id=null){
+  document.getElementById('offer-modal-title').textContent=id?'Edit Offer':'Add Offer';
+  document.getElementById('offer-err').style.display='none';
+  if(id){
+    const o=_offers.find(x=>x.id===id);if(!o)return;
+    document.getElementById('offer-id').value=o.id;
+    document.getElementById('offer-title').value=o.title||'';
+    document.getElementById('offer-desc').value=o.description||'';
+    document.getElementById('offer-type').value=o.type||'banner';
+    document.getElementById('offer-expiry').value=o.valid_until?o.valid_until.slice(0,16):'';
+    document.getElementById('offer-img').value=o.image_url||'';
+    document.getElementById('offer-link').value=o.link||'';
+    document.getElementById('offer-active').checked=!!o.active;
+  } else {
+    document.getElementById('offer-id').value='';
+    ['offer-title','offer-desc','offer-expiry','offer-img','offer-link'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('offer-type').value='banner';
+    document.getElementById('offer-active').checked=true;
+  }
+  openModal('offer-modal');
+}
+function editOffer(id){openOfferModal(id);}
+async function saveOffer(){
+  const id=document.getElementById('offer-id').value;
+  const title=document.getElementById('offer-title').value.trim();
+  const errEl=document.getElementById('offer-err');
+  if(!title){errEl.textContent='Title is required.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const payload={
+    title,
+    description:document.getElementById('offer-desc').value||null,
+    type:document.getElementById('offer-type').value,
+    valid_until:document.getElementById('offer-expiry').value||null,
+    image_url:document.getElementById('offer-img').value||null,
+    link:document.getElementById('offer-link').value||null,
+    active:document.getElementById('offer-active').checked,
+  };
+  const{error}=id?await sb.from('offers').update(payload).eq('id',id):await sb.from('offers').insert(payload);
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  toast(id?'✅ Offer updated':'✅ Offer added');
+  closeModal('offer-modal');loadOffers();
+}
+async function deleteOffer(id){
+  if(!confirm('Delete this offer?'))return;
+  const{error}=await sb.from('offers').delete().eq('id',id);
+  if(error)toast('Error: '+error.message,true);
+  else{toast('🗑️ Offer deleted');loadOffers();}
+}
+
+// ════════════════════════════════════════════════════
+// CUSTOMERS
+// ════════════════════════════════════════════════════
+let _customers=[];
+async function loadCustomers(){
+  const{data}=await sb.from('users').select('*,orders(total,status),wallets(balance)').order('created_at',{ascending:false});
+  _customers=data||[];renderCustomersTable();
+}
+function renderCustomersTable(){
+  const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
+  let rows=_customers;
+  if(q)rows=rows.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.phone||'').includes(q)||(u.email||'').toLowerCase().includes(q));
+  document.getElementById('customers-tbody').innerHTML=rows.length
+    ?rows.map(u=>{
+      const ords=u.orders||[];
+      const spent=ords.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+      const walBal=u.wallets?.[0]?.balance??0;
+      return`<tr>
+        <td><strong>${u.name||'—'}</strong></td>
+        <td>${u.phone||'—'}</td>
+        <td>${u.email||'—'}</td>
+        <td style="text-align:center;">${ords.length}</td>
+        <td><strong>${fmt.price(spent)}</strong></td>
+        <td>${fmt.price(walBal)}</td>
+        <td>${fmt.date(u.created_at)}</td>
+      </tr>`;
+    }).join('')
+    :'<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px;">No customers</td></tr>';
+}
+
+// ════════════════════════════════════════════════════
+// WALLET ADMIN
+// ════════════════════════════════════════════════════
+let _wallets=[];
+async function loadWalletAdmin(){
+  const{data}=await sb.from('wallets').select('*,users(id,name,phone)').order('updated_at',{ascending:false});
+  _wallets=data||[];renderWalletTable();
+}
+function renderWalletTable(){
+  const q=(document.getElementById('wallet-search')?.value||'').toLowerCase();
+  let rows=_wallets;
+  if(q)rows=rows.filter(w=>(w.users?.name||'').toLowerCase().includes(q)||(w.users?.phone||'').includes(q));
+  document.getElementById('wallet-tbody').innerHTML=rows.length
+    ?rows.map(w=>`<tr>
+      <td><strong>${w.users?.name||'—'}</strong></td>
+      <td>${w.users?.phone||'—'}</td>
+      <td><strong style="color:var(--teal2);font-size:15px;">${fmt.price(w.balance||0)}</strong></td>
+      <td>${w.interest_rate||4}% PA</td>
+      <td>${fmt.date(w.updated_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openWalletModal('${w.user_id}','${w.users?.name||''}','${w.users?.phone||''}',${w.balance||0})">Edit</button></td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">No wallets found</td></tr>';
+}
+function openWalletModal(userId,name,phone,balance){
+  document.getElementById('wm-user-id').value=userId;
+  document.getElementById('wm-user-info').innerHTML=`<strong>${name}</strong> &nbsp;|&nbsp; ${phone}<br><span style="color:var(--g3);font-size:12px;">Current Balance: <strong style="color:var(--teal2);">${fmt.price(balance)}</strong></span>`;
+  document.getElementById('wm-amount').value='';
+  document.getElementById('wm-note').value='';
+  document.getElementById('wm-type').value='credit';
+  document.getElementById('wm-err').style.display='none';
+  openModal('wallet-modal');
+}
+async function saveWalletEdit(){
+  const userId=document.getElementById('wm-user-id').value;
+  const type=document.getElementById('wm-type').value;
+  const amount=parseFloat(document.getElementById('wm-amount').value);
+  const note=document.getElementById('wm-note').value.trim();
+  const errEl=document.getElementById('wm-err');
+  if(!amount||isNaN(amount)||amount<=0){errEl.textContent='Enter a valid amount.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  // get current wallet
+  const{data:wallet}=await sb.from('wallets').select('balance').eq('user_id',userId).single();
+  let currentBal=Number(wallet?.balance||0);
+  let newBal;
+  if(type==='credit')newBal=currentBal+amount;
+  else if(type==='debit'){
+    if(amount>currentBal){errEl.textContent='Debit amount exceeds wallet balance.';errEl.style.display='block';return;}
+    newBal=currentBal-amount;
+  } else {
+    newBal=amount; // admin_adjust = set
+  }
+  newBal=Math.round(newBal*100)/100;
+  // upsert wallet
+  const{error:e1}=await sb.from('wallets').upsert({user_id:userId,balance:newBal,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(e1){errEl.textContent=e1.message;errEl.style.display='block';return;}
+  // log transaction
+  await sb.from('wallet_transactions').insert({user_id:userId,type,amount,note:note||'Admin adjustment',balance_after:newBal});
+  toast('✅ Wallet updated');
+  closeModal('wallet-modal');
+  loadWalletAdmin();loadCustomers();
+}
+
+// ════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════
+function saveConfig(){
+  const cfg={
+    store_name:document.getElementById('cfg-name').value,
+    whatsapp:document.getElementById('cfg-wa').value,
+    email:document.getElementById('cfg-email').value,
+    free_delivery_above:document.getElementById('cfg-free-del').value,
+  };
+  localStorage.setItem('aq_config',JSON.stringify(cfg));
+  toast('✅ Configuration saved');
+}
+function loadConfig(){
+  try{
+    const cfg=JSON.parse(localStorage.getItem('aq_config')||'{}');
+    if(cfg.store_name)document.getElementById('cfg-name').value=cfg.store_name;
+    if(cfg.whatsapp)document.getElementById('cfg-wa').value=cfg.whatsapp;
+    if(cfg.email)document.getElementById('cfg-email').value=cfg.email;
+    if(cfg.free_delivery_above)document.getElementById('cfg-free-del').value=cfg.free_delivery_above;
+  }catch(e){}
+}
+loadConfig();
+</script>
+</body>
+</html>
