@@ -1,97 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Account – Aquanics</title>
-  <link rel="icon" href="logo.png">
-  
-  <style>
-    .account-layout{display:grid;grid-template-columns:240px 1fr;gap:28px;padding:32px 0 64px;align-items:start;}
-    .account-sidebar{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(26,122,110,0.08);position:sticky;top:100px;}
-    .acc-user{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--gray-200);margin-bottom:16px;}
-    .acc-avatar{width:48px;height:48px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0;}
-    .acc-name{font-weight:700;font-size:15px;}
-    .acc-phone{font-size:12px;color:var(--gray-400);}
-    .acc-nav{list-style:none;}
-    .acc-nav li a,.acc-nav li button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;color:var(--text);width:100%;text-align:left;background:none;border:none;font-family:var(--font-body);cursor:pointer;transition:var(--transition);}
-    .acc-nav li a:hover,.acc-nav li button:hover{background:var(--gray-100);}
-    .acc-nav li.active a,.acc-nav li.active button{background:var(--gray-100);color:var(--teal);font-weight:600;}
-    .acc-main{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:0 2px 12px rgba(26,122,110,0.08);}
-    .acc-main h2{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--gray-100);}
-    .order-card{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:14px;transition:var(--transition);}
-    .order-card:hover{border-color:var(--teal);box-shadow:var(--shadow);}
-    .order-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-    .order-id{font-size:12px;font-weight:700;color:var(--gray-600);}
-    .order-items-preview{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-    .order-item-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--gray-100);}
-    .order-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
-    .order-total{font-weight:700;font-size:15px;color:var(--ocean);}
-    .order-date{font-size:12px;color:var(--gray-400);}
-    @media(max-width:768px){.account-layout{grid-template-columns:1fr;}.account-sidebar{position:static;}}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account – Aquanics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<style>
+.acc-wrap{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
+.acc-grid{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:start;}
+/* SIDEBAR */
+.acc-sb{background:#fff;border-radius:20px;border:1px solid var(--g1);padding:20px;position:sticky;top:80px;}
+.acc-av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--R);font-size:22px;font-weight:700;margin-bottom:12px;}
+.acc-name{font-family:var(--R);font-size:16px;font-weight:700;color:var(--ocean);}
+.acc-phone{font-size:12px;color:var(--g3);margin-top:2px;margin-bottom:16px;}
+.acc-nav{list-style:none;}
+.acc-nav li{margin-bottom:3px;}
+.acc-nav li button{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;font-size:13.5px;color:var(--g4);width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:var(--B);transition:all .18s;font-weight:500;}
+.acc-nav li button:hover{background:var(--g1);}
+.acc-nav li.on button{background:var(--g1);color:var(--teal2);font-weight:600;}
+/* SECTIONS */
+.acc-sec{display:none;}
+.acc-sec.on{display:block;}
+/* ORDER CARDS */
+.ord-card{background:#fff;border-radius:16px;border:1.5px solid var(--g1);padding:16px;margin-bottom:12px;transition:all .2s;}
+.ord-card:hover{border-color:rgba(0,212,170,.25);box-shadow:0 4px 18px rgba(0,168,130,.1);}
+.ord-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.ord-id{font-size:11.5px;font-weight:700;color:var(--g3);}
+.ord-date{font-size:11.5px;color:var(--g3);margin-top:2px;}
+.ord-name{font-weight:600;font-size:14px;color:var(--ocean);}
+.ord-thumbs{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+.ord-th{width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--g1);}
+.ord-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.ord-total{font-family:var(--R);font-weight:700;font-size:16px;color:var(--ocean);}
+/* WALLET */
+.wallet-hero{background:linear-gradient(135deg,var(--ocean2) 0%,var(--ocean) 40%,#062e50 100%);border-radius:22px;padding:26px;position:relative;overflow:hidden;margin-bottom:18px;}
+.wallet-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 80% 20%,rgba(0,212,170,.18),transparent);}
+.wallet-hero::after{content:'💳';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:80px;opacity:.07;}
+.w-lbl{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;position:relative;}
+.w-bal{font-family:var(--R);font-size:38px;font-weight:800;color:#fff;position:relative;margin-bottom:16px;}
+.w-row{display:flex;gap:10px;position:relative;flex-wrap:wrap;}
+.w-stat{flex:1;min-width:100px;}
+.w-stat .wl{font-size:10px;color:rgba(255,255,255,.35);margin-bottom:2px;}
+.w-stat .wv{font-size:15px;font-weight:700;color:rgba(255,255,255,.8);}
+/* Interest badge */
+.interest-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,170,.15);border:1px solid rgba(0,212,170,.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--teal);margin-bottom:16px;}
+.interest-badge::before{content:'★';color:var(--gold);}
+/* Add money card */
+.add-money-card{background:#fff;border-radius:18px;border:1px solid var(--g1);padding:20px;margin-bottom:16px;}
+.add-money-card h3{font-family:var(--R);font-size:15px;font-weight:700;margin-bottom:4px;}
+.add-money-card p{font-size:13px;color:var(--g3);margin-bottom:16px;line-height:1.5;}
+.amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.amt-chip{padding:10px 8px;border:1.5px solid var(--g2);border-radius:10px;background:none;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--R);text-align:center;}
+.amt-chip:hover,.amt-chip.on{background:var(--teal3);border-color:var(--teal);}
+/* Txn list */
+.txn-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--g1);}
+.txn-item:last-child{border-bottom:none;}
+.txn-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.txn-info{flex:1;}
+.txn-desc{font-size:13px;font-weight:500;color:var(--text);}
+.txn-date{font-size:11.5px;color:var(--g3);margin-top:1px;}
+.txn-amt{font-family:var(--R);font-size:14px;font-weight:700;}
+.txn-c{color:var(--teal2);}
+.txn-d{color:var(--red,#ef4444);}
+/* Profile */
+.profile-card{background:#fff;border-radius:18px;border:1px solid var(--g1);padding:22px;}
+.profile-card h3{font-family:var(--R);font-size:15px;font-weight:700;margin-bottom:16px;}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pf-field{display:flex;flex-direction:column;gap:4px;}
+.pf-field label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);}
+.pf-field input{padding:10px 13px;border:1.5px solid var(--g2);border-radius:10px;font-size:14px;font-family:var(--B);outline:none;transition:border-color .2s;}
+.pf-field input:focus{border-color:var(--teal);}
+.pf-field input:disabled{background:var(--g1);color:var(--g3);}
+/* EMPTY */
+.empty-sec{text-align:center;padding:48px 20px;}
+.empty-sec .ico{font-size:52px;margin-bottom:14px;}
+.empty-sec h3{font-family:var(--R);font-size:18px;font-weight:700;color:var(--ocean);margin-bottom:6px;}
+.empty-sec p{font-size:13.5px;color:var(--g3);}
+@media(max-width:900px){.acc-grid{grid-template-columns:1fr;}.acc-sb{position:static;}.amount-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.pf-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-<header id="navbar"></header>
-<div class="container">
-  <div id="account-content"></div>
+<div id="nav"></div>
+
+<div class="acc-wrap">
+  <div class="acc-grid">
+
+    <!-- SIDEBAR -->
+    <div class="acc-sb">
+      <div class="acc-av" id="acc-av">A</div>
+      <div class="acc-name" id="acc-name">Loading…</div>
+      <div class="acc-phone" id="acc-phone"></div>
+      <ul class="acc-nav">
+        <li class="on" id="nav-orders"><button onclick="showSec('orders')">📦 My Orders</button></li>
+        <li id="nav-wallet"><button onclick="showSec('wallet')">💰 My Wallet</button></li>
+        <li id="nav-wishlist"><button onclick="location.href='wishlist.html'">❤️ Wishlist</button></li>
+        <li id="nav-profile"><button onclick="showSec('profile')">👤 Profile</button></li>
+        <li><button onclick="Auth.logout()" style="color:var(--red,#ef4444)">🚪 Logout</button></li>
+      </ul>
+    </div>
+
+    <!-- CONTENT -->
+    <div>
+      <!-- ORDERS -->
+      <div class="acc-sec on" id="sec-orders">
+        <div id="orders-content"><div style="text-align:center;padding:40px;color:var(--g3)">Loading orders…</div></div>
+      </div>
+
+      <!-- WALLET -->
+      <div class="acc-sec" id="sec-wallet">
+        <!-- Hero balance card -->
+        <div class="wallet-hero">
+          <div class="w-lbl">Wallet Balance</div>
+          <div class="w-bal" id="w-bal">₹0.00</div>
+          <div class="w-row">
+            <div class="w-stat"><div class="wl">Total Added</div><div class="wv" id="w-added">₹0</div></div>
+            <div class="w-stat"><div class="wl">Interest Earned</div><div class="wv" id="w-interest">₹0</div></div>
+            <div class="w-stat"><div class="wl">Transactions</div><div class="wv" id="w-txns">0</div></div>
+          </div>
+        </div>
+
+        <!-- Interest badge -->
+        <div style="margin-bottom:18px">
+          <div class="interest-badge">First Store Wallet — Earn 4% Per Annum Interest on Your Wallet Balance</div>
+          <p style="font-size:13px;color:var(--g3);line-height:1.6;margin-top:8px">
+            Aquanics Wallet is India's first store wallet that pays you <strong style="color:var(--teal2)">4% interest per year</strong> on your balance. The longer you keep money in your wallet, the more you earn — and you can use it anytime for shopping with us!
+          </p>
+        </div>
+
+        <!-- Add money -->
+        <div class="add-money-card">
+          <h3>➕ Add Money to Wallet</h3>
+          <p>Money added to your wallet can be used for purchases on Aquanics. Quick top-up with Razorpay.</p>
+          <div class="amount-grid">
+            <button class="amt-chip" onclick="selectAmt(100)">₹100</button>
+            <button class="amt-chip" onclick="selectAmt(250)">₹250</button>
+            <button class="amt-chip" onclick="selectAmt(500)">₹500</button>
+            <button class="amt-chip" onclick="selectAmt(1000)">₹1000</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex:1">
+              <span style="font-size:18px;font-weight:700;color:var(--ocean)">₹</span>
+              <input type="number" id="add-amt" placeholder="Or enter custom amount" min="10" style="flex:1;padding:10px 13px;border:1.5px solid var(--g2);border-radius:10px;font-size:14px;font-family:var(--B);outline:none;transition:border-color .2s" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--g2)'">
+            </div>
+            <button class="btn btn-teal" onclick="addMoney()" id="add-btn" style="padding:11px 24px;font-size:14px;border-radius:11px">
+              Add Money
+            </button>
+          </div>
+          <div id="add-msg" style="font-size:13px;margin-top:4px"></div>
+        </div>
+
+        <!-- Transaction history -->
+        <div class="add-money-card" style="margin-bottom:0">
+          <h3>📋 Transaction History</h3>
+          <div id="txn-list" style="margin-top:12px"><p style="color:var(--g3);font-size:13px">Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="acc-sec" id="sec-profile">
+        <div class="profile-card">
+          <h3>👤 My Profile</h3>
+          <div class="pf-grid" id="profile-form"></div>
+          <button class="btn btn-teal" style="margin-top:16px" onclick="saveProfile()">Save Changes</button>
+          <div id="profile-msg" style="margin-top:10px;font-size:13px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<footer id="footer"></footer>
-<script src="js/app.js"></script>
+
+<a href="https://wa.me/919999999999" target="_blank" class="wa-btn"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg></a>
+
+<div id="footer-wrap"></div>
+
 <script src="js/app.js"></script>
 <script>
-async function init() {
-  await UI.nav();
-  UI.footer();
+const RAZORPAY_KEY = 'rzp_live_SSegtOEGykPOUN';
+let currentUser = null, walletData = null;
 
-  if (!Auth.isLoggedIn()) { window.location.href = '/login.html?redirect=/account.html'; return; }
+function showSec(name) {
+  document.querySelectorAll('.acc-sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.acc-nav li').forEach(l=>l.classList.remove('on'));
+  document.getElementById('sec-'+name)?.classList.add('on');
+  document.getElementById('nav-'+name)?.classList.add('on');
+  if (name==='wallet') loadWallet();
+  if (name==='profile') loadProfile();
+}
 
-  const user = Auth.getUser();
-  const initial = (user.name || 'U')[0].toUpperCase();
+function selectAmt(n){
+  document.querySelectorAll('.amt-chip').forEach(b=>b.classList.remove('on'));
+  document.getElementById('add-amt').value=n;
+  event.target.classList.add('on');
+}
 
-  const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+// ── Format helpers ──────────────────────────────────
+const P = n => '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2});
+const D = d => new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const DT = d => new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
-  document.getElementById('account-content').innerHTML = `
-    <div class="account-layout">
-      <aside class="account-sidebar">
-        <div class="acc-user">
-          <div class="acc-avatar">${initial}</div>
-          <div><div class="acc-name">${user.name}</div><div class="acc-phone">+91 ${user.phone}</div></div>
+// ── ORDERS ─────────────────────────────────────────
+async function loadOrders(user){
+  const el = document.getElementById('orders-content');
+  try{
+    const{data:orders}=await sb.from('orders').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(!orders?.length){
+      el.innerHTML=`<div class="empty-sec"><div class="ico">📦</div><h3>No orders yet</h3><p>Browse our store and place your first order!</p><a href="products.html" class="btn btn-teal" style="margin-top:16px;display:inline-flex">Start Shopping</a></div>`;
+      return;
+    }
+    el.innerHTML=`<h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:16px">My Orders (${orders.length})</h2>`+
+      orders.map(o=>`
+      <div class="ord-card">
+        <div class="ord-top">
+          <div>
+            <div class="ord-id">Order #${(o.id||'').slice(0,8).toUpperCase()}</div>
+            <div class="ord-name">${o.address?.name||user.name||''}</div>
+            <div class="ord-date">${D(o.created_at)}</div>
+          </div>
+          <span class="badge badge-${o.status||'confirmed'}">${(o.status||'confirmed').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
         </div>
-        <ul class="acc-nav">
-          <li class="active"><a href="account.html">📦 My Orders</a></li>
-          <li><a href="wishlist.html">❤️ Wishlist</a></li>
-          <li><button onclick="Auth.logout()">🚪 Logout</button></li>
-        </ul>
-      </aside>
-      <main class="acc-main">
-        <h2>My Orders (${(orders||[]).length})</h2>
-        ${!(orders||[]).length ? '<div class="empty-state"><p>No orders yet.</p><a href="products.html" class="btn btn-primary" style="margin-top:16px">Start Shopping</a></div>' :
-          (orders||[]).map(o => `
-            <div class="order-card">
-              <div class="order-card-top">
-                <div>
-                  <div class="order-id">Order #${(o.id||'').slice(0,8).toUpperCase()}</div>
-                  <div class="order-date">${fmt.date(o.created_at)}</div>
-                </div>
-                <span class="badge badge-${o.status}">${o.status?.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
-              </div>
-              <div class="order-items-preview">
-                ${(o.items||[]).slice(0,4).map(item => `<img class="order-item-thumb" src="${item.image_url||''}" onerror="this.style.display='none'" alt="${item.name}">`).join('')}
-                ${(o.items||[]).length > 4 ? `<div style="width:48px;height:48px;border-radius:6px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gray-400)">+${o.items.length-4}</div>` : ''}
-              </div>
-              <div class="order-footer">
-                <span class="order-total">${fmt.price(o.total)}</span>
-                <a href="order-success.html?id=${o.id}" class="btn btn-outline btn-sm">Track Order →</a>
-              </div>
-            </div>
-          `).join('')}
-      </main>
-    </div>
-  `;
+        <div class="ord-thumbs">
+          ${(o.items||[]).slice(0,5).map(i=>`<img class="ord-th" src="${i.image_url||''}" onerror="this.style.display='none'" alt="${i.name}">`).join('')}
+          ${(o.items||[]).length>5?`<div style="width:46px;height:46px;border-radius:8px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--g3)">+${o.items.length-5}</div>`:''}
+        </div>
+        <div class="ord-foot">
+          <span class="ord-total">${P(o.total)}</span>
+          <a href="order-success.html?id=${o.id}" class="btn btn-outline btn-sm" style="text-decoration:none">Track Order →</a>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<p style="color:var(--g3);padding:20px">Could not load orders: ${e.message}</p>`;}
+}
+
+// ── WALLET ──────────────────────────────────────────
+async function loadWallet(){
+  if(!currentUser)return;
+  try{
+    let{data:wallet}=await sb.from('wallets').select('*').eq('user_id',currentUser.id).single().catch(()=>({data:null}));
+    if(!wallet){
+      // Create wallet for user
+      const{data:newW}=await sb.from('wallets').insert([{user_id:currentUser.id,balance:0,total_added:0,interest_earned:0}]).select().single();
+      wallet=newW;
+    }
+    walletData=wallet;
+
+    // Accrue interest if needed
+    await accrueInterest(wallet);
+
+    // Re-fetch after interest
+    const{data:fresh}=await sb.from('wallets').select('*').eq('user_id',currentUser.id).single().catch(()=>({data:wallet}));
+    walletData=fresh||wallet;
+
+    document.getElementById('w-bal').textContent=P(walletData.balance);
+    document.getElementById('w-added').textContent=P(walletData.total_added);
+    document.getElementById('w-interest').textContent=P(walletData.interest_earned);
+
+    // Load transactions
+    const{data:txns,count}=await sb.from('wallet_transactions').select('*',{count:'exact'}).eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(20);
+    document.getElementById('w-txns').textContent=count||0;
+
+    if(!txns?.length){
+      document.getElementById('txn-list').innerHTML='<p style="color:var(--g3);font-size:13px">No transactions yet.</p>';
+      return;
+    }
+    const icons={credit:'➕',debit:'➖',interest:'⭐',admin_credit:'🎁',admin_debit:'⚙️',refund:'↩️'};
+    const colors={credit:'b-green',interest:'b-teal',admin_credit:'b-teal',debit:'b-red',admin_debit:'b-red',refund:'b-amber'};
+    document.getElementById('txn-list').innerHTML=txns.map(t=>`
+      <div class="txn-item">
+        <div class="txn-ico" style="background:${t.type.includes('credit')||t.type==='interest'?'var(--g1)':'var(--red2,#fef2f2)'}">
+          ${icons[t.type]||'💰'}
+        </div>
+        <div class="txn-info">
+          <div class="txn-desc">${t.description||t.type}</div>
+          <div class="txn-date">${DT(t.created_at)}</div>
+        </div>
+        <div class="txn-amt ${t.type.includes('debit')?'txn-d':'txn-c'}">
+          ${t.type.includes('debit')?'−':'+'}${P(t.amount)}
+        </div>
+      </div>`).join('');
+  }catch(e){console.error('Wallet error:',e);}
+}
+
+// 4% per annum interest — credited daily proportionally
+async function accrueInterest(wallet){
+  if(!wallet||wallet.balance<=0)return;
+  const last=new Date(wallet.last_interest_date||wallet.created_at);
+  const now=new Date();
+  const daysDiff=Math.floor((now-last)/(1000*60*60*24));
+  if(daysDiff<1)return;
+
+  const RATE=0.04; // 4% per annum
+  const dailyRate=RATE/365;
+  const interest=parseFloat((wallet.balance*dailyRate*daysDiff).toFixed(2));
+  if(interest<0.01)return;
+
+  const newBal=parseFloat((wallet.balance+interest).toFixed(2));
+  const newInterest=parseFloat(((wallet.interest_earned||0)+interest).toFixed(2));
+
+  await sb.from('wallets').update({
+    balance:newBal,
+    interest_earned:newInterest,
+    last_interest_date:now.toISOString().split('T')[0],
+    updated_at:now.toISOString()
+  }).eq('user_id',currentUser.id);
+
+  await sb.from('wallet_transactions').insert([{
+    user_id:currentUser.id,
+    type:'interest',
+    amount:interest,
+    balance_after:newBal,
+    description:`4% PA interest — ${daysDiff} day${daysDiff>1?'s':''}`,
+    created_at:now.toISOString()
+  }]);
+}
+
+// Add money via Razorpay
+function addMoney(){
+  if(!currentUser)return;
+  const amt=parseFloat(document.getElementById('add-amt').value);
+  const msgEl=document.getElementById('add-msg');
+  if(!amt||isNaN(amt)||amt<10){msgEl.innerHTML='<span style="color:var(--red,#ef4444)">Minimum ₹10 required.</span>';return;}
+  msgEl.innerHTML='';
+
+  const options={
+    key:RAZORPAY_KEY,
+    amount:Math.round(amt*100),
+    currency:'INR',
+    name:'Aquanics Wallet',
+    description:`Add ₹${amt} to your wallet`,
+    handler: async function(resp){
+      msgEl.innerHTML='<span style="color:var(--g3)">Processing…</span>';
+      try{
+        const curBal=(walletData?.balance||0)+amt;
+        // Update wallet
+        await sb.from('wallets').upsert([{
+          user_id:currentUser.id,
+          balance:parseFloat(curBal.toFixed(2)),
+          total_added:parseFloat(((walletData?.total_added||0)+amt).toFixed(2)),
+          interest_earned:walletData?.interest_earned||0,
+          last_interest_date:walletData?.last_interest_date||new Date().toISOString().split('T')[0],
+          updated_at:new Date().toISOString()
+        }]);
+        // Log transaction
+        await sb.from('wallet_transactions').insert([{
+          user_id:currentUser.id,
+          type:'credit',
+          amount:amt,
+          balance_after:parseFloat(curBal.toFixed(2)),
+          description:`Wallet top-up via Razorpay`,
+          payment_id:resp.razorpay_payment_id
+        }]);
+        msgEl.innerHTML='<span style="color:var(--teal2)">✅ ₹'+amt+' added to your wallet!</span>';
+        document.getElementById('add-amt').value='';
+        document.querySelectorAll('.amt-chip').forEach(b=>b.classList.remove('on'));
+        loadWallet();
+        showToast('💰 ₹'+amt+' added to wallet!');
+      }catch(e){msgEl.innerHTML='<span style="color:var(--red,#ef4444)">Payment received but error saving: '+e.message+'</span>';}
+    },
+    prefill:{name:currentUser.name||'',contact:'+91'+currentUser.phone},
+    theme:{color:'#00a882'},
+    modal:{ondismiss:()=>msgEl.innerHTML=''}
+  };
+  new Razorpay(options).open();
+}
+
+// ── PROFILE ────────────────────────────────────────
+function loadProfile(){
+  if(!currentUser)return;
+  document.getElementById('profile-form').innerHTML=`
+    <div class="pf-field" style="grid-column:1/-1"><label>Full Name</label><input id="pf-name" value="${currentUser.name||''}"></div>
+    <div class="pf-field"><label>Phone Number</label><input value="+91 ${currentUser.phone||''}" disabled></div>
+    <div class="pf-field"><label>Email</label><input id="pf-email" type="email" value="${currentUser.email||''}" placeholder="Add email for notifications"></div>`;
+}
+async function saveProfile(){
+  const name=document.getElementById('pf-name')?.value?.trim();
+  const email=document.getElementById('pf-email')?.value?.trim();
+  const msgEl=document.getElementById('profile-msg');
+  try{
+    const{error}=await sb.from('users').update({name:name||null,email:email||null}).eq('id',currentUser.id);
+    if(error)throw error;
+    // Update local auth
+    const sess=Auth.get();if(sess){sess.user={...sess.user,name,email};localStorage.setItem('aq_sess',JSON.stringify(sess));}
+    currentUser={...currentUser,name,email};
+    document.getElementById('acc-name').textContent=name||currentUser.phone;
+    document.getElementById('acc-av').textContent=(name?.[0]||'A').toUpperCase();
+    msgEl.innerHTML='<span style="color:var(--teal2)">✅ Profile updated!</span>';
+    setTimeout(()=>msgEl.innerHTML='',3000);
+  }catch(e){msgEl.innerHTML='<span style="color:var(--red,#ef4444)">Error: '+e.message+'</span>';}
+}
+
+// ── INIT ───────────────────────────────────────────
+async function init(){
+  await renderNav();
+  renderFooter();
+
+  if(!Auth.isLoggedIn()){
+    location.href='login.html?redirect=account.html';
+    return;
+  }
+
+  currentUser=Auth.getUser();
+  if(!currentUser){location.href='login.html?redirect=account.html';return;}
+
+  // Set sidebar info
+  document.getElementById('acc-av').textContent=(currentUser.name?.[0]||currentUser.phone?.[0]||'A').toUpperCase();
+  document.getElementById('acc-name').textContent=currentUser.name||'Customer';
+  document.getElementById('acc-phone').textContent='+91 '+currentUser.phone;
+
+  // Load orders by default
+  loadOrders(currentUser);
 }
 init();
 </script>
