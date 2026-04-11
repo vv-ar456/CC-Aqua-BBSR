@@ -5,97 +5,433 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Account – Aquanics</title>
   <link rel="icon" href="logo.png">
-  
-  <style>
-    .account-layout{display:grid;grid-template-columns:240px 1fr;gap:28px;padding:32px 0 64px;align-items:start;}
-    .account-sidebar{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(26,122,110,0.08);position:sticky;top:100px;}
-    .acc-user{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--gray-200);margin-bottom:16px;}
-    .acc-avatar{width:48px;height:48px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;font-weight:700;flex-shrink:0;}
-    .acc-name{font-weight:700;font-size:15px;}
-    .acc-phone{font-size:12px;color:var(--gray-400);}
-    .acc-nav{list-style:none;}
-    .acc-nav li a,.acc-nav li button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;color:var(--text);width:100%;text-align:left;background:none;border:none;font-family:var(--font-body);cursor:pointer;transition:var(--transition);}
-    .acc-nav li a:hover,.acc-nav li button:hover{background:var(--gray-100);}
-    .acc-nav li.active a,.acc-nav li.active button{background:var(--gray-100);color:var(--teal);font-weight:600;}
-    .acc-main{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:0 2px 12px rgba(26,122,110,0.08);}
-    .acc-main h2{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--gray-100);}
-    .order-card{border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:14px;transition:var(--transition);}
-    .order-card:hover{border-color:var(--teal);box-shadow:var(--shadow);}
-    .order-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-    .order-id{font-size:12px;font-weight:700;color:var(--gray-600);}
-    .order-items-preview{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-    .order-item-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--gray-100);}
-    .order-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
-    .order-total{font-weight:700;font-size:15px;color:var(--ocean);}
-    .order-date{font-size:12px;color:var(--gray-400);}
-    @media(max-width:768px){.account-layout{grid-template-columns:1fr;}.account-sidebar{position:static;}}
-  </style>
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .account-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 28px;
+      padding: 32px 0 64px;
+      align-items: start;
+    }
+    .account-sidebar {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+      position: sticky;
+      top: 100px;
+      height: fit-content;
+    }
+    .acc-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #edf4f2;
+      margin-bottom: 16px;
+    }
+    .acc-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--R);
+      font-size: 20px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .acc-name {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .acc-phone {
+      font-size: 12px;
+      color: var(--g3);
+    }
+    .acc-nav {
+      list-style: none;
+    }
+    .acc-nav li a, .acc-nav li button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: var(--text);
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: var(--B);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .acc-nav li a:hover, .acc-nav li button:hover {
+      background: #f0f4f3;
+    }
+    .acc-nav li.active a, .acc-nav li.active button {
+      background: #f0f4f3;
+      color: var(--teal);
+      font-weight: 600;
+    }
+    .acc-main {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
+    }
+    .acc-main h2 {
+      font-family: var(--R);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #f0f4f3;
+    }
+    .wallet-card {
+      background: linear-gradient(135deg, #00d4aa, #00a882);
+      border-radius: 16px;
+      padding: 28px;
+      color: #fff;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,212,170,0.25);
+    }
+    .wallet-label {
+      font-size: 11px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .wallet-balance {
+      font-family: var(--R);
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .wallet-interest {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 16px;
+    }
+    .wallet-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .wallet-actions button {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .wallet-add {
+      background: rgba(255,255,255,0.25);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+    .wallet-add:hover {
+      background: rgba(255,255,255,0.35);
+    }
+    .wallet-history {
+      background: #f7faf9;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .wallet-trans {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #edf4f2;
+      font-size: 13px;
+    }
+    .wallet-trans:last-child {
+      border-bottom: none;
+    }
+    .trans-type {
+      font-weight: 600;
+    }
+    .trans-credit {
+      color: #007a60;
+    }
+    .trans-debit {
+      color: #c0392b;
+    }
+    .order-card {
+      border: 1.5px solid #edf4f2;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      transition: all .2s;
+    }
+    .order-card:hover {
+      border-color: var(--teal);
+      box-shadow: 0 4px 12px rgba(0,212,170,0.12);
+    }
+    .order-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .order-id {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--g3);
+    }
+    .order-items-preview {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .order-item-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #edf4f2;
+    }
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .order-total {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ocean);
+    }
+    .order-date {
+      font-size: 12px;
+      color: var(--g3);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--g3);
+    }
+    .empty-state p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    @media(max-width:768px) {
+      .account-layout {
+        grid-template-columns: 1fr;
+      }
+      .account-sidebar {
+        position: static;
+      }
+      .wallet-card {
+        padding: 20px;
+      }
+      .wallet-balance {
+        font-size: 24px;
+      }
+    }
+  </style>
 </head>
 <body>
-<header id="navbar"></header>
-<div class="container">
-  <div id="account-content"></div>
-</div>
-<footer id="footer"></footer>
-<script src="js/app.js"></script>
-<script src="js/app.js"></script>
-<script>
-async function init() {
-  await UI.nav();
-  UI.footer();
+  <header id="navbar"></header>
+  <div class="container">
+    <div id="account-content"></div>
+  </div>
+  <footer id="footer"></footer>
 
-  if (!Auth.isLoggedIn()) { window.location.href = '/login.html?redirect=/account.html'; return; }
+  <script src="js/app.js"></script>
+  <script>
+    async function initAccount() {
+      await renderNav();
+      renderFooter();
 
-  const user = Auth.getUser();
-  const initial = (user.name || 'U')[0].toUpperCase();
+      if (!Auth.isLoggedIn()) {
+        window.location.href = '/login.html?redirect=/account.html';
+        return;
+      }
 
-  const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      const user = Auth.getUser();
+      const initial = (user.name || 'U')[0].toUpperCase();
 
-  document.getElementById('account-content').innerHTML = `
-    <div class="account-layout">
-      <aside class="account-sidebar">
-        <div class="acc-user">
-          <div class="acc-avatar">${initial}</div>
-          <div><div class="acc-name">${user.name}</div><div class="acc-phone">+91 ${user.phone}</div></div>
-        </div>
-        <ul class="acc-nav">
-          <li class="active"><a href="account.html">📦 My Orders</a></li>
-          <li><a href="wishlist.html">❤️ Wishlist</a></li>
-          <li><button onclick="Auth.logout()">🚪 Logout</button></li>
-        </ul>
-      </aside>
-      <main class="acc-main">
-        <h2>My Orders (${(orders||[]).length})</h2>
-        ${!(orders||[]).length ? '<div class="empty-state"><p>No orders yet.</p><a href="products.html" class="btn btn-primary" style="margin-top:16px">Start Shopping</a></div>' :
-          (orders||[]).map(o => `
-            <div class="order-card">
-              <div class="order-card-top">
-                <div>
-                  <div class="order-id">Order #${(o.id||'').slice(0,8).toUpperCase()}</div>
-                  <div class="order-date">${fmt.date(o.created_at)}</div>
-                </div>
-                <span class="badge badge-${o.status}">${o.status?.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
-              </div>
-              <div class="order-items-preview">
-                ${(o.items||[]).slice(0,4).map(item => `<img class="order-item-thumb" src="${item.image_url||''}" onerror="this.style.display='none'" alt="${item.name}">`).join('')}
-                ${(o.items||[]).length > 4 ? `<div style="width:48px;height:48px;border-radius:6px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gray-400)">+${o.items.length-4}</div>` : ''}
-              </div>
-              <div class="order-footer">
-                <span class="order-total">${fmt.price(o.total)}</span>
-                <a href="order-success.html?id=${o.id}" class="btn btn-outline btn-sm">Track Order →</a>
+      // Load user data
+      const [
+        { data: orders },
+        { data: wallet },
+        { data: transactions }
+      ] = await Promise.all([
+        sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        sb.from('wallets').select('*').eq('user_id', user.id).single(),
+        sb.from('wallet_transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10)
+      ]);
+
+      const walletBalance = wallet?.balance || 0;
+      const walletRate = wallet?.interest_rate || 4;
+
+      document.getElementById('account-content').innerHTML = `
+        <div class="account-layout">
+          <aside class="account-sidebar">
+            <div class="acc-user">
+              <div class="acc-avatar">${initial}</div>
+              <div>
+                <div class="acc-name">${user.name}</div>
+                <div class="acc-phone">+91 ${user.phone}</div>
               </div>
             </div>
-          `).join('')}
-      </main>
-    </div>
-  `;
-}
-init();
-</script>
-<script src="js/chat-widget.js"></script>
-<script src="js/cart-ai.js"></script>
+            <ul class="acc-nav">
+              <li class="active"><button onclick="switchTab('wallet')">💰 My Wallet</button></li>
+              <li><button onclick="switchTab('orders')">📦 My Orders</button></li>
+              <li><button onclick="switchTab('wishlist')">❤️ Wishlist</button></li>
+              <li><button onclick="Auth.logout()">🚪 Logout</button></li>
+            </ul>
+          </aside>
+
+          <main class="acc-main">
+            <!-- WALLET TAB -->
+            <div id="tab-wallet" style="display:block;">
+              <h2>💰 My Wallet</h2>
+              <div class="wallet-card">
+                <div class="wallet-label">Total Balance</div>
+                <div class="wallet-balance">${fmt.price(walletBalance)}</div>
+                <div class="wallet-interest">🎁 Earning ${walletRate}% PA Interest on your balance</div>
+                <div class="wallet-actions">
+                  <button class="wallet-add" onclick="openAddMoneyModal('${user.id}')">+ Add Money</button>
+                </div>
+              </div>
+
+              <div style="background:#f7faf9;border-radius:12px;padding:16px;margin-bottom:20px;">
+                <strong style="font-size:13px;display:block;margin-bottom:10px;">ℹ️ First Store Wallet – Earn 4% PA Interest</strong>
+                <p style="font-size:12px;color:var(--g3);line-height:1.6;">
+                  Your Aquanics wallet gives you 4% per annum interest on your balance. You can add money anytime using Razorpay, and use it to shop on our store. Interest is calculated and credited monthly.
+                </p>
+              </div>
+
+              <h3 style="font-family:var(--R);font-size:15px;font-weight:700;margin-bottom:12px;">Recent Transactions</h3>
+              ${!(transactions||[]).length ? '<p style="color:var(--g3);font-size:13px;">No transactions yet</p>' : `
+                <div class="wallet-history">
+                  ${(transactions||[]).map(t => `
+                    <div class="wallet-trans">
+                      <div>
+                        <div class="trans-type">${t.type === 'credit' ? '📥 Credit' : t.type === 'debit' ? '📤 Debit' : '⚙️ Adjusted'}</div>
+                        <div style="font-size:11px;color:var(--g3);">${t.note || 'Transaction'}</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div class="trans-${t.type === 'debit' ? 'debit' : 'credit'}" style="font-weight:700;">
+                          ${t.type === 'debit' ? '−' : '+'}${fmt.price(t.amount)}
+                        </div>
+                        <div style="font-size:11px;color:var(--g3);">${fmt.date(t.created_at)}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="tab-orders" style="display:none;">
+              <h2>📦 My Orders (${(orders||[]).length})</h2>
+              ${!(orders||[]).length ? `
+                <div class="empty-state">
+                  <p>No orders yet. Start shopping!</p>
+                  <a href="products.html" class="btn btn-primary" style="margin-top:16px;">Browse Products →</a>
+                </div>
+              ` : (orders||[]).map(o => `
+                <div class="order-card">
+                  <div class="order-card-top">
+                    <div>
+                      <div class="order-id">Order #${(o.id||'').slice(0,8).toUpperCase()}</div>
+                      <div class="order-date">${fmt.date(o.created_at)}</div>
+                    </div>
+                    <span class="badge badge-${o.status}">${o.status?.replace(/_/g,' ').replace(/\\b\\w/g,c=>c.toUpperCase())}</span>
+                  </div>
+                  <div class="order-items-preview">
+                    ${(o.items||[]).slice(0,4).map(item => `
+                      <img class="order-item-thumb" src="${item.image_url||'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22><rect width=%2248%22 height=%2248%22 fill=%22%23edf4f2%22/></svg>'}" 
+                        onerror="this.style.display='none'" alt="${item.name}">
+                    `).join('')}
+                    ${(o.items||[]).length > 4 ? `
+                      <div style="width:48px;height:48px;border-radius:6px;background:#edf4f2;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--g3);">
+                        +${o.items.length-4}
+                      </div>
+                    ` : ''}
+                  </div>
+                  <div class="order-footer">
+                    <span class="order-total">${fmt.price(o.total)}</span>
+                    <a href="order-success.html?id=${o.id}" class="btn btn-outline btn-sm">Track Order →</a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- WISHLIST TAB -->
+            <div id="tab-wishlist" style="display:none;">
+              <h2>❤️ My Wishlist</h2>
+              <div id="wishlist-items"></div>
+            </div>
+          </main>
+        </div>
+      `;
+
+      loadWishlist();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.getElementById('tab-' + tab).style.display = 'block';
+      document.querySelectorAll('.acc-nav li').forEach(li => li.classList.remove('active'));
+      event.target.closest('li').classList.add('active');
+    }
+
+    async function loadWishlist() {
+      const wishIds = WL.get();
+      if (!wishIds.length) {
+        document.getElementById('wishlist-items').innerHTML = `
+          <div class="empty-state">
+            <p>No items in your wishlist yet</p>
+            <a href="products.html" class="btn btn-primary">Shop Now →</a>
+          </div>
+        `;
+        return;
+      }
+
+      const { data: products } = await sb.from('products')
+        .select('*,categories(name)')
+        .in('id', wishIds);
+
+      document.getElementById('wishlist-items').innerHTML = `
+        <div class="prod-grid">
+          ${(products||[]).map(prodCard).join('')}
+        </div>
+      `;
+      initReveal();
+    }
+
+    function openAddMoneyModal(userId) {
+      const amount = prompt('Enter amount to add (₹):');
+      if (!amount || isNaN(amount) || amount < 100) {
+        alert('Minimum amount is ₹100');
+        return;
+      }
+      // Redirect to Razorpay checkout
+      window.location.href = `checkout.html?type=wallet&user=${userId}&amount=${amount}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', initAccount);
+  </script>
+  <script src="js/chat-widget.js"></script>
+  <script src="js/cart-ai.js"></script>
 </body>
 </html>
