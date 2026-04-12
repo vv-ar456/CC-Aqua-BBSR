@@ -739,11 +739,12 @@ document.querySelectorAll('.sb-btn[data-p]').forEach(b=>b.addEventListener('clic
 let rC=null,sC=null;
 async function loadDash(){
   try{
-    const[{data:ords,count:oc},{count:pc},{count:cc}]=await Promise.all([
+    const[{data:ords,count:oc,error:e1},{count:pc},{count:cc}]=await Promise.all([
       sb.from('orders').select('total,status,created_at',{count:'exact'}),
       sb.from('products').select('*',{count:'exact',head:true}),
       sb.from('users').select('*',{count:'exact',head:true}),
     ]);
+    if(e1){document.getElementById('s-rev').textContent='Error';console.error('Dashboard load error:',e1.message);}
     const rev=(ords||[]).reduce((s,o)=>s+(o.total||0),0);
     const nw=(ords||[]).filter(o=>o.status==='confirmed').length;
     document.getElementById('s-rev').textContent=P(rev);
@@ -865,7 +866,9 @@ async function loadProds(){
   if(af==='1')qb=qb.eq('active',true);
   if(af==='0')qb=qb.eq('active',false);
   if(q)qb=qb.ilike('name','%'+q+'%');
-  const{data,count}=await qb.catch(()=>({data:[],count:0}));
+  const res = await qb.catch(e=>({data:[],count:0,error:e}));
+  const data = res.data, count = res.count;
+  if(res.error){tbody.innerHTML=`<tr class="empty-r"><td colspan="9">⚠️ RLS Error: ${res.error.message}<br><small>Run supabase-schema-complete.sql in Supabase</small></td></tr>`;document.getElementById('prod-cnt').textContent='Error';return;}
   document.getElementById('prod-cnt').textContent=(count||0)+' products';
   tbody.innerHTML=(data||[]).length
     ? (data||[]).map(p=>{
@@ -966,7 +969,7 @@ async function saveProd(){
   let specs=null;
   try{specs=document.getElementById('pf-specs').value?JSON.parse(document.getElementById('pf-specs').value):null;}catch(e){}
   const imgUrl=document.getElementById('pf-img-url').value.trim()||upImg||null;
-  const payload={name,category_slug:cat,subcategory_slug:document.getElementById('pf-sub').value||null,price,mrp:parseFloat(document.getElementById('pf-mrp').value)||null,stock_qty:parseInt(document.getElementById('pf-stock').value)||-1,rating:parseFloat(document.getElementById('pf-rating').value)||4.5,image_url:imgUrl,description:document.getElementById('pf-desc').value.trim()||null,highlights:document.getElementById('pf-hl').value.split('\n').filter(h=>h.trim()),specifications:specs,featured:document.getElementById('pf-feat').checked,active:document.getElementById('pf-act').checked};
+  const payload={name,category_slug:cat,subcategory_slug:document.getElementById('pf-sub').value||null,price,mrp:parseFloat(document.getElementById('pf-mrp').value)||null,stock_qty:(v=>isNaN(v)?-1:v)(parseInt(document.getElementById('pf-stock').value)),rating:parseFloat(document.getElementById('pf-rating').value)||4.5,image_url:imgUrl,description:document.getElementById('pf-desc').value.trim()||null,highlights:document.getElementById('pf-hl').value.split('\n').filter(h=>h.trim()),specifications:specs,featured:document.getElementById('pf-feat').checked,active:document.getElementById('pf-act').checked};
   try{
     if(editPid){const{error}=await sb.from('products').update(payload).eq('id',editPid);if(error)throw error;toast('Product updated!');}
     else{payload.sales_count=0;payload.review_count=0;payload.created_at=new Date().toISOString();const{error}=await sb.from('products').insert([payload]);if(error)throw error;toast('Product added!');}
@@ -986,7 +989,8 @@ async function delProd(id,name){
 // ═════════════════════════════════════
 async function loadCats(){
   const grid=document.getElementById('cat-grid');
-  const{data}=await sb.from('categories').select('*,subcategories(*)').order('sort_order').catch(()=>({data:[]}));
+  const{data,error:ce}=await sb.from('categories').select('*,subcategories(*)').order('sort_order');
+  if(ce){document.getElementById('cat-grid').innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:16px;border-radius:10px;border:1px solid #fecaca">⚠️ Cannot load categories: ${ce.message}<br><br><strong>Fix:</strong> Run <code>supabase-schema-complete.sql</code> in your Supabase SQL Editor, then reload.</div>`;return;}
   allCats=data||[];
   // Populate cat dropdowns
   const cfs=['prod-cf','of-cat'];
