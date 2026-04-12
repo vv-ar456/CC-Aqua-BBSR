@@ -1,1037 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cart & Checkout – Aquanics</title>
-  <link rel="icon" href="logo.png">
-  
-  <style>
-    .checkout-layout {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 28px;
-      padding: 32px 0 64px;
-      align-items: start;
-    }
-
-    /* STEPS */
-    .checkout-steps {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 28px;
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
-    }
-    .step {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-    }
-    .step-num {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--gray-200);
-      color: var(--gray-400);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px;
-      flex-shrink: 0;
-    }
-    .step.active .step-num { background: var(--teal); color: #fff; }
-    .step.done .step-num { background: #22a898; color: #fff; }
-    .step-label { font-size: 13px; font-weight: 600; color: var(--gray-400); }
-    .step.active .step-label, .step.done .step-label { color: var(--text); }
-    .step-sep { flex: 1; height: 2px; background: var(--gray-200); max-width: 60px; }
-    .step.done + .step-sep { background: var(--teal); }
-
-    /* CART ITEMS */
-    .cart-section {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
-    }
-    .cart-section h2 {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--gray-100);
-    }
-
-    .cart-item {
-      display: grid;
-      grid-template-columns: 80px 1fr auto;
-      gap: 16px;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .cart-item:last-child { border-bottom: none; }
-    .cart-item-img {
-      width: 80px; height: 80px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--gray-100);
-    }
-    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
-    .cart-item-name {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 4px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .cart-item-price { font-size: 15px; font-weight: 700; color: var(--ocean); }
-
-    .item-qty-ctrl {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .iq-btn {
-      width: 28px; height: 28px;
-      border: 1.5px solid var(--gray-200);
-      background: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: var(--transition);
-    }
-    .iq-btn:hover { border-color: var(--teal); color: var(--teal); }
-    .iq-num {
-      font-size: 14px;
-      font-weight: 600;
-      min-width: 24px;
-      text-align: center;
-    }
-
-    .item-remove {
-      font-size: 12px;
-      color: #e05;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-family: var(--font-body);
-      margin-top: 4px;
-    }
-    .item-remove:hover { text-decoration: underline; }
-
-    .cart-item-total {
-      font-family: var(--font-display);
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--ocean);
-      text-align: right;
-    }
-
-    /* ADDRESS */
-    .address-section {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
-      margin-top: 20px;
-    }
-    .address-section h2 {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-    .address-form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .address-form .field { margin-bottom: 0; }
-    .address-form .field.full { grid-column: 1 / -1; }
-    .address-form input, .address-form select {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: 8px;
-      font-size: 13.5px;
-      font-family: var(--font-body);
-      outline: none;
-      transition: var(--transition);
-    }
-    .address-form input:focus { border-color: var(--teal); }
-    .address-form label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-600);
-      margin-bottom: 5px;
-    }
-
-    /* ORDER SUMMARY */
-    .order-summary {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(26,122,110,0.08);
-      position: sticky;
-      top: 100px;
-    }
-    .order-summary h2 {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      padding-bottom: 14px;
-      border-bottom: 2px solid var(--gray-100);
-    }
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      font-size: 14px;
-    }
-    .summary-row.total {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 800;
-      border-top: 2px solid var(--gray-100);
-      margin-top: 8px;
-      padding-top: 14px;
-      color: var(--ocean);
-    }
-    .summary-row .label { color: var(--gray-600); }
-    .summary-row .val { font-weight: 600; }
-    .summary-row.discount .val { color: var(--teal); }
-
-    .promo-row {
-      display: flex;
-      gap: 8px;
-      margin: 16px 0;
-    }
-    .promo-row input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1.5px solid var(--gray-200);
-      border-radius: 8px;
-      font-size: 13px;
-      font-family: var(--font-body);
-      outline: none;
-    }
-    .promo-row input:focus { border-color: var(--teal); }
-
-    .pay-btn {
-      width: 100%;
-      background: var(--teal);
-      color: #fff;
-      border: none;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: var(--font-display);
-      cursor: pointer;
-      margin-top: 20px;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .pay-btn:hover { background: var(--teal-dark); }
-    .pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .secure-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: center;
-      font-size: 12px;
-      color: var(--gray-400);
-      margin-top: 12px;
-    }
-
-    .payment-logos {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .pay-logo {
-      background: var(--gray-100);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-600);
-    }
-
-    .empty-cart {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .empty-cart h3 { font-size: 20px; margin-bottom: 8px; }
-    .empty-cart p { color: var(--gray-400); font-size: 14px; margin-bottom: 24px; }
-
-    @media (max-width: 900px) {
-      .checkout-layout { grid-template-columns: 1fr; }
-      .order-summary { position: static; }
-      .address-form { grid-template-columns: 1fr; }
-      .address-form .field.full { grid-column: 1; }
-    }
-  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-</style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cart & Checkout – Aquanics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-/* ── ORDER SCHEDULING NOTICE ── */
-.schedule-notice {
-  background: linear-gradient(135deg, #fff8e6, #fffbf0);
-  border: 1.5px solid #f0a843;
-  border-radius: 14px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-.schedule-notice.scheduled {
-  background: linear-gradient(135deg, #e6f7f5, #f0fbf8);
-  border-color: #00a882;
-}
-.schedule-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.schedule-text h4 {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #7a5200;
-  margin-bottom: 4px;
-}
-.schedule-notice.scheduled .schedule-text h4 { color: #007a60; }
-.schedule-text p {
-  font-size: 13px;
-  color: #a07030;
-  line-height: 1.5;
-  margin: 0;
-}
-.schedule-notice.scheduled .schedule-text p { color: #3d6b64; }
-.schedule-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #f0a843;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 20px;
-  margin-top: 6px;
-}
-.schedule-notice.scheduled .schedule-tag {
-  background: #00a882;
-}
-</style>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
-// ── Anti-Inspect Protection ────────────────────────────────
-(function(){
-  // Disable right-click
-  document.addEventListener('contextmenu', e => e.preventDefault());
-  // Disable common keyboard shortcuts
-  document.addEventListener('keydown', e => {
-    if (
-      e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
-      (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
-    ) { e.preventDefault(); return false; }
-  });
-  // Detect DevTools open via size heuristic
-  let devOpen = false;
-  const threshold = 160;
-  function checkDev() {
-    const wDiff = window.outerWidth - window.innerWidth;
-    const hDiff = window.outerHeight - window.innerHeight;
-    if (wDiff > threshold || hDiff > threshold) {
-      if (!devOpen) {
-        devOpen = true;
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><div style="font-size:48px">🔒</div><h2>Access Restricted</h2><p>Developer tools are not allowed.</p><button onclick="location.reload()" style="padding:10px 24px;background:#00a882;color:#fff;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
-      }
-    } else {
-      devOpen = false;
-    }
-  }
-  setInterval(checkDev, 1000);
-  // Disable text selection on sensitive areas
-  document.addEventListener('selectstart', e => {
-    if (e.target.closest('.prod-price,.prod-name,.big-price')) e.preventDefault();
-  });
-})();
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key.toUpperCase()))||(e.ctrlKey&&e.key.toUpperCase()==='U')){e.preventDefault();}});
 </script>
-
-  <!-- Leaflet Map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-  /* ── MAP STYLES ── */
-  .map-section {
-    background: #fff;
-    border-radius: 16px;
-    border: 1.5px solid var(--g1, #edf4f2);
-    padding: 18px;
-    margin-bottom: 16px;
-  }
-  .map-section h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: #0d1e1c;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .map-section p {
-    font-size: 12.5px;
-    color: #7fa9a3;
-    margin-bottom: 12px;
-    line-height: 1.5;
-  }
-  #delivery-map {
-    width: 100%;
-    height: 280px;
-    border-radius: 12px;
-    border: 2px solid #e2ebe8;
-    z-index: 1;
-    background: #e8f0ee;
-  }
-  .map-locate-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 16px;
-    background: linear-gradient(135deg, #00d4aa, #00a882);
-    color: #031520;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    margin-bottom: 10px;
-    transition: all .2s;
-  }
-  .map-locate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,212,170,.3); }
-  .map-locate-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-  .map-selected-addr {
-    background: #f0fbf8;
-    border: 1.5px solid #b3ddd6;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 12.5px;
-    color: #007a60;
-    margin-top: 10px;
-    display: none;
-    line-height: 1.6;
-  }
-  .map-selected-addr.show { display: block; }
-  .map-pin-hint {
-    text-align: center;
-    font-size: 12px;
-    color: #7fa9a3;
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-  }
-  </style>
+<style>
+.cart-wrap{max-width:1140px;margin:0 auto;padding:24px 18px 80px;}
+.cart-layout{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;}
+.steps{display:flex;align-items:center;background:#fff;border-radius:14px;padding:16px 20px;margin-bottom:18px;border:1px solid var(--g1);}
+.stp{display:flex;align-items:center;gap:8px;flex:1;}
+.stp-n{width:28px;height:28px;border-radius:50%;background:var(--g1);color:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.stp.on .stp-n{background:var(--teal);color:#fff;}
+.stp.dn .stp-n{background:var(--teal2);color:#fff;}
+.stp-lbl{font-size:13px;font-weight:600;color:var(--g3);}
+.stp.on .stp-lbl,.stp.dn .stp-lbl{color:var(--text);}
+.stp-line{flex:1;height:2px;background:var(--g1);max-width:50px;}
+.cart-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
+.cart-box h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ocean);}
+.ci{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--g1);align-items:flex-start;}
+.ci:last-child{border-bottom:none;}
+.ci-img{width:68px;height:68px;border-radius:10px;overflow:hidden;background:var(--g1);flex-shrink:0;}
+.ci-img img{width:100%;height:100%;object-fit:cover;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.ci-pr{font-size:13px;color:var(--g3);margin-bottom:8px;}
+.ci-qty{display:flex;align-items:center;gap:0;}
+.qbtn{width:30px;height:30px;border:1.5px solid var(--g2);background:#fff;border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.qbtn:hover{border-color:var(--teal);color:var(--teal);}
+.qnum{width:36px;text-align:center;font-weight:700;font-size:14px;}
+.ci-rm{margin-left:8px;background:none;border:none;color:var(--g3);font-size:12px;cursor:pointer;text-decoration:underline;}
+.ci-rm:hover{color:#ef4444;}
+.ci-tot{font-family:var(--R);font-size:15px;font-weight:700;color:var(--ocean);flex-shrink:0;}
+.sched-box{border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;}
+.sched-now{background:#e6faf5;border:1.5px solid var(--teal);}
+.sched-tmr{background:#fff8e6;border:1.5px solid var(--gold);}
+.sched-ico{font-size:20px;flex-shrink:0;}
+.sched-ttl{font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ocean);}
+.sched-sub{font-size:12.5px;line-height:1.5;color:var(--g4);}
+.sched-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.07);padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:5px;color:var(--ocean);}
+.map-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
+.map-box h3{font-family:var(--R);font-size:15px;font-weight:700;color:var(--ocean);margin-bottom:4px;}
+.map-box p{font-size:12.5px;color:var(--g3);margin-bottom:12px;line-height:1.5;}
+#delivery-map{width:100%;height:260px;border-radius:12px;border:2px solid var(--g1);background:#e8f0ee;}
+.loc-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--B);cursor:pointer;margin-bottom:10px;transition:all .2s;width:fit-content;}
+.loc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,170,.3);}
+.loc-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.map-hint{font-size:11.5px;color:var(--g3);text-align:center;margin-top:6px;}
+.map-addr{background:var(--tl);border:1.5px solid var(--g2);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--teal2);margin-top:10px;display:none;line-height:1.6;}
+.map-addr.show{display:block;}
+.addr-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
+.addr-box h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ocean);}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.af{display:flex;flex-direction:column;gap:3px;}
+.af.full{grid-column:1/-1;}
+.af label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);}
+.af input,.af select{padding:10px 12px;border:1.5px solid var(--g2);border-radius:10px;font-size:14px;font-family:var(--B);color:var(--text);outline:none;transition:border-color .2s;background:#fff;}
+.af input:focus,.af select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,212,170,.08);}
+.summary{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);position:sticky;top:78px;}
+.summary h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:16px;}
+.sr{display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--g1);}
+.sr:last-of-type{border-bottom:none;}
+.sr .lbl{color:var(--g3);}
+.sr.tot{border-top:2px solid var(--g1);margin-top:6px;padding-top:12px;}
+.sr.tot .lbl{font-weight:700;color:var(--text);font-family:var(--R);}
+.sr.tot .val{font-family:var(--R);font-size:18px;font-weight:800;color:var(--ocean);}
+.sr.disc .val{color:#ef4444;}
+.promo-row{display:flex;gap:8px;margin:12px 0;}
+.promo-row input{flex:1;padding:9px 12px;border:1.5px solid var(--g2);border-radius:10px;font-size:13px;font-family:var(--B);outline:none;text-transform:uppercase;}
+.promo-row input:focus{border-color:var(--teal);}
+.pay-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);border:none;border-radius:13px;font-size:15px;font-weight:800;font-family:var(--R);cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;box-shadow:0 4px 18px rgba(0,212,170,.25);}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,212,170,.38);}
+.pay-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+.sec-note{text-align:center;font-size:11.5px;color:var(--g3);margin-top:10px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.empty-cart{text-align:center;padding:60px 20px;background:#fff;border-radius:16px;border:1px solid var(--g1);}
+.empty-cart .ico{font-size:56px;margin-bottom:16px;}
+.empty-cart h3{font-family:var(--R);font-size:20px;font-weight:700;margin-bottom:6px;}
+.empty-cart p{color:var(--g3);margin-bottom:20px;}
+@media(max-width:900px){.cart-layout{grid-template-columns:1fr;}.summary{position:static;}}
+@media(max-width:600px){.cart-wrap{padding:14px 12px 80px;}.ag{grid-template-columns:1fr;}.af.full{grid-column:1;}.steps{padding:12px;}.stp-lbl{display:none;}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
-<header id="navbar"></header>
-
-<div class="container">
-  <!-- STEPS -->
-  <div class="checkout-steps">
-    <div class="step done" id="step-cart">
-      <div class="step-num">1</div>
-      <span class="step-label">Cart</span>
-    </div>
-    <div class="step-sep"></div>
-    <div class="step active" id="step-delivery">
-      <div class="step-num">2</div>
-      <span class="step-label">Delivery</span>
-    </div>
-    <div class="step-sep"></div>
-    <div class="step" id="step-payment">
-      <div class="step-num">3</div>
-      <span class="step-label">Payment</span>
-    </div>
+<div id="nav"></div>
+<div class="cart-wrap">
+  <div class="steps">
+    <div class="stp on"><div class="stp-n">1</div><div class="stp-lbl">Cart</div></div>
+    <div class="stp-line"></div>
+    <div class="stp"><div class="stp-n">2</div><div class="stp-lbl">Address</div></div>
+    <div class="stp-line"></div>
+    <div class="stp"><div class="stp-n">3</div><div class="stp-lbl">Payment</div></div>
   </div>
-
-  <!-- AI Cart Advisor inline banner -->
-<div id="ai-inline-banner" style="
-  background:linear-gradient(135deg,#4f46e5,#7c3aed);
-  border-radius:16px;padding:16px 20px;margin-bottom:20px;
-  display:flex;align-items:center;gap:14px;cursor:pointer;
-  transition:transform .2s,box-shadow .2s;
-" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(79,70,229,.35)'"
-   onmouseout="this.style.transform='';this.style.boxShadow=''"
-   onclick="document.getElementById('ai-fab-btn').click()">
-  <div style="font-size:28px;animation:aiPulseInline 2s ease-in-out infinite">🤖</div>
-  <div style="flex:1">
-    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px">AI Compatibility Check</div>
-    <div style="font-size:12.5px;color:rgba(255,255,255,.6)">Let AI check your cart for fish aggression, diet issues & safety tips</div>
-  </div>
-  <div style="background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:20px;white-space:nowrap">
-    Check Now →
-  </div>
+  <div id="cart-root"></div>
 </div>
-<style>@keyframes aiPulseInline{0%,100%{transform:scale(1)}50%{transform:scale(1.1)rotate(5deg)}}</style>
-<div id="cart-content"></div>
-</div>
+<div id="footer-wrap"></div>
 
-<footer id="footer"></footer>
-
-<script src="js/app.js"></script>
 <script src="js/app.js"></script>
 <script>
-const DELIVERY_FEE_THRESHOLD = 599;
-const DELIVERY_FEE = 49;
+// ══════════════════════════════════════════
+//  CART — all logic, relies on app.js for sb/Auth/Cart/fmt/showToast
+// ══════════════════════════════════════════
+const DELIVERY_THRESHOLD = 599;
+const DELIVERY_FEE_AMT = 49;
+const RZP_KEY = 'rzp_live_SSegtOEGykPOUN';
 let appliedPromo = null;
+let _map = null, _marker = null;
 
-function getDeliveryFee(subtotal) {
-  return subtotal >= DELIVERY_FEE_THRESHOLD ? 0 : DELIVERY_FEE;
+const fp = n => '₹' + Number(n||0).toLocaleString('en-IN');
+
+// IST scheduling
+function getIST(){const u=Date.now()+new Date().getTimezoneOffset()*60000;const i=new Date(u+5.5*3600000);return{h:i.getHours(),m:i.getMinutes(),dt:i};}
+function afterCutoff(){const{h,m}=getIST();return h>20||(h===20&&m>=30)||h<9;}
+function schedDate(){const{dt}=getIST();const t=new Date(dt);t.setDate(t.getDate()+1);const D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${D[t.getDay()]}, ${t.getDate()} ${M[t.getMonth()]}`;}
+
+function delFee(s){return s>=DELIVERY_THRESHOLD?0:DELIVERY_FEE_AMT;}
+function discAmt(s){
+  if(!appliedPromo)return 0;
+  const t=appliedPromo.type;
+  const cap=appliedPromo.max_discount||Infinity;
+  if(t==='percentage'||t==='percent')return Math.min(Math.round(s*appliedPromo.value/100),cap);
+  if(t==='flat')return appliedPromo.value;
+  if(t==='free_shipping')return delFee(s);
+  return 0;
 }
 
-function getDiscount(subtotal) {
-  if (!appliedPromo) return 0;
-  if (appliedPromo.type === 'percent') return Math.round(subtotal * appliedPromo.value / 100);
-  return appliedPromo.value;
-}
+function updateQty(id,qty){Cart.updateQty(id,qty);renderCart();}
+function removeItem(id){Cart.remove(id);renderCart();}
 
-function renderCart() {
-  const items = Cart.get();
-  const contentEl = document.getElementById('cart-content');
+function renderCart(){
+  const items=Cart.get();
+  const root=document.getElementById('cart-root');
+  if(!root)return;
 
-  if (!items.length) {
-    contentEl.innerHTML = `
-        <div id='schedule-notice' class='schedule-notice'></div>
-      <div class="empty-cart">
-        <div style="font-size:60px;margin-bottom:16px">🛒</div>
-        <h3>Your cart is empty</h3>
-        <p>Add some items to get started</p>
-        <a href="products.html" class="btn btn-primary btn-lg">Browse Products</a>
-      </div>
-    `;
+  if(!items.length){
+    root.innerHTML=`<div class="empty-cart"><div class="ico">🛒</div><h3>Your cart is empty</h3><p>Add products to get started</p><a href="products.html" class="btn btn-teal btn-lg">Browse Products</a></div>`;
     return;
   }
 
-  const subtotal = Cart.total();
-  const delivery = getDeliveryFee(subtotal);
-  const discount = getDiscount(subtotal);
-  const total = subtotal + delivery - discount;
+  const sub=Cart.total(), del=delFee(sub), disc=discAmt(sub), tot=sub+del-disc;
+  const late=afterCutoff();
+  const schedHtml=late
+    ?`<div class="sched-box sched-tmr"><span class="sched-ico">📅</span><div><div class="sched-ttl">Order Scheduled for Tomorrow</div><div class="sched-sub">Orders placed after 8:30 PM or before 9:00 AM (IST) are dispatched next day. Your order will be dispatched on <strong>${schedDate()}</strong> after 9:00 AM IST.</div><span class="sched-tag">🕘 Dispatch: ${schedDate()} after 9:00 AM</span></div></div>`
+    :(()=>{const{h,m}=getIST();const l=(20*60+30)-(h*60+m);const hs=Math.floor(l/60),ms=l%60;const ts=hs>0?`${hs}h ${ms}m`:`${ms} min`;return`<div class="sched-box sched-now"><span class="sched-ico">⚡</span><div><div class="sched-ttl">Order Now — Same-Day Processing</div><div class="sched-sub">Place before <strong>8:30 PM IST</strong>. <strong>${ts}</strong> left!</div><span class="sched-tag">⏰ Cutoff 8:30 PM IST</span></div></div>`})();
 
-  contentEl.innerHTML = `
-    <div class="checkout-layout">
-      <div>
-        <!-- CART ITEMS -->
-        <div class="cart-section">
-          <h2>🛒 Cart (${Cart.count()} items)</h2>
-          ${items.map(item => `
-            <div class="cart-item">
-              <div class="cart-item-img">
-                <img src="${item.image_url || '/assets/placeholder.jpg'}" alt="${item.name}">
+  const STATES=['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir'];
+
+  root.innerHTML=`
+  <div class="cart-layout">
+    <div>
+      ${schedHtml}
+      <div class="cart-box">
+        <h2>🛒 Cart (${Cart.count()} items)</h2>
+        ${items.map(it=>{
+          const sid=String(it.id).replace(/['"]/g,'');
+          return`<div class="ci">
+            <div class="ci-img"><img src="${it.image_url||''}" alt="" onerror="this.style.display='none'"></div>
+            <div class="ci-info">
+              <div class="ci-name">${it.name||''}</div>
+              <div class="ci-pr">${fp(it.price)} each</div>
+              <div class="ci-qty">
+                <button class="qbtn" onclick="updateQty('${sid}',${it.qty-1})">−</button>
+                <span class="qnum">${it.qty}</span>
+                <button class="qbtn" onclick="updateQty('${sid}',${it.qty+1})">+</button>
+                <button class="ci-rm" onclick="removeItem('${sid}')">Remove</button>
               </div>
-              <div>
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">${fmt.price(item.price)}</div>
-                <div class="item-qty-ctrl">
-                  <button class="iq-btn" onclick="updateQty(${item.id}, ${item.qty - 1})">−</button>
-                  <span class="iq-num">${item.qty}</span>
-                  <button class="iq-btn" onclick="updateQty(${item.id}, ${item.qty + 1})">+</button>
-                  <button class="item-remove" onclick="removeItem(${item.id})">Remove</button>
-                </div>
-              </div>
-              <div class="cart-item-total">${fmt.price(item.price * item.qty)}</div>
             </div>
-          `).join('')}
-        </div>
-
-        <!-- MAP + ADDRESS -->
-        <div class="map-section">
-          <h3>📍 Pin Your Delivery Location</h3>
-          <p>Drop a pin on the map to confirm your exact delivery location — like Swiggy & Zomato.</p>
-          <button class="map-locate-btn" id="locate-btn" onclick="locateMe()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
-            Use My Current Location
-          </button>
-          <div id="delivery-map"></div>
-          <div class="map-pin-hint">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            Tap anywhere on the map to move the pin
-          </div>
-          <div class="map-selected-addr" id="map-addr-display"></div>
-          <input type="hidden" id="map-lat" value="">
-          <input type="hidden" id="map-lng" value="">
-        </div>
-
-        <div class="address-section">
-          <h2>📋 Delivery Details</h2>
-          <div class="address-form">
-            <div class="field">
-              <label>Full Name *</label>
-              <input type="text" id="addr-name" placeholder="Recipient name" value="${Auth.getUser()?.name || ''}">
-            </div>
-            <div class="field">
-              <label>Phone *</label>
-              <input type="tel" id="addr-phone" placeholder="10-digit number" maxlength="10" inputmode="numeric" value="${Auth.getUser()?.phone || ''}">
-            </div>
-            <div class="field full">
-              <label>House / Flat / Building *</label>
-              <input type="text" id="addr-line1" placeholder="House no., flat, building name">
-            </div>
-            <div class="field full">
-              <label>Street / Area / Locality</label>
-              <input type="text" id="addr-line2" placeholder="Auto-filled from map or enter manually">
-            </div>
-            <div class="field">
-              <label>City *</label>
-              <input type="text" id="addr-city" placeholder="City">
-            </div>
-            <div class="field">
-              <label>State *</label>
-              <select id="addr-state">
-                <option value="">Select State</option>
-                ${['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir'].map(s => `<option>${s}</option>`).join('')}
-              </select>
-            </div>
-            <div class="field">
-              <label>PIN Code *</label>
-              <input type="text" id="addr-pin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric">
-            </div>
-          </div>
-        </div>
+            <div class="ci-tot">${fp(it.price*it.qty)}</div>
+          </div>`;
+        }).join('')}
       </div>
 
-      <!-- ORDER SUMMARY -->
-      <div class="order-summary">
-        <h2>Order Summary</h2>
-        <div class="summary-row">
-          <span class="label">Subtotal (${Cart.count()} items)</span>
-          <span class="val">${fmt.price(subtotal)}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Delivery Fee</span>
-          <span class="val ${delivery === 0 ? '' : ''}">${delivery === 0 ? '<span style="color:var(--teal)">FREE</span>' : fmt.price(delivery)}</span>
-        </div>
-        ${discount ? `
-          <div class="summary-row discount">
-            <span class="label">Discount (${appliedPromo.code})</span>
-            <span class="val">−${fmt.price(discount)}</span>
-          </div>
-        ` : ''}
-        ${delivery > 0 ? `<p style="font-size:11px;color:var(--teal);text-align:right;margin-top:-4px">Add ${fmt.price(DELIVERY_FEE_THRESHOLD - subtotal)} more for free delivery</p>` : ''}
-
-        <div class="promo-row">
-          <input type="text" id="promo-input" placeholder="Promo code" style="text-transform:uppercase">
-          <button class="btn btn-outline btn-sm" onclick="applyPromo()">Apply</button>
-        </div>
-        <div id="promo-msg"></div>
-
-        <div class="summary-row total">
-          <span>Total</span>
-          <span>${fmt.price(total)}</span>
-        </div>
-
-        <button class="pay-btn" onclick="proceedToPayment()">
-          🔒 Pay ${fmt.price(total)}
+      <div class="map-box">
+        <h3>📍 Pin Your Delivery Location</h3>
+        <p>Drop a pin on the map like Swiggy & Zomato — drag it to the exact spot. Address auto-fills from the pin!</p>
+        <button class="loc-btn" id="loc-btn" onclick="locateMe()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          Use My Current Location
         </button>
+        <div id="delivery-map"></div>
+        <div class="map-hint">📌 Tap anywhere on the map to place your pin</div>
+        <div class="map-addr" id="map-addr"></div>
+        <input type="hidden" id="map-lat">
+        <input type="hidden" id="map-lng">
+      </div>
 
-        <div class="secure-badge">
-          🛡️ Safe & Secure Checkout
-        </div>
-
-        <div class="payment-logos">
-          <span class="pay-logo">VISA</span>
-          <span class="pay-logo">Mastercard</span>
-          <span class="pay-logo">UPI</span>
-          <span class="pay-logo">Net Banking</span>
-          <span class="pay-logo">Razorpay</span>
+      <div class="addr-box">
+        <h2>📋 Delivery Details</h2>
+        <div class="ag">
+          <div class="af"><label>Full Name *</label><input id="an" placeholder="Recipient name" value="${Auth.getUser()?.name||''}"></div>
+          <div class="af"><label>Phone *</label><input id="ap" type="tel" placeholder="10-digit" maxlength="10" inputmode="numeric" value="${Auth.getUser()?.phone||''}"></div>
+          <div class="af full"><label>House / Flat / Building *</label><input id="al1" placeholder="House no., flat, building name"></div>
+          <div class="af full"><label>Street / Area (auto-filled from map)</label><input id="al2" placeholder="Street, area, locality"></div>
+          <div class="af"><label>City *</label><input id="ac" placeholder="City"></div>
+          <div class="af"><label>State *</label>
+            <select id="as"><option value="">Select State</option>${STATES.map(s=>`<option>${s}</option>`).join('')}</select>
+          </div>
+          <div class="af"><label>PIN Code *</label><input id="apin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric"></div>
         </div>
       </div>
     </div>
-  `;
+
+    <div class="summary">
+      <h2>Order Summary</h2>
+      <div class="sr"><span class="lbl">Subtotal (${Cart.count()} items)</span><span class="val">${fp(sub)}</span></div>
+      <div class="sr"><span class="lbl">Delivery</span><span class="val" style="${del===0?'color:var(--teal);font-weight:700':''}">${del===0?'FREE':fp(del)}</span></div>
+      ${disc?`<div class="sr disc"><span class="lbl">Discount (${appliedPromo?.code||''})</span><span class="val">−${fp(disc)}</span></div>`:''}
+      ${del>0?`<p style="font-size:11px;color:var(--teal);text-align:right;margin:-4px 0 6px">Add ${fp(DELIVERY_THRESHOLD-sub)} more for free delivery</p>`:''}
+      <div class="sr tot"><span class="lbl">Total</span><span class="val">${fp(tot)}</span></div>
+      <div class="promo-row">
+        <input type="text" id="promo-inp" placeholder="Promo code" style="text-transform:uppercase">
+        <button class="btn btn-outline btn-sm" onclick="applyPromo()">Apply</button>
+      </div>
+      <div id="promo-msg" style="font-size:12.5px;margin-top:4px"></div>
+      <button class="pay-btn" id="pay-btn" onclick="startCheckout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Pay ${fp(tot)}
+      </button>
+      <div class="sec-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Secured by Razorpay
+      </div>
+    </div>
+  </div>`;
+
+  setTimeout(initMap, 150);
 }
 
-function updateQty(id, qty) {
-  Cart.updateQty(id, qty);
-  renderCart();
-  renderScheduleNotice();
-  setTimeout(initDeliveryMap, 200); // init map after DOM renders
-}
-
-function removeItem(id) {
-  Cart.remove(id);
-  renderCart();
-}
-
-async function applyPromo() {
-  const code = document.getElementById('promo-input').value.trim().toUpperCase();
-  if (!code) return;
-  const msgEl = document.getElementById('promo-msg');
-
-  try {
-    const { data, error } = await sb.from('promo_codes').select('*').eq('code', code).eq('active', true).single();
-    if (error || !data) { msgEl.innerHTML = '<div class="alert alert-error">Invalid promo code</div>'; return; }
-    if (data.expires_at && new Date(data.expires_at) < new Date()) {
-      msgEl.innerHTML = '<div class="alert alert-error">This promo code has expired</div>'; return;
-    }
-    appliedPromo = data;
-    msgEl.innerHTML = `<div class="alert alert-success">✓ Promo applied: ${data.description}</div>`;
+// ── Promo ────────────────────────────────────────────────────
+async function applyPromo(){
+  const code=document.getElementById('promo-inp')?.value?.trim().toUpperCase();
+  const msg=document.getElementById('promo-msg');
+  if(!code)return;
+  msg.innerHTML='<span style="color:var(--g3)">Checking…</span>';
+  try{
+    const{data,error}=await sb.from('promo_codes').select('*').eq('code',code).eq('active',true).single();
+    if(error||!data){msg.innerHTML='<span style="color:#ef4444">Invalid or expired code.</span>';return;}
+    const sub=Cart.total();
+    if(data.min_order&&sub<data.min_order){msg.innerHTML=`<span style="color:#ef4444">Min order ${fp(data.min_order)} required.</span>`;return;}
+    appliedPromo=data;
+    msg.innerHTML=`<span style="color:var(--teal2)">✅ "${code}" applied!</span>`;
     renderCart();
-  } catch(e) {
-    msgEl.innerHTML = '<div class="alert alert-error">Could not apply promo code</div>';
-  }
+  }catch(e){msg.innerHTML='<span style="color:#ef4444">Error.</span>';}
 }
 
-
-// ════════════════════════════════════════
-//  DELIVERY MAP (Leaflet + OpenStreetMap)
-// ════════════════════════════════════════
-let _map = null, _marker = null;
-
-function initDeliveryMap() {
-  if (_map) return;
-  // Default: center of India
-  const defaultLat = 20.5937, defaultLng = 78.9629, defaultZoom = 5;
-  _map = L.map('delivery-map', { zoomControl: true, scrollWheelZoom: false }).setView([defaultLat, defaultLng], defaultZoom);
-
-  // Tile layer
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 19,
-  }).addTo(_map);
-
-  // Custom pin icon
-  const pinIcon = L.divIcon({
-    html: `<div style="position:relative;display:inline-block">
-      <svg width="36" height="46" viewBox="0 0 36 46" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#00a882"/>
-        <circle cx="18" cy="18" r="8" fill="white"/>
-        <circle cx="18" cy="18" r="5" fill="#00a882"/>
-      </svg>
-      <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:12px;height:4px;background:rgba(0,0,0,.2);border-radius:50%;filter:blur(2px)"></div>
-    </div>`,
-    iconSize: [36, 50],
-    iconAnchor: [18, 50],
-    popupAnchor: [0, -50],
-  });
-
-  // Click on map to place pin
-  _map.on('click', function(e) {
-    placePin(e.latlng.lat, e.latlng.lng, true);
-  });
-
-  // Try to get user location on map init
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => placePin(pos.coords.latitude, pos.coords.longitude, true, 15),
-      () => {} // silent fail
-    );
-  }
-
-  window._pinIcon = pinIcon;
-}
-
-async function placePin(lat, lng, reverseGeocode = true, zoom = null) {
-  document.getElementById('map-lat').value = lat.toFixed(6);
-  document.getElementById('map-lng').value = lng.toFixed(6);
-
-  if (_marker) {
-    _marker.setLatLng([lat, lng]);
-  } else {
-    _marker = L.marker([lat, lng], { icon: window._pinIcon, draggable: true }).addTo(_map);
-    _marker.on('dragend', function(e) {
-      const pos = e.target.getLatLng();
-      placePin(pos.lat, pos.lng, true);
-    });
-  }
-
-  if (zoom) _map.setView([lat, lng], zoom);
-  else _map.panTo([lat, lng]);
-
-  if (reverseGeocode) {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`);
-      const data = await res.json();
-      const addr = data.address || {};
-      // Auto-fill form fields
-      const road   = addr.road || addr.pedestrian || addr.footway || '';
-      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || '';
-      const city   = addr.city || addr.town || addr.village || addr.county || '';
-      const state  = addr.state || '';
-      const pin    = addr.postcode || '';
-      const display = data.display_name || '';
-
-      if (road || suburb) document.getElementById('addr-line2').value = [road, suburb].filter(Boolean).join(', ');
-      if (city)  document.getElementById('addr-city').value = city;
-      if (pin)   document.getElementById('addr-pin').value  = pin.replace(/\s/g,'').slice(0,6);
-
-      // Auto-select state
-      if (state) {
-        const stateEl = document.getElementById('addr-state');
-        for (let i = 0; i < stateEl.options.length; i++) {
-          if (stateEl.options[i].text.toLowerCase().includes(state.toLowerCase()) ||
-              state.toLowerCase().includes(stateEl.options[i].text.toLowerCase())) {
-            stateEl.selectedIndex = i; break;
-          }
-        }
-      }
-
-      // Show selected location
-      const addrDisplay = document.getElementById('map-addr-display');
-      addrDisplay.innerHTML = `<strong>📍 Pinned Location:</strong><br>${display}`;
-      addrDisplay.classList.add('show');
-
-      // Add popup on marker
-      _marker.bindPopup(`<div style="font-size:12px;max-width:200px"><strong>📍 Your delivery here</strong><br>${[road,suburb,city].filter(Boolean).join(', ')}</div>`).openPopup();
-    } catch(e) {
-      console.warn('Reverse geocode failed:', e.message);
-    }
-  }
-}
-
-async function locateMe() {
-  const btn = document.getElementById('locate-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Locating…';
-  try {
-    await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        pos => { placePin(pos.coords.latitude, pos.coords.longitude, true, 17); resolve(); },
-        err => reject(err),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
-  } catch(e) {
-    alert('Could not get location. Please allow location access or pin manually on the map.');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg> Use My Current Location';
-}
-
-// Init map when cart renders
-const _origRenderCart = window.renderCart;
-if (typeof renderCart === 'function') {
-  const __origRC = renderCart;
-}
-// Map init is called after renderCart() places the map div in DOM
-
-// Add lat/lng to address collection
-const _origGetAddr = window.getAddress;
-function getAddress() {
-  return {
-    name: document.getElementById('addr-name')?.value?.trim(),
-    lat: document.getElementById('map-lat')?.value || null,
-    lng: document.getElementById('map-lng')?.value || null,
-    phone: document.getElementById('addr-phone')?.value?.trim(),
-    line1: document.getElementById('addr-line1')?.value?.trim(),
-    line2: document.getElementById('addr-line2')?.value?.trim(),
-    city: document.getElementById('addr-city')?.value?.trim(),
-    state: document.getElementById('addr-state')?.value,
-    pin: document.getElementById('addr-pin')?.value?.trim(),
+// ── Get address ───────────────────────────────────────────────
+function getAddr(){
+  return{
+    name: document.getElementById('an')?.value?.trim()||'',
+    phone:document.getElementById('ap')?.value?.trim()||'',
+    line1:document.getElementById('al1')?.value?.trim()||'',
+    line2:document.getElementById('al2')?.value?.trim()||'',
+    city: document.getElementById('ac')?.value?.trim()||'',
+    state:document.getElementById('as')?.value||'',
+    pin:  document.getElementById('apin')?.value?.trim()||'',
+    lat:  document.getElementById('map-lat')?.value||null,
+    lng:  document.getElementById('map-lng')?.value||null,
   };
 }
-
-function validateAddress(addr) {
-  if (!addr.name) return 'Please enter recipient name';
-  if (!/^[6-9]\d{9}$/.test(addr.phone)) return 'Please enter a valid phone number';
-  if (!addr.line1) return 'Please enter your address';
-  if (!addr.city) return 'Please enter city';
-  if (!addr.state) return 'Please select state';
-  if (!/^\d{6}$/.test(addr.pin)) return 'Please enter a valid 6-digit PIN code';
+function validateAddr(a){
+  if(!a.name)return'Please enter recipient name';
+  if(!/^\d{10}$/.test(a.phone))return'Please enter a valid 10-digit phone';
+  if(!a.line1)return'Please enter house/flat/building';
+  if(!a.city)return'Please enter city';
+  if(!a.state)return'Please select state';
+  if(!/^\d{6}$/.test(a.pin))return'Please enter a valid 6-digit PIN code';
   return null;
 }
 
-async function proceedToPayment() {
-  if (!Auth.isLoggedIn()) {
-    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
-    return;
-  }
-
-  const addr = getAddress();
-  const err = validateAddress(addr);
-  if (err) { alert(err); return; }
-
-  const items = Cart.get();
-  const subtotal = Cart.total();
-  const delivery = getDeliveryFee(subtotal);
-  const discount = getDiscount(subtotal);
-  const total = subtotal + delivery - discount;
-
-  const user = Auth.getUser();
-
-  const options = {
-    key: RAZORPAY_KEY,
-    amount: total * 100, // paise
-    currency: 'INR',
-    name: 'Aquanics',
-    description: `Order (${items.length} items)`,
-    image: '/logo.png',
-    prefill: {
-      name: addr.name,
-      contact: '+91' + addr.phone,
-      email: user?.email || ''
+// ── Checkout ─────────────────────────────────────────────────
+async function startCheckout(){
+  if(!Auth.isLoggedIn()){location.href='login.html?redirect=cart.html';return;}
+  const addr=getAddr(), err=validateAddr(addr);
+  if(err){showToast('⚠️ '+err);return;}
+  const sub=Cart.total(),del=delFee(sub),disc=discAmt(sub),tot=sub+del-disc;
+  const user=Auth.getUser();
+  const btn=document.getElementById('pay-btn');
+  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Opening payment…';
+  const opts={
+    key:RZP_KEY, amount:Math.round(tot*100), currency:'INR',
+    name:'Aquanics', description:Cart.count()+' item(s)',
+    handler:async function(resp){
+      btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Saving order…';
+      try{
+        const{data:order,error}=await sb.from('orders').insert([{
+          user_id:user.id, items:Cart.get(), address:addr,
+          subtotal:sub, delivery_fee:del, discount:disc, total:tot,
+          payment_id:resp.razorpay_payment_id, payment_status:'paid',
+          status:'confirmed', promo_code:appliedPromo?.code||null,
+          scheduled:afterCutoff(), scheduled_date:afterCutoff()?schedDate():null,
+        }]).select().single();
+        if(error)throw error;
+        Cart.clear();
+        location.href='order-success.html?id='+order.id;
+      }catch(e){showToast('⚠️ Order save failed: '+e.message);btn.disabled=false;btn.innerHTML=`Pay ${fp(tot)}`;}
     },
-    theme: { color: '#1a7a6e' },
-    handler: async function(response) {
-      await handlePaymentSuccess(response, items, addr, total);
-    },
-    modal: {
-      ondismiss: function() {
-        document.querySelector('.pay-btn').disabled = false;
-        document.querySelector('.pay-btn').innerHTML = `🔒 Pay ${fmt.price(total)}`;
-      }
-    }
+    prefill:{name:user.name||'',contact:'+91'+(user.phone||''),email:user.email||''},
+    theme:{color:'#00a882'},
+    modal:{ondismiss:()=>{btn.disabled=false;btn.innerHTML=`Pay ${fp(tot)}`;}}
   };
-
-  document.querySelector('.pay-btn').disabled = true;
-  document.querySelector('.pay-btn').textContent = 'Opening payment…';
-
-  const rzp = new Razorpay(options);
-  rzp.open();
+  new Razorpay(opts).open();
 }
 
-async function handlePaymentSuccess(response, items, addr, total) {
-  try {
-    const user = Auth.getUser();
-    const { data: order, error } = await sb.from('orders').insert([{
-      user_id: user.id,
-      items: items,
-      address: addr,
-      subtotal: Cart.total(),
-      delivery_fee: getDeliveryFee(Cart.total()),
-      discount: getDiscount(Cart.total()),
-      total: total,
-      payment_id: response.razorpay_payment_id,
-      payment_status: 'paid',
-      status: 'confirmed',
-      promo_code: appliedPromo?.code || null,
-      created_at: new Date().toISOString()
-    }]).select().single();
+// ── MAP ───────────────────────────────────────────────────────
+function initMap(){
+  const el=document.getElementById('delivery-map');
+  if(!el||typeof L==='undefined')return;
+  if(_map){_map.invalidateSize();return;}
 
-    if (error) throw error;
+  _map=L.map('delivery-map',{zoomControl:true,scrollWheelZoom:false}).setView([20.5937,78.9629],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(_map);
 
-    // Update sales count
-    for (const item of items) {
-      await sb.rpc('increment_sales', { product_id: item.id, qty: item.qty });
-    }
+  const pin=L.divIcon({
+    html:`<div style="width:36px;height:46px"><svg viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg"><path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28S36 31.5 36 18C36 8.06 27.94 0 18 0z" fill="#00a882" stroke="#007a60" stroke-width="1"/><circle cx="18" cy="18" r="7" fill="white"/><circle cx="18" cy="18" r="4" fill="#00a882"/></svg></div>`,
+    iconSize:[36,46],iconAnchor:[18,46],popupAnchor:[0,-46]
+  });
+  window._mapPin=pin;
 
-    Cart.clear();
-    window.location.href = `/order-success.html?id=${order.id}`;
-  } catch(e) {
-    alert('Payment received but order saving failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+  _map.on('click',e=>placePin(e.latlng.lat,e.latlng.lng));
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>placePin(p.coords.latitude,p.coords.longitude,15),()=>{});
   }
 }
 
-async function init() {
-  await UI.nav();
-  UI.footer();
+async function placePin(lat,lng,zoom=null){
+  if(!_map)return;
+  document.getElementById('map-lat').value=lat.toFixed(6);
+  document.getElementById('map-lng').value=lng.toFixed(6);
+  if(_marker)_marker.setLatLng([lat,lng]);
+  else{
+    _marker=L.marker([lat,lng],{icon:window._mapPin,draggable:true}).addTo(_map);
+    _marker.on('dragend',e=>{const p=e.target.getLatLng();placePin(p.lat,p.lng);});
+  }
+  if(zoom)_map.setView([lat,lng],zoom);else _map.panTo([lat,lng]);
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`);
+    const d=await r.json(); const a=d.address||{};
+    const road=a.road||a.pedestrian||'', suburb=a.suburb||a.neighbourhood||'';
+    const city=a.city||a.town||a.village||'', state=a.state||'', pin=(a.postcode||'').replace(/\s/g,'').slice(0,6);
+    if(road||suburb){const el=document.getElementById('al2');if(el)el.value=[road,suburb].filter(Boolean).join(', ');}
+    if(city){const el=document.getElementById('ac');if(el)el.value=city;}
+    if(pin){const el=document.getElementById('apin');if(el)el.value=pin;}
+    if(state){const sel=document.getElementById('as');if(sel)for(let i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===state.toLowerCase()||state.toLowerCase().includes(sel.options[i].text.toLowerCase())){sel.selectedIndex=i;break;}}}
+    const box=document.getElementById('map-addr');
+    if(box){box.textContent='📍 '+d.display_name;box.classList.add('show');}
+    _marker.bindPopup(`<div style="font-size:12px"><strong>📍 Delivery here</strong><br>${[road,suburb,city].filter(Boolean).join(', ')}</div>`).openPopup();
+  }catch(e){}
+}
+
+async function locateMe(){
+  const btn=document.getElementById('loc-btn');
+  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Locating…';
+  try{
+    await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(
+      p=>{placePin(p.coords.latitude,p.coords.longitude,17);res();},
+      rej,{enableHighAccuracy:true,timeout:10000}
+    ));
+  }catch(e){showToast('⚠️ Location access denied. Please pin manually on the map.');}
+  btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use My Current Location';
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init(){
+  await renderNav();
+  renderFooter();
   renderCart();
 }
-
-init();
-</script>
-
-<script>
-// ── ORDER Scheduling (IST 8:30 PM – 9:00 AM) ──────────
-function getISTTime() {
-  const now = new Date();
-  // IST = UTC + 5:30
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const ist = new Date(utc + (5.5 * 3600000));
-  return { h: ist.getHours(), m: ist.getMinutes(), full: ist };
-}
-
-function isAfterCutoff() {
-  const { h, m } = getISTTime();
-  // After 8:30 PM (20:30) OR before 9:00 AM (09:00)
-  if (h > 20) return true;
-  if (h === 20 && m >= 30) return true;
-  if (h < 9) return true;
-  return false;
-}
-
-function getScheduledDeliveryText() {
-  const { h, m, full } = getISTTime();
-  const tomorrow = new Date(full);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dayName = days[tomorrow.getDay()];
-  const dateStr = `${tomorrow.getDate()} ${months[tomorrow.getMonth()]}`;
-  return { dayName, dateStr };
-}
-
-function renderScheduleNotice() {
-  const el = document.getElementById('schedule-notice');
-  if (!el) return;
-
-  const late = isAfterCutoff();
-
-  if (late) {
-    const { dayName, dateStr } = getScheduledDeliveryText();
-    el.className = 'schedule-notice scheduled';
-    el.innerHTML = `
-      <span class="schedule-icon">📅</span>
-      <div class="schedule-text">
-        <h4>Order Scheduled for Tomorrow</h4>
-        <p>Orders placed after 8:30 PM or before 9:00 AM (IST) are automatically scheduled.<br>
-        Your order will be dispatched on <strong>${dayName}, ${dateStr}</strong> after 9:00 AM.</p>
-        <span class="schedule-tag">🕘 Dispatch: ${dateStr} after 9:00 AM IST</span>
-      </div>`;
-    // Store scheduled flag for order
-    window._orderScheduled = true;
-    window._scheduledDate = `${dayName}, ${dateStr}`;
-  } else {
-    const { h, m } = getISTTime();
-    const cutoffH = 20, cutoffM = 30;
-    const totalMinsLeft = (cutoffH * 60 + cutoffM) - (h * 60 + m);
-    const hLeft = Math.floor(totalMinsLeft / 60);
-    const mLeft = totalMinsLeft % 60;
-    const timeLeft = hLeft > 0 ? `${hLeft}h ${mLeft}m` : `${mLeft} min`;
-
-    el.className = 'schedule-notice';
-    el.innerHTML = `
-      <span class="schedule-icon">⚡</span>
-      <div class="schedule-text">
-        <h4>Order Now for Same-Day Processing</h4>
-        <p>Place your order before <strong>8:30 PM IST</strong> for same-day processing.
-        You have <strong>${timeLeft}</strong> left!</p>
-        <span class="schedule-tag">⏰ Cutoff: 8:30 PM IST Today</span>
-      </div>`;
-    window._orderScheduled = false;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', renderScheduleNotice);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 <script src="js/chat-widget.js"></script>
 <script src="js/cart-ai.js"></script>

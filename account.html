@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/style.css">
 <!-- app.js MUST be loaded before inline script uses sb / Auth -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <style>
 /* ── ACCOUNT LAYOUT ── */
@@ -170,9 +171,7 @@
         <li id="nav-li-wallet">
           <button onclick="showSec('wallet')">💰 My Wallet</button>
         </li>
-        <li>
-          <a href="wishlist.html">❤️ Wishlist</a>
-        </li>
+        
         <li id="nav-li-profile">
           <button onclick="showSec('profile')">👤 Profile</button>
         </li>
@@ -254,7 +253,6 @@
 <div id="footer-wrap"></div>
 
 <!-- app.js first — provides: sb, Auth, fmt, showToast, renderNav, renderFooter -->
-<script src="js/app.js"></script>
 <script>
 // ── All vars and functions after app.js is loaded ──────────────
 const RZP_KEY = 'rzp_live_SSegtOEGykPOUN';
