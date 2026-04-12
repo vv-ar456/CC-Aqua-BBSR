@@ -9,6 +9,43 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// ── Anti-Inspect Protection ────────────────────────────────
+(function(){
+  // Disable right-click
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  // Disable common keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+    ) { e.preventDefault(); return false; }
+  });
+  // Detect DevTools open via size heuristic
+  let devOpen = false;
+  const threshold = 160;
+  function checkDev() {
+    const wDiff = window.outerWidth - window.innerWidth;
+    const hDiff = window.outerHeight - window.innerHeight;
+    if (wDiff > threshold || hDiff > threshold) {
+      if (!devOpen) {
+        devOpen = true;
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><div style="font-size:48px">🔒</div><h2>Access Restricted</h2><p>Developer tools are not allowed.</p><button onclick="location.reload()" style="padding:10px 24px;background:#00a882;color:#fff;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
+      }
+    } else {
+      devOpen = false;
+    }
+  }
+  setInterval(checkDev, 1000);
+  // Disable text selection on sensitive areas
+  document.addEventListener('selectstart', e => {
+    if (e.target.closest('.prod-price,.prod-name,.big-price')) e.preventDefault();
+  });
+})();
+</script>
 </head>
 <body>
 <header id="navbar"></header>

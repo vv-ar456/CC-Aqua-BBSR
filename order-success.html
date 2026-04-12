@@ -221,6 +221,43 @@
 .schedule-banner p { font-size: 13px; color: #3d6b64; line-height: 1.5; margin: 0; }
 .schedule-banner .tag { display:inline-flex; align-items:center; gap:5px; background:#00a882; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-top:6px; }
 </style>
+
+<script>
+// ── Anti-Inspect Protection ────────────────────────────────
+(function(){
+  // Disable right-click
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  // Disable common keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+    ) { e.preventDefault(); return false; }
+  });
+  // Detect DevTools open via size heuristic
+  let devOpen = false;
+  const threshold = 160;
+  function checkDev() {
+    const wDiff = window.outerWidth - window.innerWidth;
+    const hDiff = window.outerHeight - window.innerHeight;
+    if (wDiff > threshold || hDiff > threshold) {
+      if (!devOpen) {
+        devOpen = true;
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><div style="font-size:48px">🔒</div><h2>Access Restricted</h2><p>Developer tools are not allowed.</p><button onclick="location.reload()" style="padding:10px 24px;background:#00a882;color:#fff;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
+      }
+    } else {
+      devOpen = false;
+    }
+  }
+  setInterval(checkDev, 1000);
+  // Disable text selection on sensitive areas
+  document.addEventListener('selectstart', e => {
+    if (e.target.closest('.prod-price,.prod-name,.big-price')) e.preventDefault();
+  });
+})();
+</script>
 </head>
 <body>
 <header id="navbar"></header>
@@ -386,7 +423,7 @@ function renderOrder(order) {
           <textarea class="support-input" rows="3" placeholder="Describe your issue…"></textarea>
           <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="submitIssue()">Submit Issue</button>
           <p style="font-size:12px;color:var(--gray-400);margin-top:10px;text-align:center">
-            Or <a href="https://wa.me/91XXXXXXXXXX" style="color:var(--teal)">WhatsApp us</a> for instant help
+            Or  for instant help
           </p>
         </div>
       </div>
