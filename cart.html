@@ -288,7 +288,8 @@
       .address-form { grid-template-columns: 1fr; }
       .address-form .field.full { grid-column: 1; }
     }
-  </style>
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="stylesheet" href="css/style.css">
@@ -346,6 +347,121 @@
   background: #00a882;
 }
 </style>
+
+<script>
+// ── Anti-Inspect Protection ────────────────────────────────
+(function(){
+  // Disable right-click
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  // Disable common keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+      (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+    ) { e.preventDefault(); return false; }
+  });
+  // Detect DevTools open via size heuristic
+  let devOpen = false;
+  const threshold = 160;
+  function checkDev() {
+    const wDiff = window.outerWidth - window.innerWidth;
+    const hDiff = window.outerHeight - window.innerHeight;
+    if (wDiff > threshold || hDiff > threshold) {
+      if (!devOpen) {
+        devOpen = true;
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px"><div style="font-size:48px">🔒</div><h2>Access Restricted</h2><p>Developer tools are not allowed.</p><button onclick="location.reload()" style="padding:10px 24px;background:#00a882;color:#fff;border:none;border-radius:8px;cursor:pointer">Reload</button></div>';
+      }
+    } else {
+      devOpen = false;
+    }
+  }
+  setInterval(checkDev, 1000);
+  // Disable text selection on sensitive areas
+  document.addEventListener('selectstart', e => {
+    if (e.target.closest('.prod-price,.prod-name,.big-price')) e.preventDefault();
+  });
+})();
+</script>
+
+  <!-- Leaflet Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+  /* ── MAP STYLES ── */
+  .map-section {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid var(--g1, #edf4f2);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .map-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0d1e1c;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .map-section p {
+    font-size: 12.5px;
+    color: #7fa9a3;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  #delivery-map {
+    width: 100%;
+    height: 280px;
+    border-radius: 12px;
+    border: 2px solid #e2ebe8;
+    z-index: 1;
+    background: #e8f0ee;
+  }
+  .map-locate-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    background: linear-gradient(135deg, #00d4aa, #00a882);
+    color: #031520;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all .2s;
+  }
+  .map-locate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,212,170,.3); }
+  .map-locate-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+  .map-selected-addr {
+    background: #f0fbf8;
+    border: 1.5px solid #b3ddd6;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: #007a60;
+    margin-top: 10px;
+    display: none;
+    line-height: 1.6;
+  }
+  .map-selected-addr.show { display: block; }
+  .map-pin-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #7fa9a3;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  </style>
 </head>
 <body>
 <header id="navbar"></header>
@@ -458,9 +574,26 @@ function renderCart() {
           `).join('')}
         </div>
 
-        <!-- ADDRESS -->
+        <!-- MAP + ADDRESS -->
+        <div class="map-section">
+          <h3>📍 Pin Your Delivery Location</h3>
+          <p>Drop a pin on the map to confirm your exact delivery location — like Swiggy & Zomato.</p>
+          <button class="map-locate-btn" id="locate-btn" onclick="locateMe()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+            Use My Current Location
+          </button>
+          <div id="delivery-map"></div>
+          <div class="map-pin-hint">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Tap anywhere on the map to move the pin
+          </div>
+          <div class="map-selected-addr" id="map-addr-display"></div>
+          <input type="hidden" id="map-lat" value="">
+          <input type="hidden" id="map-lng" value="">
+        </div>
+
         <div class="address-section">
-          <h2>📍 Delivery Address</h2>
+          <h2>📋 Delivery Details</h2>
           <div class="address-form">
             <div class="field">
               <label>Full Name *</label>
@@ -475,8 +608,8 @@ function renderCart() {
               <input type="text" id="addr-line1" placeholder="House no., flat, building name">
             </div>
             <div class="field full">
-              <label>Street / Area / Locality *</label>
-              <input type="text" id="addr-line2" placeholder="Street, area, locality">
+              <label>Street / Area / Locality</label>
+              <input type="text" id="addr-line2" placeholder="Auto-filled from map or enter manually">
             </div>
             <div class="field">
               <label>City *</label>
@@ -551,6 +684,7 @@ function updateQty(id, qty) {
   Cart.updateQty(id, qty);
   renderCart();
   renderScheduleNotice();
+  setTimeout(initDeliveryMap, 200); // init map after DOM renders
 }
 
 function removeItem(id) {
@@ -577,9 +711,146 @@ async function applyPromo() {
   }
 }
 
+
+// ════════════════════════════════════════
+//  DELIVERY MAP (Leaflet + OpenStreetMap)
+// ════════════════════════════════════════
+let _map = null, _marker = null;
+
+function initDeliveryMap() {
+  if (_map) return;
+  // Default: center of India
+  const defaultLat = 20.5937, defaultLng = 78.9629, defaultZoom = 5;
+  _map = L.map('delivery-map', { zoomControl: true, scrollWheelZoom: false }).setView([defaultLat, defaultLng], defaultZoom);
+
+  // Tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(_map);
+
+  // Custom pin icon
+  const pinIcon = L.divIcon({
+    html: `<div style="position:relative;display:inline-block">
+      <svg width="36" height="46" viewBox="0 0 36 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#00a882"/>
+        <circle cx="18" cy="18" r="8" fill="white"/>
+        <circle cx="18" cy="18" r="5" fill="#00a882"/>
+      </svg>
+      <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:12px;height:4px;background:rgba(0,0,0,.2);border-radius:50%;filter:blur(2px)"></div>
+    </div>`,
+    iconSize: [36, 50],
+    iconAnchor: [18, 50],
+    popupAnchor: [0, -50],
+  });
+
+  // Click on map to place pin
+  _map.on('click', function(e) {
+    placePin(e.latlng.lat, e.latlng.lng, true);
+  });
+
+  // Try to get user location on map init
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => placePin(pos.coords.latitude, pos.coords.longitude, true, 15),
+      () => {} // silent fail
+    );
+  }
+
+  window._pinIcon = pinIcon;
+}
+
+async function placePin(lat, lng, reverseGeocode = true, zoom = null) {
+  document.getElementById('map-lat').value = lat.toFixed(6);
+  document.getElementById('map-lng').value = lng.toFixed(6);
+
+  if (_marker) {
+    _marker.setLatLng([lat, lng]);
+  } else {
+    _marker = L.marker([lat, lng], { icon: window._pinIcon, draggable: true }).addTo(_map);
+    _marker.on('dragend', function(e) {
+      const pos = e.target.getLatLng();
+      placePin(pos.lat, pos.lng, true);
+    });
+  }
+
+  if (zoom) _map.setView([lat, lng], zoom);
+  else _map.panTo([lat, lng]);
+
+  if (reverseGeocode) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`);
+      const data = await res.json();
+      const addr = data.address || {};
+      // Auto-fill form fields
+      const road   = addr.road || addr.pedestrian || addr.footway || '';
+      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || '';
+      const city   = addr.city || addr.town || addr.village || addr.county || '';
+      const state  = addr.state || '';
+      const pin    = addr.postcode || '';
+      const display = data.display_name || '';
+
+      if (road || suburb) document.getElementById('addr-line2').value = [road, suburb].filter(Boolean).join(', ');
+      if (city)  document.getElementById('addr-city').value = city;
+      if (pin)   document.getElementById('addr-pin').value  = pin.replace(/\s/g,'').slice(0,6);
+
+      // Auto-select state
+      if (state) {
+        const stateEl = document.getElementById('addr-state');
+        for (let i = 0; i < stateEl.options.length; i++) {
+          if (stateEl.options[i].text.toLowerCase().includes(state.toLowerCase()) ||
+              state.toLowerCase().includes(stateEl.options[i].text.toLowerCase())) {
+            stateEl.selectedIndex = i; break;
+          }
+        }
+      }
+
+      // Show selected location
+      const addrDisplay = document.getElementById('map-addr-display');
+      addrDisplay.innerHTML = `<strong>📍 Pinned Location:</strong><br>${display}`;
+      addrDisplay.classList.add('show');
+
+      // Add popup on marker
+      _marker.bindPopup(`<div style="font-size:12px;max-width:200px"><strong>📍 Your delivery here</strong><br>${[road,suburb,city].filter(Boolean).join(', ')}</div>`).openPopup();
+    } catch(e) {
+      console.warn('Reverse geocode failed:', e.message);
+    }
+  }
+}
+
+async function locateMe() {
+  const btn = document.getElementById('locate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Locating…';
+  try {
+    await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        pos => { placePin(pos.coords.latitude, pos.coords.longitude, true, 17); resolve(); },
+        err => reject(err),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+  } catch(e) {
+    alert('Could not get location. Please allow location access or pin manually on the map.');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg> Use My Current Location';
+}
+
+// Init map when cart renders
+const _origRenderCart = window.renderCart;
+if (typeof renderCart === 'function') {
+  const __origRC = renderCart;
+}
+// Map init is called after renderCart() places the map div in DOM
+
+// Add lat/lng to address collection
+const _origGetAddr = window.getAddress;
 function getAddress() {
   return {
     name: document.getElementById('addr-name')?.value?.trim(),
+    lat: document.getElementById('map-lat')?.value || null,
+    lng: document.getElementById('map-lng')?.value || null,
     phone: document.getElementById('addr-phone')?.value?.trim(),
     line1: document.getElementById('addr-line1')?.value?.trim(),
     line2: document.getElementById('addr-line2')?.value?.trim(),
