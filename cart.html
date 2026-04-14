@@ -6,91 +6,97 @@
 <title>Cart & Checkout – Aquanics</title>
 <link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- app.js FIRST — defines sb, Cart, Auth, showToast, renderNav, renderFooter -->
+<script src="js/app.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <script>
+// Anti-inspect
 document.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key.toUpperCase()))||(e.ctrlKey&&e.key.toUpperCase()==='U')){e.preventDefault();}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C','K'].includes(e.key.toUpperCase()))||(e.ctrlKey&&e.key.toUpperCase()==='U')){e.preventDefault();return false;}
+});
 </script>
 <style>
-.cart-wrap{max-width:1140px;margin:0 auto;padding:24px 18px 80px;}
-.cart-layout{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;}
-.steps{display:flex;align-items:center;background:#fff;border-radius:14px;padding:16px 20px;margin-bottom:18px;border:1px solid var(--g1);}
+.cart-wrap{max-width:1100px;margin:0 auto;padding:24px 18px 80px;}
+.cart-layout{display:grid;grid-template-columns:1fr 350px;gap:20px;align-items:start;}
+/* Steps */
+.steps{display:flex;align-items:center;background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:16px;border:1px solid var(--g1,#edf4f2);}
 .stp{display:flex;align-items:center;gap:8px;flex:1;}
-.stp-n{width:28px;height:28px;border-radius:50%;background:var(--g1);color:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
-.stp.on .stp-n{background:var(--teal);color:#fff;}
-.stp.dn .stp-n{background:var(--teal2);color:#fff;}
-.stp-lbl{font-size:13px;font-weight:600;color:var(--g3);}
-.stp.on .stp-lbl,.stp.dn .stp-lbl{color:var(--text);}
-.stp-line{flex:1;height:2px;background:var(--g1);max-width:50px;}
-.cart-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
-.cart-box h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ocean);}
-.ci{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--g1);align-items:flex-start;}
+.stp-n{width:28px;height:28px;border-radius:50%;background:var(--g1,#edf4f2);color:#8aafaa;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;transition:all .3s;}
+.stp.on .stp-n{background:var(--teal,#00a882);color:#fff;}
+.stp-lbl{font-size:13px;font-weight:600;color:#8aafaa;}
+.stp.on .stp-lbl{color:var(--text,#0d1e1c);}
+.stp-line{flex:1;height:2px;background:var(--g1,#edf4f2);max-width:48px;}
+/* Boxes */
+.cbox{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1,#edf4f2);margin-bottom:14px;}
+.cbox h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ocean,#031520);}
+.cbox h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--ocean,#031520);}
+/* Cart items */
+.ci{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--g1,#edf4f2);align-items:flex-start;}
 .ci:last-child{border-bottom:none;}
-.ci-img{width:68px;height:68px;border-radius:10px;overflow:hidden;background:var(--g1);flex-shrink:0;}
+.ci-img{width:66px;height:66px;border-radius:10px;overflow:hidden;background:var(--g1,#edf4f2);flex-shrink:0;}
 .ci-img img{width:100%;height:100%;object-fit:cover;}
 .ci-info{flex:1;min-width:0;}
-.ci-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.ci-pr{font-size:13px;color:var(--g3);margin-bottom:8px;}
-.ci-qty{display:flex;align-items:center;gap:0;}
-.qbtn{width:30px;height:30px;border:1.5px solid var(--g2);background:#fff;border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.qbtn:hover{border-color:var(--teal);color:var(--teal);}
-.qnum{width:36px;text-align:center;font-weight:700;font-size:14px;}
-.ci-rm{margin-left:8px;background:none;border:none;color:var(--g3);font-size:12px;cursor:pointer;text-decoration:underline;}
+.ci-name{font-size:13.5px;font-weight:600;margin-bottom:3px;}
+.ci-pr{font-size:12.5px;color:#7fa9a3;margin-bottom:8px;}
+.ci-ctrl{display:flex;align-items:center;gap:0;}
+.qb{width:30px;height:30px;border:1.5px solid #c8dbd7;background:#fff;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;font-weight:500;}
+.qb:hover{border-color:var(--teal,#00a882);color:var(--teal,#00a882);}
+.qn{width:34px;text-align:center;font-weight:700;font-size:14px;}
+.ci-rm{margin-left:8px;background:none;border:none;color:#8aafaa;font-size:12px;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif;}
 .ci-rm:hover{color:#ef4444;}
-.ci-tot{font-family:var(--R);font-size:15px;font-weight:700;color:var(--ocean);flex-shrink:0;}
-.sched-box{border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;}
-.sched-now{background:#e6faf5;border:1.5px solid var(--teal);}
-.sched-tmr{background:#fff8e6;border:1.5px solid var(--gold);}
+.ci-tot{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--ocean,#031520);flex-shrink:0;}
+/* Schedule */
+.sched{border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;}
+.sched-ok{background:#e6faf5;border:1.5px solid #00a882;}
+.sched-tm{background:#fff8e6;border:1.5px solid #f0a843;}
 .sched-ico{font-size:20px;flex-shrink:0;}
-.sched-ttl{font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ocean);}
-.sched-sub{font-size:12.5px;line-height:1.5;color:var(--g4);}
-.sched-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.07);padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:5px;color:var(--ocean);}
-.map-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
-.map-box h3{font-family:var(--R);font-size:15px;font-weight:700;color:var(--ocean);margin-bottom:4px;}
-.map-box p{font-size:12.5px;color:var(--g3);margin-bottom:12px;line-height:1.5;}
-#delivery-map{width:100%;height:260px;border-radius:12px;border:2px solid var(--g1);background:#e8f0ee;}
-.loc-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--B);cursor:pointer;margin-bottom:10px;transition:all .2s;width:fit-content;}
-.loc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,170,.3);}
+.sched-ttl{font-weight:700;font-size:14px;margin-bottom:3px;}
+.sched-sub{font-size:12.5px;line-height:1.5;color:#3a5a54;}
+.sched-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.06);padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:5px;}
+/* Map */
+.map-p{font-size:12.5px;color:#7fa9a3;margin-bottom:12px;line-height:1.5;}
+#delivery-map{width:100%;height:260px;border-radius:12px;border:2px solid var(--g1,#edf4f2);background:#e8f0ee;}
+.loc-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:linear-gradient(135deg,#00d4aa,#00a882);color:#031520;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;transition:all .2s;width:fit-content;}
+.loc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,168,130,.3);}
 .loc-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.map-hint{font-size:11.5px;color:var(--g3);text-align:center;margin-top:6px;}
-.map-addr{background:var(--tl);border:1.5px solid var(--g2);border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--teal2);margin-top:10px;display:none;line-height:1.6;}
-.map-addr.show{display:block;}
-.addr-box{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);margin-bottom:14px;}
-.addr-box h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:14px;color:var(--ocean);}
-.ag{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.map-hint{font-size:11.5px;color:#8aafaa;text-align:center;margin-top:6px;}
+.map-addr-lbl{background:#e6faf5;border:1.5px solid #b3ddd6;border-radius:10px;padding:9px 14px;font-size:12px;color:#007a60;margin-top:10px;display:none;line-height:1.6;}
+.map-addr-lbl.show{display:block;}
+/* Address */
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .af{display:flex;flex-direction:column;gap:3px;}
 .af.full{grid-column:1/-1;}
-.af label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);}
-.af input,.af select{padding:10px 12px;border:1.5px solid var(--g2);border-radius:10px;font-size:14px;font-family:var(--B);color:var(--text);outline:none;transition:border-color .2s;background:#fff;}
-.af input:focus,.af select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,212,170,.08);}
-.summary{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1);position:sticky;top:78px;}
-.summary h2{font-family:var(--R);font-size:16px;font-weight:700;margin-bottom:16px;}
-.sr{display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--g1);}
+.af label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#7fa9a3;}
+.af input,.af select{padding:10px 12px;border:1.5px solid #c8dbd7;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text,#0d1e1c);outline:none;transition:border-color .2s;background:#fff;}
+.af input:focus,.af select:focus{border-color:#00a882;box-shadow:0 0 0 3px rgba(0,168,130,.08);}
+/* Summary */
+.summ{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--g1,#edf4f2);position:sticky;top:78px;}
+.summ h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--g1,#edf4f2);}
 .sr:last-of-type{border-bottom:none;}
-.sr .lbl{color:var(--g3);}
-.sr.tot{border-top:2px solid var(--g1);margin-top:6px;padding-top:12px;}
-.sr.tot .lbl{font-weight:700;color:var(--text);font-family:var(--R);}
-.sr.tot .val{font-family:var(--R);font-size:18px;font-weight:800;color:var(--ocean);}
+.sr .lbl{color:#7fa9a3;}
+.sr.tot{border-top:2px solid var(--g1,#edf4f2);margin-top:6px;padding-top:12px;border-bottom:none;}
+.sr.tot .lbl{font-weight:700;color:var(--text,#0d1e1c);font-family:'Syne',sans-serif;}
+.sr.tot .val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--ocean,#031520);}
 .sr.disc .val{color:#ef4444;}
-.promo-row{display:flex;gap:8px;margin:12px 0;}
-.promo-row input{flex:1;padding:9px 12px;border:1.5px solid var(--g2);border-radius:10px;font-size:13px;font-family:var(--B);outline:none;text-transform:uppercase;}
-.promo-row input:focus{border-color:var(--teal);}
-.pay-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);border:none;border-radius:13px;font-size:15px;font-weight:800;font-family:var(--R);cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;box-shadow:0 4px 18px rgba(0,212,170,.25);}
-.pay-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,212,170,.38);}
+.promo-row{display:flex;gap:8px;margin:12px 0 4px;}
+.promo-inp{flex:1;padding:9px 12px;border:1.5px solid #c8dbd7;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;text-transform:uppercase;}
+.promo-inp:focus{border-color:#00a882;}
+.pay-btn{width:100%;padding:15px;background:linear-gradient(135deg,#00d4aa,#00a882);color:#031520;border:none;border-radius:13px;font-size:15px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;box-shadow:0 4px 18px rgba(0,168,130,.25);}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,168,130,.38);}
 .pay-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
-.sec-note{text-align:center;font-size:11.5px;color:var(--g3);margin-top:10px;display:flex;align-items:center;justify-content:center;gap:5px;}
-.empty-cart{text-align:center;padding:60px 20px;background:#fff;border-radius:16px;border:1px solid var(--g1);}
-.empty-cart .ico{font-size:56px;margin-bottom:16px;}
-.empty-cart h3{font-family:var(--R);font-size:20px;font-weight:700;margin-bottom:6px;}
-.empty-cart p{color:var(--g3);margin-bottom:20px;}
-@media(max-width:900px){.cart-layout{grid-template-columns:1fr;}.summary{position:static;}}
-@media(max-width:600px){.cart-wrap{padding:14px 12px 80px;}.ag{grid-template-columns:1fr;}.af.full{grid-column:1;}.steps{padding:12px;}.stp-lbl{display:none;}}
+.sec-note{text-align:center;font-size:11.5px;color:#8aafaa;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.empty-cart{text-align:center;padding:56px 20px;background:#fff;border-radius:16px;border:1px solid var(--g1,#edf4f2);}
+.empty-cart .ico{font-size:52px;margin-bottom:14px;}
+.empty-cart h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+.empty-cart p{color:#7fa9a3;margin-bottom:20px;}
+@media(max-width:900px){.cart-layout{grid-template-columns:1fr;}.summ{position:static;}}
+@media(max-width:600px){.cart-wrap{padding:12px 12px 80px;}.ag{grid-template-columns:1fr;}.af.full{grid-column:1;}.steps{padding:10px 12px;}.stp-lbl{display:none;}}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -107,125 +113,120 @@ document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey
   <div id="cart-root"></div>
 </div>
 <div id="footer-wrap"></div>
-
-<script src="js/app.js"></script>
 <script>
-// ══════════════════════════════════════════
-//  CART — all logic, relies on app.js for sb/Auth/Cart/fmt/showToast
-// ══════════════════════════════════════════
-const DELIVERY_THRESHOLD = 599;
-const DELIVERY_FEE_AMT = 49;
-const RZP_KEY = 'rzp_live_SSegtOEGykPOUN';
-let appliedPromo = null;
-let _map = null, _marker = null;
+// All cart logic — app.js already loaded above, so Cart/Auth/sb/showToast available
+const DELV_THRESH = 599, DELV_FEE = 49;
+let _promo = null, _map = null, _marker = null;
 
 const fp = n => '₹' + Number(n||0).toLocaleString('en-IN');
 
-// IST scheduling
+// IST helpers
 function getIST(){const u=Date.now()+new Date().getTimezoneOffset()*60000;const i=new Date(u+5.5*3600000);return{h:i.getHours(),m:i.getMinutes(),dt:i};}
 function afterCutoff(){const{h,m}=getIST();return h>20||(h===20&&m>=30)||h<9;}
-function schedDate(){const{dt}=getIST();const t=new Date(dt);t.setDate(t.getDate()+1);const D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${D[t.getDay()]}, ${t.getDate()} ${M[t.getMonth()]}`;}
-
-function delFee(s){return s>=DELIVERY_THRESHOLD?0:DELIVERY_FEE_AMT;}
-function discAmt(s){
-  if(!appliedPromo)return 0;
-  const t=appliedPromo.type;
-  const cap=appliedPromo.max_discount||Infinity;
-  if(t==='percentage'||t==='percent')return Math.min(Math.round(s*appliedPromo.value/100),cap);
-  if(t==='flat')return appliedPromo.value;
-  if(t==='free_shipping')return delFee(s);
+function tmrDate(){const{dt}=getIST();const t=new Date(dt);t.setDate(t.getDate()+1);return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][t.getDay()]+', '+t.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][t.getMonth()];}
+function dFee(s){return s>=DELV_THRESH?0:DELV_FEE;}
+function disc(s){
+  if(!_promo)return 0;
+  const t=_promo.type,cap=_promo.max_discount||Infinity;
+  if(t==='percentage'||t==='percent')return Math.min(Math.round(s*_promo.value/100),cap);
+  if(t==='flat')return _promo.value;
+  if(t==='free_shipping')return dFee(s);
   return 0;
 }
 
-function updateQty(id,qty){Cart.updateQty(id,qty);renderCart();}
-function removeItem(id){Cart.remove(id);renderCart();}
+// Global functions (called from onclick in innerHTML)
+window.doUpdateQty = function(id, qty) {
+  Cart.updateQty(String(id), parseInt(qty));
+  renderCart();
+};
+window.doRemoveItem = function(id) {
+  Cart.remove(String(id));
+  renderCart();
+};
 
 function renderCart(){
-  const items=Cart.get();
-  const root=document.getElementById('cart-root');
-  if(!root)return;
+  const items = Cart.get();
+  const root  = document.getElementById('cart-root');
+  if(!root) return;
 
   if(!items.length){
-    root.innerHTML=`<div class="empty-cart"><div class="ico">🛒</div><h3>Your cart is empty</h3><p>Add products to get started</p><a href="products.html" class="btn btn-teal btn-lg">Browse Products</a></div>`;
+    root.innerHTML = `<div class="empty-cart"><div class="ico">🛒</div><h3>Your cart is empty</h3><p>Browse our store and add some products</p><a href="products.html" class="btn btn-teal btn-lg">Browse Products</a></div>`;
     return;
   }
 
-  const sub=Cart.total(), del=delFee(sub), disc=discAmt(sub), tot=sub+del-disc;
+  const sub=Cart.total(), del=dFee(sub), dsc=disc(sub), tot=sub+del-dsc;
   const late=afterCutoff();
-  const schedHtml=late
-    ?`<div class="sched-box sched-tmr"><span class="sched-ico">📅</span><div><div class="sched-ttl">Order Scheduled for Tomorrow</div><div class="sched-sub">Orders placed after 8:30 PM or before 9:00 AM (IST) are dispatched next day. Your order will be dispatched on <strong>${schedDate()}</strong> after 9:00 AM IST.</div><span class="sched-tag">🕘 Dispatch: ${schedDate()} after 9:00 AM</span></div></div>`
-    :(()=>{const{h,m}=getIST();const l=(20*60+30)-(h*60+m);const hs=Math.floor(l/60),ms=l%60;const ts=hs>0?`${hs}h ${ms}m`:`${ms} min`;return`<div class="sched-box sched-now"><span class="sched-ico">⚡</span><div><div class="sched-ttl">Order Now — Same-Day Processing</div><div class="sched-sub">Place before <strong>8:30 PM IST</strong>. <strong>${ts}</strong> left!</div><span class="sched-tag">⏰ Cutoff 8:30 PM IST</span></div></div>`})();
+
+  const schedHtml = late
+    ? `<div class="sched sched-tm"><span class="sched-ico">📅</span><div><div class="sched-ttl">Order Will Be Scheduled</div><div class="sched-sub">Orders after 8:30 PM or before 9:00 AM (IST) ship next morning.<br>Your order: <strong>${tmrDate()}</strong> after 9:00 AM IST</div><span class="sched-tag">🕘 Dispatch: ${tmrDate()} after 9 AM</span></div></div>`
+    : (()=>{const{h,m}=getIST();const l=(20*60+30)-(h*60+m);const ts=l>=60?Math.floor(l/60)+'h '+(l%60)+'m':l+'m';return`<div class="sched sched-ok"><span class="sched-ico">⚡</span><div><div class="sched-ttl">Order Now — Same-Day Processing</div><div class="sched-sub">Cutoff at <strong>8:30 PM IST</strong> — <strong>${ts}</strong> left!</div><span class="sched-tag">⏰ Today's cutoff 8:30 PM IST</span></div></div>`})();
 
   const STATES=['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir'];
 
-  root.innerHTML=`
+  root.innerHTML = `
   <div class="cart-layout">
     <div>
       ${schedHtml}
-      <div class="cart-box">
+      <div class="cbox">
         <h2>🛒 Cart (${Cart.count()} items)</h2>
-        ${items.map(it=>{
-          const sid=String(it.id).replace(/['"]/g,'');
-          return`<div class="ci">
+        ${items.map(it=>`
+          <div class="ci">
             <div class="ci-img"><img src="${it.image_url||''}" alt="" onerror="this.style.display='none'"></div>
             <div class="ci-info">
               <div class="ci-name">${it.name||''}</div>
               <div class="ci-pr">${fp(it.price)} each</div>
-              <div class="ci-qty">
-                <button class="qbtn" onclick="updateQty('${sid}',${it.qty-1})">−</button>
-                <span class="qnum">${it.qty}</span>
-                <button class="qbtn" onclick="updateQty('${sid}',${it.qty+1})">+</button>
-                <button class="ci-rm" onclick="removeItem('${sid}')">Remove</button>
+              <div class="ci-ctrl">
+                <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty-1})">−</button>
+                <span class="qn">${it.qty}</span>
+                <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty+1})">+</button>
+                <button class="ci-rm" onclick="doRemoveItem('${it.id}')">Remove</button>
               </div>
             </div>
             <div class="ci-tot">${fp(it.price*it.qty)}</div>
-          </div>`;
-        }).join('')}
+          </div>`).join('')}
       </div>
 
-      <div class="map-box">
+      <div class="cbox">
         <h3>📍 Pin Your Delivery Location</h3>
-        <p>Drop a pin on the map like Swiggy & Zomato — drag it to the exact spot. Address auto-fills from the pin!</p>
+        <p class="map-p">Drop a pin exactly where you want delivery — like Swiggy & Zomato. Drag to fine-tune. Address auto-fills!</p>
         <button class="loc-btn" id="loc-btn" onclick="locateMe()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
           Use My Current Location
         </button>
         <div id="delivery-map"></div>
-        <div class="map-hint">📌 Tap anywhere on the map to place your pin</div>
-        <div class="map-addr" id="map-addr"></div>
+        <div class="map-hint">📌 Tap map or drag pin to set exact delivery spot</div>
+        <div class="map-addr-lbl" id="map-addr-lbl"></div>
         <input type="hidden" id="map-lat">
         <input type="hidden" id="map-lng">
       </div>
 
-      <div class="addr-box">
+      <div class="cbox">
         <h2>📋 Delivery Details</h2>
         <div class="ag">
           <div class="af"><label>Full Name *</label><input id="an" placeholder="Recipient name" value="${Auth.getUser()?.name||''}"></div>
           <div class="af"><label>Phone *</label><input id="ap" type="tel" placeholder="10-digit" maxlength="10" inputmode="numeric" value="${Auth.getUser()?.phone||''}"></div>
           <div class="af full"><label>House / Flat / Building *</label><input id="al1" placeholder="House no., flat, building name"></div>
-          <div class="af full"><label>Street / Area (auto-filled from map)</label><input id="al2" placeholder="Street, area, locality"></div>
+          <div class="af full"><label>Street / Area (auto-fills from map)</label><input id="al2" placeholder="Street, area, locality"></div>
           <div class="af"><label>City *</label><input id="ac" placeholder="City"></div>
-          <div class="af"><label>State *</label>
-            <select id="as"><option value="">Select State</option>${STATES.map(s=>`<option>${s}</option>`).join('')}</select>
-          </div>
+          <div class="af"><label>State *</label><select id="as"><option value="">Select State</option>${STATES.map(s=>`<option>${s}</option>`).join('')}</select></div>
           <div class="af"><label>PIN Code *</label><input id="apin" placeholder="6-digit PIN" maxlength="6" inputmode="numeric"></div>
         </div>
       </div>
     </div>
 
-    <div class="summary">
+    <div class="summ">
       <h2>Order Summary</h2>
       <div class="sr"><span class="lbl">Subtotal (${Cart.count()} items)</span><span class="val">${fp(sub)}</span></div>
-      <div class="sr"><span class="lbl">Delivery</span><span class="val" style="${del===0?'color:var(--teal);font-weight:700':''}">${del===0?'FREE':fp(del)}</span></div>
-      ${disc?`<div class="sr disc"><span class="lbl">Discount (${appliedPromo?.code||''})</span><span class="val">−${fp(disc)}</span></div>`:''}
-      ${del>0?`<p style="font-size:11px;color:var(--teal);text-align:right;margin:-4px 0 6px">Add ${fp(DELIVERY_THRESHOLD-sub)} more for free delivery</p>`:''}
+      <div class="sr"><span class="lbl">Delivery</span><span class="val" ${del===0?'style="color:#00a882;font-weight:700"':''}>${del===0?'FREE':fp(del)}</span></div>
+      ${dsc?`<div class="sr disc"><span class="lbl">Discount (${_promo?.code||''})</span><span class="val">−${fp(dsc)}</span></div>`:''}
+      ${del>0?`<p style="font-size:11px;color:#00a882;text-align:right;margin:-2px 0 6px">Add ${fp(DELV_THRESH-sub)} more for FREE delivery</p>`:''}
       <div class="sr tot"><span class="lbl">Total</span><span class="val">${fp(tot)}</span></div>
       <div class="promo-row">
-        <input type="text" id="promo-inp" placeholder="Promo code" style="text-transform:uppercase">
+        <input class="promo-inp" type="text" id="promo-inp" placeholder="Promo code">
         <button class="btn btn-outline btn-sm" onclick="applyPromo()">Apply</button>
       </div>
-      <div id="promo-msg" style="font-size:12.5px;margin-top:4px"></div>
-      <button class="pay-btn" id="pay-btn" onclick="startCheckout()">
+      <div id="promo-msg" style="font-size:12.5px"></div>
+      <button class="pay-btn" id="pay-btn" onclick="doCheckout()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         Pay ${fp(tot)}
       </button>
@@ -236,76 +237,73 @@ function renderCart(){
     </div>
   </div>`;
 
-  setTimeout(initMap, 150);
+  setTimeout(initMap, 100);
 }
 
-// ── Promo ────────────────────────────────────────────────────
 async function applyPromo(){
-  const code=document.getElementById('promo-inp')?.value?.trim().toUpperCase();
+  const code=(document.getElementById('promo-inp')?.value||'').trim().toUpperCase();
   const msg=document.getElementById('promo-msg');
   if(!code)return;
-  msg.innerHTML='<span style="color:var(--g3)">Checking…</span>';
+  msg.innerHTML='<span style="color:#7fa9a3">Checking…</span>';
   try{
     const{data,error}=await sb.from('promo_codes').select('*').eq('code',code).eq('active',true).single();
-    if(error||!data){msg.innerHTML='<span style="color:#ef4444">Invalid or expired code.</span>';return;}
-    const sub=Cart.total();
-    if(data.min_order&&sub<data.min_order){msg.innerHTML=`<span style="color:#ef4444">Min order ${fp(data.min_order)} required.</span>`;return;}
-    appliedPromo=data;
-    msg.innerHTML=`<span style="color:var(--teal2)">✅ "${code}" applied!</span>`;
+    if(error||!data){msg.innerHTML='<span style="color:#ef4444">Invalid or expired code</span>';return;}
+    if(data.min_order&&Cart.total()<data.min_order){msg.innerHTML=`<span style="color:#ef4444">Min order ${fp(data.min_order)} required</span>`;return;}
+    _promo=data;
+    msg.innerHTML=`<span style="color:#007a60">✅ "${code}" applied!</span>`;
     renderCart();
-  }catch(e){msg.innerHTML='<span style="color:#ef4444">Error.</span>';}
+  }catch(e){msg.innerHTML='<span style="color:#ef4444">Error checking code</span>';}
 }
 
-// ── Get address ───────────────────────────────────────────────
 function getAddr(){
   return{
-    name: document.getElementById('an')?.value?.trim()||'',
-    phone:document.getElementById('ap')?.value?.trim()||'',
-    line1:document.getElementById('al1')?.value?.trim()||'',
-    line2:document.getElementById('al2')?.value?.trim()||'',
-    city: document.getElementById('ac')?.value?.trim()||'',
+    name: (document.getElementById('an')?.value||'').trim(),
+    phone:(document.getElementById('ap')?.value||'').trim(),
+    line1:(document.getElementById('al1')?.value||'').trim(),
+    line2:(document.getElementById('al2')?.value||'').trim(),
+    city: (document.getElementById('ac')?.value||'').trim(),
     state:document.getElementById('as')?.value||'',
-    pin:  document.getElementById('apin')?.value?.trim()||'',
+    pin:  (document.getElementById('apin')?.value||'').trim(),
     lat:  document.getElementById('map-lat')?.value||null,
     lng:  document.getElementById('map-lng')?.value||null,
   };
 }
-function validateAddr(a){
-  if(!a.name)return'Please enter recipient name';
-  if(!/^\d{10}$/.test(a.phone))return'Please enter a valid 10-digit phone';
-  if(!a.line1)return'Please enter house/flat/building';
-  if(!a.city)return'Please enter city';
-  if(!a.state)return'Please select state';
-  if(!/^\d{6}$/.test(a.pin))return'Please enter a valid 6-digit PIN code';
+function validAddr(a){
+  if(!a.name)return'Enter recipient name';
+  if(!/^\d{10}$/.test(a.phone))return'Enter a valid 10-digit phone number';
+  if(!a.line1)return'Enter house/flat/building details';
+  if(!a.city)return'Enter city';
+  if(!a.state)return'Select a state';
+  if(!/^\d{6}$/.test(a.pin))return'Enter a valid 6-digit PIN code';
   return null;
 }
 
-// ── Checkout ─────────────────────────────────────────────────
-async function startCheckout(){
+async function doCheckout(){
   if(!Auth.isLoggedIn()){location.href='login.html?redirect=cart.html';return;}
-  const addr=getAddr(), err=validateAddr(addr);
+  const addr=getAddr(), err=validAddr(addr);
   if(err){showToast('⚠️ '+err);return;}
-  const sub=Cart.total(),del=delFee(sub),disc=discAmt(sub),tot=sub+del-disc;
+  const sub=Cart.total(),del=dFee(sub),dsc=disc(sub),tot=sub+del-dsc;
   const user=Auth.getUser();
   const btn=document.getElementById('pay-btn');
-  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Opening payment…';
+  btn.disabled=true;btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Opening payment…';
   const opts={
-    key:RZP_KEY, amount:Math.round(tot*100), currency:'INR',
-    name:'Aquanics', description:Cart.count()+' item(s)',
+    key:'rzp_live_SSegtOEGykPOUN',
+    amount:Math.round(tot*100),currency:'INR',
+    name:'Aquanics',description:Cart.count()+' item(s)',
     handler:async function(resp){
       btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Saving order…';
       try{
         const{data:order,error}=await sb.from('orders').insert([{
-          user_id:user.id, items:Cart.get(), address:addr,
-          subtotal:sub, delivery_fee:del, discount:disc, total:tot,
-          payment_id:resp.razorpay_payment_id, payment_status:'paid',
-          status:'confirmed', promo_code:appliedPromo?.code||null,
-          scheduled:afterCutoff(), scheduled_date:afterCutoff()?schedDate():null,
+          user_id:user.id,items:Cart.get(),address:addr,
+          subtotal:sub,delivery_fee:del,discount:dsc,total:tot,
+          payment_id:resp.razorpay_payment_id,payment_status:'paid',
+          status:'confirmed',promo_code:_promo?.code||null,
+          scheduled:afterCutoff(),scheduled_date:afterCutoff()?tmrDate():null,
         }]).select().single();
         if(error)throw error;
         Cart.clear();
         location.href='order-success.html?id='+order.id;
-      }catch(e){showToast('⚠️ Order save failed: '+e.message);btn.disabled=false;btn.innerHTML=`Pay ${fp(tot)}`;}
+      }catch(e){showToast('⚠️ Failed to save: '+e.message);btn.disabled=false;btn.innerHTML=`Pay ${fp(tot)}`;}
     },
     prefill:{name:user.name||'',contact:'+91'+(user.phone||''),email:user.email||''},
     theme:{color:'#00a882'},
@@ -314,65 +312,49 @@ async function startCheckout(){
   new Razorpay(opts).open();
 }
 
-// ── MAP ───────────────────────────────────────────────────────
+// ── MAP ──────────────────────────────────────────────────────
 function initMap(){
   const el=document.getElementById('delivery-map');
   if(!el||typeof L==='undefined')return;
-  if(_map){_map.invalidateSize();return;}
-
+  if(_map){try{_map.invalidateSize();}catch(e){}return;}
   _map=L.map('delivery-map',{zoomControl:true,scrollWheelZoom:false}).setView([20.5937,78.9629],5);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(_map);
-
-  const pin=L.divIcon({
-    html:`<div style="width:36px;height:46px"><svg viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg"><path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28S36 31.5 36 18C36 8.06 27.94 0 18 0z" fill="#00a882" stroke="#007a60" stroke-width="1"/><circle cx="18" cy="18" r="7" fill="white"/><circle cx="18" cy="18" r="4" fill="#00a882"/></svg></div>`,
-    iconSize:[36,46],iconAnchor:[18,46],popupAnchor:[0,-46]
-  });
-  window._mapPin=pin;
-
+  const pinHtml=`<div style="width:32px;height:42px"><svg viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg"><path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26S32 28 32 16C32 7.16 24.84 0 16 0z" fill="#00a882" stroke="#007a60" stroke-width="1"/><circle cx="16" cy="16" r="6" fill="white"/><circle cx="16" cy="16" r="3.5" fill="#00a882"/></svg></div>`;
+  window._pin=L.divIcon({html:pinHtml,iconSize:[32,42],iconAnchor:[16,42],popupAnchor:[0,-42]});
   _map.on('click',e=>placePin(e.latlng.lat,e.latlng.lng));
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>placePin(p.coords.latitude,p.coords.longitude,15),()=>{});
-  }
+  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>placePin(p.coords.latitude,p.coords.longitude,16),()=>{});
 }
 
-async function placePin(lat,lng,zoom=null){
+async function placePin(lat,lng,zoom){
   if(!_map)return;
   document.getElementById('map-lat').value=lat.toFixed(6);
   document.getElementById('map-lng').value=lng.toFixed(6);
   if(_marker)_marker.setLatLng([lat,lng]);
-  else{
-    _marker=L.marker([lat,lng],{icon:window._mapPin,draggable:true}).addTo(_map);
-    _marker.on('dragend',e=>{const p=e.target.getLatLng();placePin(p.lat,p.lng);});
-  }
+  else{_marker=L.marker([lat,lng],{icon:window._pin,draggable:true}).addTo(_map);_marker.on('dragend',e=>{const p=e.target.getLatLng();placePin(p.lat,p.lng);});}
   if(zoom)_map.setView([lat,lng],zoom);else _map.panTo([lat,lng]);
   try{
     const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`);
-    const d=await r.json(); const a=d.address||{};
-    const road=a.road||a.pedestrian||'', suburb=a.suburb||a.neighbourhood||'';
-    const city=a.city||a.town||a.village||'', state=a.state||'', pin=(a.postcode||'').replace(/\s/g,'').slice(0,6);
-    if(road||suburb){const el=document.getElementById('al2');if(el)el.value=[road,suburb].filter(Boolean).join(', ');}
-    if(city){const el=document.getElementById('ac');if(el)el.value=city;}
-    if(pin){const el=document.getElementById('apin');if(el)el.value=pin;}
-    if(state){const sel=document.getElementById('as');if(sel)for(let i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===state.toLowerCase()||state.toLowerCase().includes(sel.options[i].text.toLowerCase())){sel.selectedIndex=i;break;}}}
-    const box=document.getElementById('map-addr');
-    if(box){box.textContent='📍 '+d.display_name;box.classList.add('show');}
-    _marker.bindPopup(`<div style="font-size:12px"><strong>📍 Delivery here</strong><br>${[road,suburb,city].filter(Boolean).join(', ')}</div>`).openPopup();
+    const d=await r.json();const a=d.address||{};
+    const road=a.road||a.pedestrian||'',suburb=a.suburb||a.neighbourhood||'',city=a.city||a.town||a.village||'',state=a.state||'',pin=(a.postcode||'').replace(/\s/g,'').slice(0,6);
+    if(road||suburb){const e2=document.getElementById('al2');if(e2)e2.value=[road,suburb].filter(Boolean).join(', ');}
+    if(city){const e2=document.getElementById('ac');if(e2)e2.value=city;}
+    if(pin){const e2=document.getElementById('apin');if(e2)e2.value=pin;}
+    if(state){const sel=document.getElementById('as');if(sel)for(let i=0;i<sel.options.length;i++)if(state.toLowerCase().includes(sel.options[i].text.toLowerCase())||sel.options[i].text.toLowerCase()===state.toLowerCase()){sel.selectedIndex=i;break;}}
+    const lbl=document.getElementById('map-addr-lbl');
+    if(lbl){lbl.textContent='📍 '+d.display_name;lbl.classList.add('show');}
+    _marker.bindPopup(`<div style="font-size:12px"><strong>📍 Deliver here</strong><br>${[road,suburb,city].filter(Boolean).join(', ')}</div>`).openPopup();
   }catch(e){}
 }
 
-async function locateMe(){
+window.locateMe=async function(){
   const btn=document.getElementById('loc-btn');
-  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Locating…';
+  btn.disabled=true;btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Locating…';
   try{
-    await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(
-      p=>{placePin(p.coords.latitude,p.coords.longitude,17);res();},
-      rej,{enableHighAccuracy:true,timeout:10000}
-    ));
-  }catch(e){showToast('⚠️ Location access denied. Please pin manually on the map.');}
-  btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use My Current Location';
-}
+    await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(p=>{placePin(p.coords.latitude,p.coords.longitude,17);res();},rej,{enableHighAccuracy:true,timeout:10000}));
+  }catch(e){showToast('⚠️ Location access denied. Pin manually on map.');}
+  btn.disabled=false;btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use My Current Location';
+};
 
-// ── INIT ─────────────────────────────────────────────────────
 async function init(){
   await renderNav();
   renderFooter();
