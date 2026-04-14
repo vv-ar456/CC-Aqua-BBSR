@@ -733,18 +733,36 @@ function sw(p){
 }
 document.querySelectorAll('.sb-btn[data-p]').forEach(b=>b.addEventListener('click',()=>sw(b.dataset.p)));
 
+function showAdminError(msg){
+  const banner=document.createElement('div');
+  banner.innerHTML=`<div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#b91c1c;display:flex;align-items:flex-start;gap:10px">
+    <span style="font-size:18px;flex-shrink:0">⚠️</span>
+    <div><strong>Database Error</strong><br>${msg}</div>
+  </div>`;
+  const content=document.querySelector('.content');
+  if(content)content.prepend(banner.firstChild);
+}
+
 // ═════════════════════════════════════
 //  DASHBOARD
 // ═════════════════════════════════════
 let rC=null,sC=null;
 async function loadDash(){
   try{
+    // Test connection first
+    const {data:testData, error:testErr} = await sb.from('settings').select('id').eq('id',1).single();
+    if(testErr && testErr.message.includes('RLS')){
+      document.getElementById('s-rev').innerHTML='<span style="font-size:12px;color:#ef4444">RLS Error</span>';
+      showAdminError('Row Level Security is blocking queries. Run <strong>supabase-fix-final.sql</strong> in Supabase SQL Editor, then reload.');
+      return;
+    }
+
     const[{data:ords,count:oc,error:e1},{count:pc},{count:cc}]=await Promise.all([
       sb.from('orders').select('total,status,created_at',{count:'exact'}),
       sb.from('products').select('*',{count:'exact',head:true}),
       sb.from('users').select('*',{count:'exact',head:true}),
     ]);
-    if(e1){document.getElementById('s-rev').textContent='Error';console.error('Dashboard load error:',e1.message);}
+    if(e1){console.warn('Orders error:',e1.message);}
     const rev=(ords||[]).reduce((s,o)=>s+(o.total||0),0);
     const nw=(ords||[]).filter(o=>o.status==='confirmed').length;
     document.getElementById('s-rev').textContent=P(rev);
@@ -866,9 +884,16 @@ async function loadProds(){
   if(af==='1')qb=qb.eq('active',true);
   if(af==='0')qb=qb.eq('active',false);
   if(q)qb=qb.ilike('name','%'+q+'%');
-  const res = await qb.catch(e=>({data:[],count:0,error:e}));
-  const data = res.data, count = res.count;
-  if(res.error){tbody.innerHTML=`<tr class="empty-r"><td colspan="9">⚠️ RLS Error: ${res.error.message}<br><small>Run supabase-schema-complete.sql in Supabase</small></td></tr>`;document.getElementById('prod-cnt').textContent='Error';return;}
+  const res = await qb;
+  const {data, count, error:loadErr} = res;
+  if(loadErr){
+    tbody.innerHTML=`<tr class="empty-r"><td colspan="9" style="color:#b91c1c">
+      ⚠️ Cannot load products: ${loadErr.message}<br>
+      <small style="color:#7fa9a3">Run <strong>supabase-fix-final.sql</strong> in Supabase SQL Editor, then reload this page.</small>
+    </td></tr>`;
+    document.getElementById('prod-cnt').textContent='Error';
+    return;
+  }
   document.getElementById('prod-cnt').textContent=(count||0)+' products';
   tbody.innerHTML=(data||[]).length
     ? (data||[]).map(p=>{
@@ -892,22 +917,20 @@ function pvImg(url){const p=document.getElementById('pf-img-prev');if(url){p.src
 async function uploadImg(inp){
   const file=inp.files[0];if(!file)return;
   const prog=document.getElementById('img-prog');
-  prog.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Uploading…';
-
-  // Check file size (max 5MB)
-  if(file.size > 5*1024*1024){prog.textContent='❌ File too large. Max 5MB.';return;}
-
+  prog.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">↻</span> Uploading to Supabase Storage…';
+  if(file.size>5*1024*1024){prog.innerHTML='<span style="color:var(--red)">❌ File too large. Max 5MB.</span>';return;}
   const ext=file.name.split('.').pop().toLowerCase();
-  if(!['jpg','jpeg','png','webp','gif'].includes(ext)){prog.textContent='❌ Use JPG, PNG, or WebP only.';return;}
+  if(!['jpg','jpeg','png','webp','gif'].includes(ext)){prog.innerHTML='<span style="color:var(--red)">❌ Use JPG, PNG, or WebP only.</span>';return;}
   const path=`products/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   try{
     const{data:upData,error}=await sb.storage.from('product-media').upload(path,file,{upsert:true,contentType:file.type});
     if(error){
-      // If bucket doesn't exist, show helpful message
-      if(error.message.includes('Bucket not found')||error.message.includes('bucket')){
-        prog.innerHTML='❌ Storage bucket "product-media" not found.<br><small>Go to Supabase → Storage → New bucket → name: <strong>product-media</strong> → Public ON → Create. Then try again.</small>';
+      if(error.message.includes('row-level security')||error.message.includes('RLS')||error.message.includes('policy')){
+        prog.innerHTML='<span style="color:var(--red)">❌ Storage RLS blocked upload.<br><small>Run <strong>supabase-fix-final.sql</strong> in Supabase SQL Editor, then retry.</small></span>';
+      } else if(error.message.includes('Bucket')||error.message.includes('bucket')){
+        prog.innerHTML='<span style="color:var(--red)">❌ Bucket "product-media" missing.<br><small>Run <strong>supabase-fix-final.sql</strong> — it creates the bucket automatically.</small></span>';
       } else {
-        prog.textContent='❌ '+error.message;
+        prog.innerHTML='<span style="color:var(--red)">❌ '+error.message+'</span>';
       }
       return;
     }
@@ -915,8 +938,8 @@ async function uploadImg(inp){
     upImg=urlData.publicUrl;
     document.getElementById('pf-img-url').value=upImg;
     pvImg(upImg);
-    prog.innerHTML='<span style="color:var(--teal2)">✅ Uploaded successfully!</span>';
-  }catch(e){prog.textContent='❌ '+e.message;}
+    prog.innerHTML='<span style="color:var(--teal2)">✅ Uploaded!</span>';
+  }catch(e){prog.innerHTML='<span style="color:var(--red)">❌ '+e.message+'</span>';}
 }
 
 function openProdModal(pre){
@@ -1004,7 +1027,13 @@ async function delProd(id,name){
 async function loadCats(){
   const grid=document.getElementById('cat-grid');
   const{data,error:ce}=await sb.from('categories').select('*,subcategories(*)').order('sort_order');
-  if(ce){document.getElementById('cat-grid').innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:16px;border-radius:10px;border:1px solid #fecaca">⚠️ Cannot load categories: ${ce.message}<br><br><strong>Fix:</strong> Run <code>supabase-schema-complete.sql</code> in your Supabase SQL Editor, then reload.</div>`;return;}
+  if(ce){
+    document.getElementById('cat-grid').innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:16px;border-radius:10px;border:1px solid #fecaca;font-size:13px">
+      ⚠️ Cannot load categories: ${ce.message}<br><br>
+      <strong>Fix:</strong> Run <code style="background:#fee2e2;padding:2px 6px;border-radius:4px">supabase-fix-final.sql</code> in Supabase SQL Editor, then reload.
+    </div>`;
+    return;
+  }
   allCats=data||[];
   // Populate cat dropdowns
   const cfs=['prod-cf','of-cat'];
