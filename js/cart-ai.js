@@ -327,7 +327,15 @@ function getEmoji(item) {
 function updateCartPreview() {
   const preview = document.getElementById('ai-cart-preview');
   if (!preview) return;
-  const items = window.Cart ? Cart.get() : [];
+  let items = [];
+  try {
+    // Try window.Cart first (defined in app.js)
+    if(window.Cart && typeof window.Cart.get === 'function'){
+      items = window.Cart.get();
+    } else {
+      items = JSON.parse(localStorage.getItem('aq_cart')||'[]');
+    }
+  } catch(e) { items = []; }
   const badge = document.getElementById('ai-fab-badge');
 
   if (!items.length) {
@@ -351,7 +359,11 @@ function updateCartPreview() {
 
 /* ── AI Analysis ──────────────────────────────────────── */
 window.runAIAnalysis = async function () {
-  const items = window.Cart ? Cart.get() : [];
+  let items = [];
+  try {
+    if(window.Cart && typeof window.Cart.get === 'function') items = window.Cart.get();
+    else items = JSON.parse(localStorage.getItem('aq_cart')||'[]');
+  } catch(e) { items = []; }
   if (!items.length) {
     document.getElementById('ai-body').innerHTML = '<div class="ai-empty">Your cart is empty. Add some items first!</div>';
     return;
@@ -501,7 +513,7 @@ window.resetAIPanel = function () {
 if (location.pathname.includes('cart')) {
   setTimeout(() => {
     updateCartPreview();
-    const items = window.Cart ? Cart.get() : [];
+    let items = []; try { items = (window.Cart || window.parent?.Cart)?.get() || JSON.parse(localStorage.getItem('aq_cart')||'[]'); } catch(e) { items = []; }
     if (items.length >= 2) {
       // Show pulsing badge to hint at AI check
       const badge = document.getElementById('ai-fab-badge');
@@ -511,20 +523,29 @@ if (location.pathname.includes('cart')) {
 }
 
 // Re-render preview when cart changes
-const _origCartSave = window.Cart?.save;
-if (window.Cart) {
-  const origSave = Cart.save.bind(Cart);
-  Cart.save = function(v) {
-    origSave(v);
-    updateCartPreview();
-  };
+// Wait for Cart to be defined (app.js must load first)
+function patchCart(){
+  if(window.Cart && !window.Cart._aiPatched){
+    const origSave = Cart.save.bind(Cart);
+    Cart.save = function(v){ origSave(v); setTimeout(updateCartPreview, 50); };
+    window.Cart._aiPatched = true;
+  }
 }
 
+// Listen for localStorage changes (cross-tab cart updates)
+window.addEventListener('storage', e => {
+  if(e.key === 'aq_cart') setTimeout(updateCartPreview, 50);
+});
+
 // Init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', inject);
-} else {
+function doInit(){
+  patchCart();
   inject();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', doInit);
+} else {
+  doInit();
 }
 
 })();

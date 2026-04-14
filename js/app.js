@@ -13,22 +13,30 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 // ── Cart ─────────────────────────────────────────────
 const Cart = {
   key:'aq_cart',
+  _sid: id => String(id),  // normalize id to string for comparison
   get(){  try{return JSON.parse(localStorage.getItem(this.key)||'[]')}catch{return[]} },
   save(v){ localStorage.setItem(this.key,JSON.stringify(v)); this.badge(); },
   clear(){ localStorage.removeItem(this.key); this.badge(); },
-  total(){ return this.get().reduce((s,i)=>s+i.price*i.qty,0); },
-  count(){ return this.get().reduce((s,i)=>s+i.qty,0); },
+  total(){ return this.get().reduce((s,i)=>s+(+i.price)*(+i.qty),0); },
+  count(){ return this.get().reduce((s,i)=>s+(+i.qty),0); },
   add(p,qty=1){
-    const items=this.get(), i=items.findIndex(x=>x.id===p.id);
-    if(i>-1) items[i].qty+=qty; else items.push({...p,qty});
+    const items=this.get();
+    const sid=this._sid(p.id);
+    const i=items.findIndex(x=>this._sid(x.id)===sid);
+    if(i>-1) items[i].qty+=(+qty); else items.push({...p,id:sid,qty:(+qty)});
     this.save(items);
-    showToast('🛒 '+p.name+' added to cart!');
+    showToast('🛒 '+(p.name||'Item')+' added to cart!');
   },
-  remove(id){ this.save(this.get().filter(i=>i.id!==id)); },
+  remove(id){
+    const sid=this._sid(id);
+    this.save(this.get().filter(i=>this._sid(i.id)!==sid));
+  },
   updateQty(id,qty){
-    const items=this.get(), i=items.findIndex(x=>x.id===id);
+    const sid=this._sid(id);
+    const items=this.get();
+    const i=items.findIndex(x=>this._sid(x.id)===sid);
     if(i<0) return;
-    if(qty<=0) items.splice(i,1); else items[i].qty=qty;
+    if((+qty)<=0) items.splice(i,1); else items[i].qty=(+qty);
     this.save(items);
   },
   badge(){
