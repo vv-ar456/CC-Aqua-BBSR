@@ -236,7 +236,7 @@ async function renderNav(activeCat=''){
   if(!el) return;
   const user=Auth.getUser();
   let cats=PH_CATS;
-  try{ const {data}=await DB.cats(); if(data?.length) cats=data; } catch(e){}
+  try{ const c=await DB.cats(); if(c?.length) cats=c; } catch(e){}
   const catHtml=cats.map(c=>`
     <li class="${activeCat===c.slug?'active':''}">
       <a href="products.html?cat=${c.slug}">${c.emoji||''} ${c.name}</a>
@@ -283,7 +283,7 @@ function goSearch(){
 
 // ── Shared footer ─────────────────────────────────────
 function renderFooter(){
-  const el=document.getElementById('footer');
+  const el=document.getElementById('footer')||document.getElementById('footer-wrap');
   if(!el) return;
   el.innerHTML=`
   <footer>

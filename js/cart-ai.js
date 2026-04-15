@@ -329,12 +329,10 @@ function updateCartPreview() {
   if (!preview) return;
   let items = [];
   try {
-    // Try window.Cart first (defined in app.js)
-    if(window.Cart && typeof window.Cart.get === 'function'){
-      items = window.Cart.get();
-    } else {
-      items = JSON.parse(localStorage.getItem('aq_cart')||'[]');
-    }
+    // localStorage is always reliable - Cart.save() always writes here
+    const raw = localStorage.getItem('aq_cart');
+    items = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(items)) items = [];
   } catch(e) { items = []; }
   const badge = document.getElementById('ai-fab-badge');
 
@@ -361,8 +359,9 @@ function updateCartPreview() {
 window.runAIAnalysis = async function () {
   let items = [];
   try {
-    if(window.Cart && typeof window.Cart.get === 'function') items = window.Cart.get();
-    else items = JSON.parse(localStorage.getItem('aq_cart')||'[]');
+    const raw = localStorage.getItem('aq_cart');
+    items = raw ? JSON.parse(raw) : [];
+    if(!Array.isArray(items)) items = [];
   } catch(e) { items = []; }
   if (!items.length) {
     document.getElementById('ai-body').innerHTML = '<div class="ai-empty">Your cart is empty. Add some items first!</div>';
@@ -513,7 +512,7 @@ window.resetAIPanel = function () {
 if (location.pathname.includes('cart')) {
   setTimeout(() => {
     updateCartPreview();
-    let items = []; try { items = (window.Cart || window.parent?.Cart)?.get() || JSON.parse(localStorage.getItem('aq_cart')||'[]'); } catch(e) { items = []; }
+    let items = []; try { const r=localStorage.getItem('aq_cart'); items=r?JSON.parse(r):[]; if(!Array.isArray(items))items=[]; } catch(e) { items = []; }
     if (items.length >= 2) {
       // Show pulsing badge to hint at AI check
       const badge = document.getElementById('ai-fab-badge');
@@ -522,25 +521,25 @@ if (location.pathname.includes('cart')) {
   }, 1200);
 }
 
-// Re-render preview when cart changes
-// Wait for Cart to be defined (app.js must load first)
+// Patch Cart.save to trigger preview updates
 function patchCart(){
-  if(window.Cart && !window.Cart._aiPatched){
-    const origSave = Cart.save.bind(Cart);
-    Cart.save = function(v){ origSave(v); setTimeout(updateCartPreview, 50); };
-    window.Cart._aiPatched = true;
-  }
+  if(!window.Cart || window.Cart._aiPatched) return;
+  const origSave = Cart.save.bind(Cart);
+  Cart.save = function(v){ origSave(v); setTimeout(updateCartPreview, 80); };
+  window.Cart._aiPatched = true;
 }
 
-// Listen for localStorage changes (cross-tab cart updates)
+// Also listen for storage events (works across tabs and within same page)
 window.addEventListener('storage', e => {
-  if(e.key === 'aq_cart') setTimeout(updateCartPreview, 50);
+  if(e.key === 'aq_cart') setTimeout(updateCartPreview, 80);
 });
 
-// Init
+// Init - wait for DOM + Cart to be ready
 function doInit(){
   patchCart();
   inject();
+  // Re-patch after short delay in case app.js wasn't ready
+  setTimeout(patchCart, 500);
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', doInit);
