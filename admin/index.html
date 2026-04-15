@@ -1274,10 +1274,13 @@ let allCusts=[];
 async function loadCusts(){
   const tbody=document.getElementById('cust-body');
   tbody.innerHTML='<tr class="empty-r"><td colspan="6">Loading…</td></tr>';
-  const{data,count}=await sb.from('users').select('*,wallets(balance)',{count:'exact'}).order('created_at',{ascending:false}).catch(()=>({data:[],count:0}));
-  allCusts=data||[];
-  document.getElementById('cust-cnt').textContent=(count||0)+' customers';
-  renderCusts();
+  try{
+    const{data,count,error}=await sb.from('users').select('*,wallets(balance)',{count:'exact'}).order('created_at',{ascending:false});
+    if(error){tbody.innerHTML=`<tr class="empty-r"><td colspan="6" style="color:var(--red)">Error: ${error.message}<br><small>Run supabase-fix-final.sql in Supabase</small></td></tr>`;return;}
+    allCusts=data||[];
+    document.getElementById('cust-cnt').textContent=(count||0)+' customers';
+    renderCusts();
+  }catch(e){tbody.innerHTML=`<tr class="empty-r"><td colspan="6" style="color:var(--red)">Error: ${e.message}</td></tr>`;}
 }
 function renderCusts(){
   const q=(document.getElementById('cust-q')?.value||'').toLowerCase();
@@ -1300,10 +1303,13 @@ let allWals=[];
 async function loadWals(){
   const tbody=document.getElementById('wal-body');
   tbody.innerHTML='<tr class="empty-r"><td colspan="6">Loading…</td></tr>';
-  const{data}=await sb.from('wallets').select('*,users(name,phone)').order('balance',{ascending:false}).catch(()=>({data:[]}));
-  allWals=data||[];
-  document.getElementById('wal-cnt').textContent=allWals.length+' wallets';
-  renderWals();
+  try{
+    const{data,error}=await sb.from('wallets').select('*,users(name,phone)').order('balance',{ascending:false});
+    if(error){tbody.innerHTML=`<tr class="empty-r"><td colspan="6" style="color:var(--red)">Error: ${error.message}</td></tr>`;return;}
+    allWals=data||[];
+    document.getElementById('wal-cnt').textContent=allWals.length+' wallets';
+    renderWals();
+  }catch(e){tbody.innerHTML=`<tr class="empty-r"><td colspan="6" style="color:var(--red)">Error: ${e.message}</td></tr>`;}
 }
 function renderWals(){
   const q=(document.getElementById('wal-q')?.value||'').toLowerCase();
@@ -1477,8 +1483,14 @@ async function admSend(id){
 // ═════════════════════════════════════
 async function loadMedia(){
   const tbody=document.getElementById('media-body');
-  const{data}=await sb.from('media_requests').select('*,users(name,phone)').order('created_at',{ascending:false}).catch(()=>({data:[]}));
-  if(!data?.length){tbody.innerHTML='<tr class="empty-r"><td colspan="7">No requests.</td></tr>';return;}
+  tbody.innerHTML='<tr class="empty-r"><td colspan="7">Loading…</td></tr>';
+  let data=[];
+  try{
+    const res=await sb.from('media_requests').select('*,users(name,phone)').order('created_at',{ascending:false});
+    if(res.error){tbody.innerHTML=`<tr class="empty-r"><td colspan="7" style="color:var(--red)">Error: ${res.error.message}</td></tr>`;return;}
+    data=res.data||[];
+  }catch(e){tbody.innerHTML=`<tr class="empty-r"><td colspan="7" style="color:var(--red)">Error: ${e.message}</td></tr>`;return;}
+  if(!data?.length){tbody.innerHTML='<tr class="empty-r"><td colspan="7">No media requests yet.</td></tr>';return;}
   const pend=data.filter(r=>r.status==='pending').length;
   if(pend>0){const b=document.getElementById('bdg-media');b.textContent=pend;b.classList.add('on');}
   tbody.innerHTML=data.map(r=>`<tr>
@@ -1496,9 +1508,24 @@ async function loadMedia(){
 //  SETTINGS
 // ═════════════════════════════════════
 async function saveSettings(){
-  const{error}=await sb.from('settings').upsert([{id:1,store_name:document.getElementById('cfg-name').value,email:document.getElementById('cfg-email').value,whatsapp:document.getElementById('cfg-wa').value,free_delivery_threshold:parseFloat(document.getElementById('cfg-fd').value)||599,address:document.getElementById('cfg-addr').value}]);
-  if(error){toast('Failed: '+error.message,true);return;}
-  toast('Settings saved!');
+  const payload={
+    id:1,
+    store_name:document.getElementById('cfg-name')?.value||'',
+    email:document.getElementById('cfg-email')?.value||'',
+    whatsapp:document.getElementById('cfg-wa')?.value||'',
+    free_delivery_threshold:parseFloat(document.getElementById('cfg-fd')?.value)||599,
+    address:document.getElementById('cfg-addr')?.value||''
+  };
+  try{
+    // Try update first (row must exist)
+    const{error:ue}=await sb.from('settings').update(payload).eq('id',1);
+    if(ue){
+      // Row might not exist, try insert
+      const{error:ie}=await sb.from('settings').insert([payload]);
+      if(ie){toast('Failed: '+ie.message,true);return;}
+    }
+    toast('✅ Settings saved!');
+  }catch(e){toast('Error: '+e.message,true);}
 }
 async function changePwd(){
   const p=document.getElementById('cfg-pwd').value.trim();
