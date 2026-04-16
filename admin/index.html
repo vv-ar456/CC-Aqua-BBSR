@@ -1481,6 +1481,36 @@ async function admSend(id){
 // ═════════════════════════════════════
 //  MEDIA REQUESTS
 // ═════════════════════════════════════
+async function replyToMediaReq(userId, productName, reqId){
+  // Switch to chat panel
+  sw('chat');
+  // Wait for chat panel to load
+  await new Promise(r=>setTimeout(r,300));
+  // Find or open the thread for this user
+  try{
+    const{data:threads}=await sb.from('support_threads')
+      .select('*,users(name,phone)')
+      .eq('user_id',userId)
+      .order('updated_at',{ascending:false})
+      .limit(5);
+    if(threads?.length){
+      // Open the most recent thread from this user
+      const t=threads[0];
+      openAdmThread(t.id, t.subject||'Media Request: '+productName, t.users?.name||'Customer');
+    } else {
+      // No thread yet - show message in chat area
+      const wrap=document.getElementById('adm-chat');
+      if(wrap) wrap.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px">
+        <div style="font-size:32px">📸</div>
+        <p style="font-size:13px;color:var(--muted);text-align:center">Customer hasn't started a chat yet for this request.<br>They will contact you via chat when ready.</p>
+      </div>`;
+    }
+    // Mark media request as in-progress
+    await sb.from('media_requests').update({status:'fulfilled'}).eq('id',reqId);
+    loadMedia();
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
 async function loadMedia(){
   const tbody=document.getElementById('media-body');
   tbody.innerHTML='<tr class="empty-r"><td colspan="7">Loading…</td></tr>';
@@ -1500,7 +1530,7 @@ async function loadMedia(){
     <td style="font-size:11.5px;color:var(--muted);max-width:120px">${r.note||'—'}</td>
     <td><span class="badge ${r.status==='pending'?'bamber':r.status==='fulfilled'?'bgreen':'bred'}">${r.status}</span></td>
     <td style="font-size:12px">${DS(r.created_at)}</td>
-    <td>${r.status==='pending'?`<button class="act ae" onclick="sw('chat')">Reply →</button>`:'<span style="color:var(--muted);font-size:11px">Done</span>'}</td>
+    <td>${r.status==='pending'?`<button class="act ae" onclick="replyToMediaReq('${r.user_id}','${(r.product_name||'').replace(/'/g,'')}','${r.id}')">Reply →</button>`:'<span style="color:var(--muted);font-size:11px">Done</span>'}</td>
   </tr>`).join('');
 }
 
