@@ -389,28 +389,39 @@ window.runAIAnalysis = async function () {
       `- ${i.name} (qty: ${i.qty}, category: ${i.category_slug || 'unknown'}, price: ₹${i.price})`
     ).join('\n');
 
-    const prompt = `You are an expert pet and aquarium advisor for an Indian online pet store called Aquanics.
+    const prompt = `You are an expert pet, aquarium and animal care advisor for Aquanics, an Indian pet store.
 
-A customer has the following items in their cart:
+Customer's cart items:
 ${cartSummary}
 
-Analyze this cart and respond with a JSON array of advice cards. Each card should have:
-- "type": one of "safe" | "warning" | "danger" | "tip"
-- "title": short title (max 6 words)
-- "body": 1-2 line advice in simple, friendly Hindi-English mix is fine (beginner-friendly)
+Analyze for safety, compatibility, and care needs. Reply with a JSON array of advice cards.
+
+CRITICAL DANGER RULES (always flag these):
+- Dog food / cat food fed to fish = DANGER (toxic, wrong nutrition)
+- Cat food / dog food fed to birds = DANGER
+- Betta fish + any other fish = DANGER (betta is aggressive, will kill others)
+- Goldfish + tropical fish = WARNING (different temperature needs)
+- Large predator fish + small fish = DANGER
+- Cats + birds in same household = WARNING (natural predators)
+- Dog treats / chews fed to cats = WARNING
+- Saltwater/marine fish products + freshwater fish = DANGER
+- Multiple male bettas = DANGER (they fight to death)
+- Overcrowded tank (too many fish for stated tank size) = WARNING
+
+Each card:
+- "type": "safe" | "warning" | "danger" | "tip"
+- "title": max 6 words, specific to actual items
+- "body": 1-2 lines, friendly, specific. Mention product names.
 
 Rules:
-- "danger" = items that should NOT be together (e.g. aggressive fish + small fish, cats + birds without precautions)
-- "warning" = items that need care (e.g. betta fish alone, special diet needs)
-- "safe" = things that work well together
-- "tip" = a helpful suggestion or pro tip
-- Max 4 cards total. Keep each body under 2 lines.
-- If cart has only accessories/food with no live animals, give 1 safe + 1 relevant tip.
-- Be specific to the actual items, not generic advice.
-- ONLY return valid JSON array, no markdown, no explanation.
+- Max 5 cards. Always be specific to the actual items in cart.
+- If only food/accessories with no live animals: 1 tip about proper usage.
+- If mixed pet types (dog + fish + bird food): check if customer might confuse feeding.
+- ALWAYS flag if someone has dog/cat food AND live fish together (common mistake).
+- Return ONLY valid JSON array, no markdown, no extra text.
 
-Example format:
-[{"type":"warning","title":"Betta needs solo tank","body":"Betta fish are aggressive and should be kept alone. Add a divider if you plan to add tank mates."},{"type":"tip","title":"Great filter choice","body":"The canister filter you selected works perfectly for tanks up to 50 gallons. Good pick!"}]`;
+Example:
+[{"type":"danger","title":"Wrong food for fish!","body":"Dog food (Pedigree) contains meat and grains that are harmful to fish. Fish need specially formulated fish food - add that to your cart instead."},{"type":"tip","title":"Tiger barbs are fin nippers","body":"Tiger barbs nip the fins of slow fish. Keep them only with fast fish like danios, not with bettas or guppies."}]`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

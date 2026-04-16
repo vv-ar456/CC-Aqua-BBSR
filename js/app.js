@@ -324,3 +324,25 @@ function renderFooter(){
 
 // ── Init badge on load ────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>Cart.badge());
+
+// ── UI compatibility object (for products.html) ────────
+const UI = {
+  nav:    (cat='') => renderNav(cat),
+  footer: ()       => renderFooter(),
+  card:   (p)      => prodCard(p),
+  skels:  (n=8)    => Array(n).fill(`
+    <div class="prod-card" style="animation:pulse 1.5s ease-in-out infinite">
+      <div style="aspect-ratio:1;background:var(--g1,#edf4f2);border-radius:12px 12px 0 0"></div>
+      <div style="padding:12px">
+        <div style="height:10px;background:var(--g1,#edf4f2);border-radius:6px;margin-bottom:8px"></div>
+        <div style="height:10px;background:var(--g1,#edf4f2);border-radius:6px;width:70%;margin-bottom:8px"></div>
+        <div style="height:14px;background:var(--g1,#edf4f2);border-radius:6px;width:40%"></div>
+      </div>
+    </div>`).join('')
+};
+
+// Pulse animation for skeletons
+const _skel_style = document.createElement('style');
+_skel_style.textContent = '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}';
+document.head.appendChild(_skel_style);
+
