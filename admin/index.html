@@ -373,15 +373,25 @@ tbody tr:hover td{background:#fafcfb;}
 
     <!-- ═══ CHAT ═══ -->
     <div class="panel" id="panel-chat">
-      <div style="display:grid;grid-template-columns:260px 1fr;gap:12px;height:calc(100vh - 86px)">
-        <div class="card" style="display:flex;flex-direction:column;overflow:hidden">
-          <div class="card-hd" style="flex-shrink:0"><h3>Conversations</h3></div>
+      <div id="chat-layout" style="display:grid;grid-template-columns:260px 1fr;gap:12px;height:calc(100vh - 86px)">
+        <div class="card" id="chat-list-col" style="display:flex;flex-direction:column;overflow:hidden">
+          <div class="card-hd" style="flex-shrink:0">
+            <h3>Conversations</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadAdmThreads()" title="Refresh">↻</button>
+          </div>
           <div id="adm-tlist" style="flex:1;overflow-y:auto"></div>
         </div>
         <div class="card" id="adm-chat" style="display:flex;flex-direction:column;overflow:hidden">
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-direction:column;gap:8px"><div style="font-size:32px">💬</div><p style="font-size:12.5px">Select a conversation</p></div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-direction:column;gap:8px"><div style="font-size:32px">💬</div><p style="font-size:12.5px">Select a conversation to reply</p></div>
         </div>
       </div>
+      <style>
+        @media(max-width:768px){
+          #chat-layout{grid-template-columns:1fr!important;height:auto!important;}
+          #chat-list-col{max-height:40vh;}
+          #adm-chat{min-height:60vh;}
+        }
+      </style>
     </div>
 
     <!-- ═══ MEDIA ═══ -->
@@ -1125,8 +1135,17 @@ async function delSub(id){
 const OI={percentage:'💸',flat:'🏷️',buy_x_get_y:'🎁',free_shipping:'🚚'};
 async function loadOffers(){
   const list=document.getElementById('offers-list');
-  const{data}=await sb.from('offers').select('*').order('created_at',{ascending:false}).catch(()=>({data:[]}));
-  if(!data?.length){list.innerHTML='<p style="color:var(--muted);padding:16px">No offers yet. Create one!</p>';return;}
+  list.innerHTML='<p style="color:var(--muted);padding:16px">Loading…</p>';
+  try{
+    const{data,error}=await sb.from('offers').select('*').order('created_at',{ascending:false});
+    if(error){
+      list.innerHTML=`<div style="background:#fef2f2;color:#b91c1c;padding:14px 16px;border-radius:10px;font-size:13px;border:1px solid #fecaca">
+        ⚠️ Cannot load offers: ${error.message}<br>
+        <small>Run <strong>supabase-fix-final.sql</strong> in Supabase SQL Editor to fix.</small>
+      </div>`;
+      return;
+    }
+    if(!data?.length){list.innerHTML='<p style="color:var(--muted);padding:16px">No offers yet. Create your first one!</p>';return;}
   list.innerHTML=data.map(o=>{
     const now=new Date(),s=new Date(o.start_at),e=new Date(o.end_at);
     const live=o.active&&now>=s&&now<=e,up=o.active&&now<s,ex=now>e;
@@ -1141,6 +1160,7 @@ async function loadOffers(){
       <div style="display:flex;gap:4px;flex-shrink:0"><button class="act ae" onclick="editOffer('${o.id}')">✏️</button><button class="act ad" onclick="delOffer('${o.id}')">🗑️</button></div>
     </div>`;
   }).join('');
+  }catch(e){list.innerHTML=`<p style="color:var(--red,#ef4444);padding:16px">Error: ${e.message}</p>`;}
 }
 function openOfferModal(){
   document.getElementById('m-offer-t').textContent='Create Offer';
@@ -1416,8 +1436,11 @@ function downloadStmt(){
 let admTid=null;
 async function loadAdmThreads(){
   const list=document.getElementById('adm-tlist');
-  const{data}=await sb.from('support_threads').select('*,support_messages(id,message,sender,read_by_admin,created_at),users(name,phone)').order('updated_at',{ascending:false}).catch(()=>({data:[]}));
-  if(!data?.length){list.innerHTML='<p style="padding:12px;font-size:12.5px;color:var(--muted)">No conversations.</p>';return;}
+  list.innerHTML='<p style="padding:12px;font-size:12px;color:var(--muted)">Loading…</p>';
+  try{
+    const{data,error}=await sb.from('support_threads').select('*,support_messages(id,message,sender,read_by_admin,created_at),users(name,phone)').order('updated_at',{ascending:false});
+    if(error){list.innerHTML=`<p style="padding:12px;font-size:12px;color:var(--red,#ef4444)">Error: ${error.message}</p>`;return;}
+    if(!data?.length){list.innerHTML='<p style="padding:12px;font-size:12.5px;color:var(--muted)">No conversations yet.</p>';return;}
   let tot=0;
   list.innerHTML=data.map(t=>{
     const msgs=t.support_messages||[];const last=msgs[msgs.length-1];
@@ -1434,6 +1457,7 @@ async function loadAdmThreads(){
     </div>`;
   }).join('');
   if(tot>0){const b=document.getElementById('bdg-chat');b.textContent=tot;b.classList.add('on');}
+  }catch(e){list.innerHTML=`<p style="padding:12px;font-size:12px;color:var(--red,#ef4444)">Error: ${e.message}</p>`;}
 }
 async function openAdmThread(id,subj,nm){
   admTid=id;
