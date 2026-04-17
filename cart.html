@@ -118,6 +118,17 @@ document.addEventListener('keydown',e=>{
 <script>
 // All cart logic — app.js already loaded above, so Cart/Auth/sb/showToast available
 const DELV_THRESH = 599, DELV_FEE = 49;
+
+// Emoji for product placeholder
+function encodeEmoji(name, cat) {
+  const n = (name||'').toLowerCase(), c = (cat||'').toLowerCase();
+  if(c.includes('fish')||n.match(/fish|betta|tetra|goldfish|guppy|barb|cichlid|molly/)) return '🐠';
+  if(c.includes('aquarium')||n.match(/aquarium|tank|filter|pump|heater|decor/)) return '🐟';
+  if(c.includes('bird')||n.match(/bird|parrot|finch|canary/)) return '🦜';
+  if(c.includes('dog')||n.match(/dog|puppy|pedigree|drools/)) return '🐶';
+  if(c.includes('cat')||n.match(/cat|kitten|whiskas|meow/)) return '🐱';
+  return '🛒';
+}
 let _promo = null, _map = null, _marker = null;
 
 const fp = n => '₹' + Number(n||0).toLocaleString('en-IN');
@@ -165,31 +176,37 @@ function renderCart(){
 
   const STATES=['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir'];
 
+  // Pre-compute item HTML
+  const itemsHtml = items.map(it=>{
+    const emoji = encodeEmoji(it.name, it.category_slug);
+    const imgHtml = it.image_url
+      ? `<img src="${it.image_url}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : '';
+    const emojiDiv = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:30px;background:#edf4f2;${it.image_url?'display:none':''}">${emoji}</div>`;
+    return `
+    <div class="ci">
+      <div class="ci-img">${imgHtml}${emojiDiv}</div>
+      <div class="ci-info">
+        <div class="ci-name">${it.name||''}</div>
+        <div class="ci-pr">${fp(it.price)} each</div>
+        <div class="ci-ctrl">
+          <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty-1})">−</button>
+          <span class="qn">${it.qty}</span>
+          <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty+1})">+</button>
+          <button class="ci-rm" onclick="doRemoveItem('${it.id}')">Remove</button>
+        </div>
+      </div>
+      <div class="ci-tot">${fp(it.price*it.qty)}</div>
+    </div>`;
+  }).join('');
+
   root.innerHTML = `
   <div class="cart-layout">
     <div>
       ${schedHtml}
       <div class="cbox">
         <h2>🛒 Cart (${Cart.count()} items)</h2>
-        ${items.map(it=>`
-          <div class="ci">
-            <div class="ci-img" style="position:relative">
-              <img src="${it.image_url||''}" alt="" 
-                style="width:100%;height:100%;object-fit:cover"
-                onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:#edf4f2\'>${it.name?.[0]||'🐠'}</div>'">
-            </div>
-            <div class="ci-info">
-              <div class="ci-name">${it.name||''}</div>
-              <div class="ci-pr">${fp(it.price)} each</div>
-              <div class="ci-ctrl">
-                <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty-1})">−</button>
-                <span class="qn">${it.qty}</span>
-                <button class="qb" onclick="doUpdateQty('${it.id}',${it.qty+1})">+</button>
-                <button class="ci-rm" onclick="doRemoveItem('${it.id}')">Remove</button>
-              </div>
-            </div>
-            <div class="ci-tot">${fp(it.price*it.qty)}</div>
-          </div>`).join('')}
+        ${itemsHtml}
       </div>
 
       <div class="cbox">
