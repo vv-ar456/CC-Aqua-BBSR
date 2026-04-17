@@ -355,6 +355,53 @@ function updateCartPreview() {
     </div>`;
 }
 
+
+/* ── Local fallback analysis (runs when API fails) ─────── */
+function localAnalysis(items) {
+  const cards = [];
+  const names  = items.map(i => (i.name||'').toLowerCase());
+  const cats   = items.map(i => (i.category_slug||'').toLowerCase());
+  const allText = names.join(' ');
+
+  const hasFish    = cats.some(c=>c.includes('fish')||c.includes('aquarium')) || names.some(n=>n.match(/fish|betta|tetra|goldfish|cichlid|guppy|barb|platy|molly/));
+  const hasDogFood = names.some(n=>n.match(/dog food|pedigree|royal canin dog|drools|kibble|dog biscuit|dog treat/));
+  const hasCatFood = names.some(n=>n.match(/cat food|whiskas|meow|cat treat|kitty/));
+  const hasBetta   = names.some(n=>n.match(/betta/));
+  const hasBird    = cats.some(c=>c.includes('bird')) || names.some(n=>n.match(/parrot|bird|finch|canary|cockatiel/));
+  const hasDog     = cats.some(c=>c.includes('dog')) || names.some(n=>n.match(/labrador|golden|puppy|pup\b/));
+  const hasCat     = cats.some(c=>c.includes('cat')) || names.some(n=>n.match(/kitten|kitty|cat\b/));
+
+  if (hasFish && hasDogFood) {
+    cards.push({ type:'danger', title:'Dog food is toxic for fish!',
+      body:'Dog food like Pedigree contains proteins and preservatives that are toxic to fish. Fish need specialized fish pellets or flakes. Please add fish food to your cart instead.' });
+  }
+  if (hasFish && hasCatFood) {
+    cards.push({ type:'danger', title:'Cat food will harm your fish!',
+      body:'Cat food is formulated for cats and can make fish sick or die. Always use fish-specific food for your aquarium.' });
+  }
+  if (hasBetta && items.filter(i=>(i.category_slug||'').includes('fish') || (i.name||'').match(/fish|tetra|barb|guppy|molly|platy/i)).length > 1) {
+    cards.push({ type:'danger', title:'Betta will attack other fish!',
+      body:'Betta fish are highly aggressive and will attack and kill most tank mates. Keep Betta alone or only with very specific peaceful bottom dwellers.' });
+  }
+  if (hasBird && hasCat) {
+    cards.push({ type:'warning', title:'Cat + Bird needs precaution',
+      body:'Cats are natural predators of birds. Keep them in separate, secure rooms and never leave them unsupervised together.' });
+  }
+  if (hasDog && hasCatFood) {
+    cards.push({ type:'warning', title:'Dog eating cat food = problems',
+      body:'Cat food has too much protein and fat for dogs. Feed each pet their own food to avoid digestive issues.' });
+  }
+  if (cards.length === 0 && hasFish) {
+    cards.push({ type:'tip', title:'Check fish compatibility',
+      body:'Before adding fish together, verify they have similar temperature, pH, and peaceful temperaments. Research each species.' });
+  }
+  if (cards.length === 0) {
+    cards.push({ type:'safe', title:'Cart looks good!',
+      body:'No obvious compatibility issues detected. Double-check species requirements before buying live animals.' });
+  }
+  return cards;
+}
+
 /* ── AI Analysis ──────────────────────────────────────── */
 window.runAIAnalysis = async function () {
   let items = [];
@@ -377,11 +424,16 @@ window.runAIAnalysis = async function () {
   avatar.classList.add('thinking');
   status.textContent = 'Analyzing your cart…';
 
-  // Show thinking state
+  // Show instant local analysis first, then upgrade with AI
+  const quickCards = localAnalysis(items);
+  const quickIssues = quickCards.filter(c => c.type==='danger'||c.type==='warning').length;
   body.innerHTML = `
     <div class="ai-thinking">
       <div class="ai-thinking-dots"><span></span><span></span><span></span></div>
-      <div class="ai-thinking-text">Checking compatibility, diet & safety…</div>
+      <div class="ai-thinking-text">Getting deeper AI analysis…</div>
+    </div>
+    <div style="margin-top:10px;padding:8px 12px;background:#f0fbf8;border-radius:8px;font-size:12px;color:#007a60">
+      ⚡ Quick check: ${quickIssues > 0 ? quickIssues + ' issue(s) found — details loading…' : 'Looks OK — verifying with AI…'}
     </div>`;
 
   try {
@@ -430,22 +482,35 @@ Example:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1200,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await response.json();
-    const raw  = data.content?.[0]?.text || '[]';
+
+    // Check for API errors (wrong model, rate limit, auth fail, etc.)
+    if (!response.ok || data.error || !data.content) {
+      const errMsg = data.error?.message || `API error ${response.status}`;
+      console.error('AI Advisor API error:', errMsg, data);
+      throw new Error(errMsg);
+    }
+
+    const raw = data.content[0]?.text || '[]';
 
     // Parse JSON safely
     let cards = [];
     try {
-      const cleaned = raw.replace(/```json|```/g, '').trim();
+      // Extract JSON even if wrapped in markdown
+      const jsonMatch = raw.match(/\[.*\]/s);
+      const cleaned   = jsonMatch ? jsonMatch[0] : raw.replace(/```json|```/g, '').trim();
       cards = JSON.parse(cleaned);
+      if (!Array.isArray(cards)) throw new Error('Not array');
     } catch(e) {
-      cards = [{ type: 'tip', title: 'Cart looks good!', body: 'No major compatibility issues found in your selection.' }];
+      console.warn('AI JSON parse failed, raw:', raw);
+      // Run our own local analysis as fallback
+      cards = localAnalysis(items);
     }
 
     // Count warnings/dangers

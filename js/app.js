@@ -237,6 +237,23 @@ async function renderNav(activeCat=''){
   const user=Auth.getUser();
   let cats=PH_CATS;
   try{ const c=await DB.cats(); if(c?.length) cats=c; } catch(e){}
+  
+  // Back button — show on all pages except home
+  const isHome = location.pathname.endsWith('index.html') || location.pathname.endsWith('/') || location.pathname === '';
+  const backBtn = isHome ? '' : `
+    <button onclick="history.length>1?history.back():location.href='index.html'" 
+      style="position:fixed;left:12px;bottom:80px;z-index:500;width:42px;height:42px;
+        background:rgba(3,21,32,0.85);backdrop-filter:blur(8px);border:1.5px solid rgba(0,212,170,.25);
+        border-radius:50%;display:flex;align-items:center;justify-content:center;
+        cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:all .2s;color:#fff"
+      onmouseover="this.style.background='rgba(0,168,130,.9)';this.style.borderColor='#00a882'"
+      onmouseout="this.style.background='rgba(3,21,32,0.85)';this.style.borderColor='rgba(0,212,170,.25)'"
+      title="Go back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>`;
+  if(backBtn){ const b=document.createElement('div'); b.innerHTML=backBtn; document.body.appendChild(b.firstElementChild); }
   const catHtml=cats.map(c=>`
     <li class="${activeCat===c.slug?'active':''}">
       <a href="products.html?cat=${c.slug}">${c.emoji||''} ${c.name}</a>
