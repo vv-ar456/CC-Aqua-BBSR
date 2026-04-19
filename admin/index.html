@@ -260,6 +260,7 @@ tbody tr:hover td{background:#fafcfb;}
     <button class="sb-btn" data-p="media"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Media Requests<span class="sb-bdg" id="bdg-media">0</span></button>
     <div class="sb-sec">Config</div>
     <button class="sb-btn" data-p="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+    <button class="sb-btn" data-p="delivery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Delivery &amp; Policy</button>
   </nav>
   <div class="sb-foot">
     <div class="sb-av">A</div>
@@ -421,6 +422,47 @@ tbody tr:hover td{background:#fafcfb;}
           <div class="fg" style="grid-template-columns:1fr"><div class="ff"><label>New Password (min 6)</label><input type="password" id="cfg-pwd" placeholder="Enter new password"></div></div>
           <button class="btn btn-teal" style="margin-top:10px" onclick="changePwd()">Update</button>
         </div>
+
+    <!-- ═══ DELIVERY & POLICY ═══ -->
+    <div class="panel" id="panel-delivery">
+      <div style="max-width:660px;display:flex;flex-direction:column;gap:14px">
+
+        <!-- Delivery Zones -->
+        <div class="card" style="padding:20px">
+          <h3 style="font-family:var(--FD);font-size:14px;font-weight:700;margin-bottom:4px">📦 Delivery Zones</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Currently delivering only within Bhubaneswar, Puri, Cuttack &amp; Khordha districts. Add/remove serviceable PIN codes below.</p>
+          <div class="ff full" style="margin-bottom:12px">
+            <label>Serviceable Areas (one per line: PIN - Area Name)</label>
+            <textarea id="del-zones" rows="10" placeholder="751001 - Bhubaneswar&#10;751002 - Unit-2&#10;752001 - Puri&#10;753001 - Cuttack&#10;754001 - Khordha"></textarea>
+          </div>
+          <div class="ff" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div class="ff"><label>Free Delivery Above (₹)</label><input id="del-free" type="number" value="499" min="0"></div>
+            <div class="ff"><label>Delivery Charge (₹)</label><input id="del-fee" type="number" value="49" min="0"></div>
+          </div>
+          <div class="ff full" style="margin-bottom:14px">
+            <label>Delivery Note (shown to customers)</label>
+            <input id="del-note" placeholder="e.g. We deliver within Bhubaneswar, Puri, Cuttack & Khordha only">
+          </div>
+          <button class="btn btn-teal" onclick="saveDelivery()">Save Delivery Settings</button>
+          <div id="del-msg" style="margin-top:10px;font-size:13px"></div>
+        </div>
+
+        <!-- Policies Editor -->
+        <div class="card" style="padding:20px">
+          <h3 style="font-family:var(--FD);font-size:14px;font-weight:700;margin-bottom:4px">📋 Store Policies</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Edit your store policies. These are displayed on the Policies page for customers.</p>
+          <div class="fg" style="grid-template-columns:1fr">
+            <div class="ff"><label>Shipping Policy</label><textarea id="pol-ship" rows="4" placeholder="Describe your shipping policy…"></textarea></div>
+            <div class="ff"><label>Return / Refund Policy</label><textarea id="pol-return" rows="4" placeholder="Describe your return and refund policy…"></textarea></div>
+            <div class="ff"><label>DOA (Dead on Arrival) Policy</label><textarea id="pol-doa" rows="4" placeholder="Describe your DOA policy for live animals…"></textarea></div>
+            <div class="ff"><label>Privacy Policy</label><textarea id="pol-priv" rows="4" placeholder="Your privacy policy…"></textarea></div>
+          </div>
+          <button class="btn btn-teal" style="margin-top:12px" onclick="savePolicies()">Save Policies</button>
+          <div id="pol-msg" style="margin-top:10px;font-size:13px"></div>
+        </div>
+      </div>
+    </div>
+
       </div>
     </div>
 
@@ -727,8 +769,10 @@ const PM={
   chat:       {t:'Chat & Support'},
   media:      {t:'Media Requests'},
   settings:   {t:'Settings'},
+  delivery:   {t:'Delivery & Policy'},
+  wallets:    {t:'Wallets & Statements'},
 };
-const PL={dashboard:loadDash,orders:loadOrds,products:loadProds,categories:loadCats,offers:loadOffers,coupons:loadCoupons,customers:loadCusts,wallets:loadWals,chat:loadAdmThreads,media:loadMedia};
+const PL={dashboard:loadDash,orders:loadOrds,products:loadProds,categories:loadCats,offers:loadOffers,coupons:loadCoupons,customers:loadCusts,wallets:loadWals,chat:loadAdmThreads,media:loadMedia,delivery:loadDelivery};
 
 function sw(p){
   document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
@@ -1587,6 +1631,56 @@ async function changePwd(){
   const{error}=await sb.from('settings').update({admin_password:p}).eq('id',1);
   if(error){toast('Failed',true);return;}
   toast('Password updated!');document.getElementById('cfg-pwd').value='';
+}
+
+// ═════════════════════════════════════
+//  DELIVERY & POLICY
+// ═════════════════════════════════════
+async function loadDelivery(){
+  try{
+    const{data}=await sb.from('settings').select('*').eq('id',1).single();
+    if(!data)return;
+    if(data.delivery_zones) document.getElementById('del-zones').value=data.delivery_zones;
+    if(data.free_delivery_threshold) document.getElementById('del-free').value=data.free_delivery_threshold;
+    if(data.delivery_fee) document.getElementById('del-fee').value=data.delivery_fee;
+    if(data.delivery_note) document.getElementById('del-note').value=data.delivery_note;
+    if(data.policy_shipping)  document.getElementById('pol-ship').value=data.policy_shipping;
+    if(data.policy_returns)   document.getElementById('pol-return').value=data.policy_returns;
+    if(data.policy_doa)       document.getElementById('pol-doa').value=data.policy_doa;
+    if(data.policy_privacy)   document.getElementById('pol-priv').value=data.policy_priv||data.policy_privacy;
+  }catch(e){console.error('loadDelivery:',e);}
+}
+async function saveDelivery(){
+  const msgEl=document.getElementById('del-msg');
+  const payload={
+    delivery_zones:document.getElementById('del-zones').value.trim(),
+    free_delivery_threshold:parseFloat(document.getElementById('del-free').value)||499,
+    delivery_fee:parseFloat(document.getElementById('del-fee').value)||49,
+    delivery_note:document.getElementById('del-note').value.trim(),
+  };
+  try{
+    const{error}=await sb.from('settings').update(payload).eq('id',1);
+    if(error)throw error;
+    toast('✅ Delivery settings saved!');
+    msgEl.innerHTML='<span style="color:var(--teal2)">✅ Saved!</span>';
+    setTimeout(()=>msgEl.innerHTML='',3000);
+  }catch(e){msgEl.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;toast('Failed: '+e.message,true);}
+}
+async function savePolicies(){
+  const msgEl=document.getElementById('pol-msg');
+  const payload={
+    policy_shipping:document.getElementById('pol-ship').value.trim(),
+    policy_returns:document.getElementById('pol-return').value.trim(),
+    policy_doa:document.getElementById('pol-doa').value.trim(),
+    policy_privacy:document.getElementById('pol-priv').value.trim(),
+  };
+  try{
+    const{error}=await sb.from('settings').update(payload).eq('id',1);
+    if(error)throw error;
+    toast('✅ Policies saved!');
+    msgEl.innerHTML='<span style="color:var(--teal2)">✅ Saved!</span>';
+    setTimeout(()=>msgEl.innerHTML='',3000);
+  }catch(e){msgEl.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;toast('Failed: '+e.message,true);}
 }
 
 // ═════════════════════════════════════
