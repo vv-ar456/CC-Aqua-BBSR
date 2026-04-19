@@ -551,17 +551,36 @@ Example:
     if (issues > 0 && badge) { badge.textContent = '!'; badge.classList.add('show'); }
 
   } catch(e) {
-    console.error('AI Advisor error:', e);
-    body.innerHTML = `
-      <div class="ai-result warning">
-        <div class="ai-result-header">
-          <div class="ai-result-icon">⚠️</div>
-          <div class="ai-result-title">Could not analyze</div>
+    console.error('AI Advisor error:', e.message);
+    // API failed (network/CORS/key error) - run local analysis so user always gets results
+    try {
+      const fallbackCards = localAnalysis(items);
+      const fIssues = fallbackCards.filter(c => c.type==='danger'||c.type==='warning').length;
+      body.innerHTML = `
+        <div style="background:#fff8e6;border:1px solid #f0a843;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:10px">
+          ⚡ Using offline analysis (AI server unreachable)
         </div>
-        <div class="ai-result-body">AI check is temporarily unavailable. Please ensure your cart items are compatible before purchasing.</div>
-      </div>
-      <div class="ai-recheck"><button onclick="resetAIPanel()">Try Again</button></div>`;
-    status.textContent = 'Offline';
+        <div class="ai-summary">
+          <div class="ai-summary-icon">${fIssues===0?'✅':fIssues===1?'⚠️':'🚨'}</div>
+          <div class="ai-summary-text">
+            <strong>${fIssues===0?'Cart looks OK':''+fIssues+' issue'+(fIssues>1?'s':'')+' found'}</strong>
+            <span>${fIssues===0?'No obvious problems detected':'Review below before purchasing'}</span>
+          </div>
+        </div>
+        ${fallbackCards.map(c => `
+          <div class="ai-result ${c.type}">
+            <div class="ai-result-header">
+              <div class="ai-result-icon">${c.type==='safe'?'✅':c.type==='warning'?'⚠️':c.type==='danger'?'🚨':'💡'}</div>
+              <div class="ai-result-title">${c.title}</div>
+            </div>
+            <div class="ai-result-body">${c.body}</div>
+          </div>`).join('')}
+        <div class="ai-recheck"><button onclick="resetAIPanel()">↻ Re-check</button></div>`;
+      status.textContent = fIssues + ' insight' + (fIssues!==1?'s':'') + ' (offline)';
+    } catch(e2) {
+      body.innerHTML = `<div class="ai-result warning"><div class="ai-result-header"><div class="ai-result-icon">⚠️</div><div class="ai-result-title">Could not analyze</div></div><div class="ai-result-body">Please check cart items manually before purchasing.</div></div><div class="ai-recheck"><button onclick="resetAIPanel()">Try Again</button></div>`;
+      status.textContent = 'Offline';
+    }
   }
 
   avatar.classList.remove('thinking');

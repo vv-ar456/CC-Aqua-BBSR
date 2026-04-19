@@ -263,12 +263,21 @@ async function renderNav(activeCat=''){
   el.innerHTML=`
   <div class="nav-row">
     <a href="index.html" class="nav-logo"><img src="logo.png" alt="Aquanics"></a>
-    <div class="nav-search">
-      <input id="ns" type="text" placeholder="Search fish, aquariums, pets…" onkeydown="if(event.key==='Enter')goSearch()">
+    <div class="nav-search" id="nav-search-wrap">
+      <input id="ns" type="text" placeholder="Search fish, aquariums, pets…"
+        onkeydown="if(event.key==='Enter')goSearch()"
+        onkeyup="if(this.value.length>0)document.getElementById('ns-clear').style.display='flex';else document.getElementById('ns-clear').style.display='none'"
+      >
+      <button id="ns-clear" onclick="document.getElementById('ns').value='';this.style.display='none';document.getElementById('ns').focus()"
+        style="display:none;position:absolute;right:36px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;width:20px;height:20px;align-items:center;justify-content:center;font-size:16px">×</button>
       <button class="nav-search-btn" onclick="goSearch()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
     </div>
+    <button class="nav-search-toggle" id="ns-toggle" onclick="toggleNavSearch()"
+      style="display:none;background:var(--teal);border:none;border-radius:8px;width:36px;height:36px;align-items:center;justify-content:center;cursor:pointer;color:var(--ocean);flex-shrink:0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
     <div class="nav-actions">
       <button class="nav-btn" onclick="location.href='${user?'account':'login'}.html'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -296,7 +305,38 @@ async function renderNav(activeCat=''){
 function goSearch(){
   const q=document.getElementById('ns')?.value?.trim();
   if(q) location.href='products.html?search='+encodeURIComponent(q);
+  else { document.getElementById('ns')?.focus(); }
 }
+
+function toggleNavSearch(){
+  const wrap=document.getElementById('nav-search-wrap');
+  const tog=document.getElementById('ns-toggle');
+  if(!wrap)return;
+  const isVisible=wrap.style.display!=='none'&&wrap.offsetWidth>0;
+  if(isVisible){
+    wrap.style.cssText='display:none';
+    tog.style.background='var(--teal)';
+  } else {
+    wrap.style.cssText='display:flex;position:absolute;left:0;right:0;top:0;height:62px;padding:12px 16px;background:var(--ocean2);z-index:200;align-items:center';
+    document.getElementById('ns')?.focus();
+  }
+}
+
+// Inject mobile nav search CSS
+(function(){
+  const s=document.createElement('style');
+  s.textContent=`
+    @media(max-width:640px){
+      #nav-search-wrap{display:none!important;}
+      #ns-toggle{display:flex!important;}
+    }
+    @media(min-width:641px){
+      #ns-toggle{display:none!important;}
+      #nav-search-wrap{display:block!important;}
+    }
+  `;
+  document.head.appendChild(s);
+})();
 
 // ── Shared footer ─────────────────────────────────────
 function renderFooter(){
