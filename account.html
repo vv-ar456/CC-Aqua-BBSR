@@ -214,21 +214,45 @@ async function loadWallet(){
     }
     _wd=w;
 
-    // Auto-interest (client-side, also runs server-side via SQL function)
+    // Auto-interest: only credit once per calendar day, with guard against double-credit
     if(w.balance>0){
-      const last=new Date(w.last_interest_date||w.created_at);
-      const now=new Date();
-      const days=Math.floor((now-last)/(86400000));
-      if(days>=1){
-        const interest=parseFloat((w.balance*0.04/365*days).toFixed(2));
-        if(interest>=0.01){
-          const nb=parseFloat((+w.balance+interest).toFixed(2));
-          const ni=parseFloat((+(w.interest_earned||0)+interest).toFixed(2));
-          await sb.from('wallets').update({balance:nb,interest_earned:ni,last_interest_date:now.toISOString().split('T')[0],updated_at:now.toISOString()}).eq('user_id',_u.id);
-          await sb.from('wallet_transactions').insert([{user_id:_u.id,type:'interest',amount:interest,balance_after:nb,description:`Auto interest: ${days} day(s) @ 4%PA on ${fp2(w.balance)}`}]);
-          // Re-fetch
-          const{data:fw}=await sb.from('wallets').select('*').eq('user_id',_u.id).single();
-          if(fw)_wd=fw;
+      const todayStr=new Date().toISOString().split('T')[0];
+      const lastStr=w.last_interest_date||'';
+      // Only run if last_interest_date is NOT today (prevents multiple credits same day)
+      if(lastStr !== todayStr){
+        // Calculate days since last credit (use last_interest_date if available, else created_at date)
+        const lastDate=lastStr ? new Date(lastStr) : new Date(w.created_at);
+        const nowDate=new Date();
+        // Reset time parts for accurate day calculation
+        lastDate.setHours(0,0,0,0); nowDate.setHours(0,0,0,0);
+        const days=Math.floor((nowDate-lastDate)/86400000);
+        if(days>=1){
+          // 4% per annum = 0.04/365 per day
+          const interest=parseFloat((w.balance * 0.04 / 365 * days).toFixed(4));
+          if(interest>=0.01){
+            const nb=parseFloat((+w.balance+interest).toFixed(2));
+            const ni=parseFloat(((+w.interest_earned||0)+interest).toFixed(2));
+            // First update the date (prevents race condition double-credit)
+            const{error:ue}=await sb.from('wallets').update({
+              balance:nb, interest_earned:ni,
+              last_interest_date:todayStr,
+              updated_at:new Date().toISOString()
+            }).eq('user_id',_u.id);
+            if(!ue){
+              // Only log transaction if update succeeded
+              await sb.from('wallet_transactions').insert([{
+                user_id:_u.id, type:'interest', amount:parseFloat(interest.toFixed(2)),
+                balance_after:nb,
+                description:`Daily interest: ${days} day(s) × 4%PA on ${fp2(w.balance)}`
+              }]);
+            }
+            // Re-fetch latest balance
+            const{data:fw}=await sb.from('wallets').select('*').eq('user_id',_u.id).single();
+            if(fw)_wd=fw;
+          } else {
+            // Interest too small (<₹0.01) - still update date to prevent accumulating tiny amounts daily
+            await sb.from('wallets').update({last_interest_date:todayStr}).eq('user_id',_u.id);
+          }
         }
       }
     }
