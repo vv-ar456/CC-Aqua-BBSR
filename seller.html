@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seller Panel – Aquanics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--teal:#00d4aa;--teal2:#00a882;--ocean:#031520;--ocean2:#062035;--ocean3:#0a2d4a;--g1:#edf4f2;--g2:#c8dbd7;--g3:#7fa9a3;--off:#f5f9f8;--text:#0d1e1c;--R:'Syne',sans-serif;--B:'DM Sans',sans-serif;--red:#ef4444;}
+body{font-family:var(--B);background:var(--off);color:var(--text);display:flex;flex-direction:column;min-height:100vh;}
+/* ── TOPBAR ── */
+.topbar{background:var(--ocean2);color:#fff;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(0,212,170,.1);}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-logo{font-family:var(--R);font-size:16px;font-weight:800;color:#fff;}
+.topbar-badge{background:rgba(0,212,170,.2);border:1px solid rgba(0,212,170,.3);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--teal);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.seller-name{font-size:13px;color:rgba(255,255,255,.6);}
+.seller-name strong{color:#fff;}
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;}
+/* ── SIDEBAR ── */
+.sidebar{width:200px;background:var(--ocean);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
+.sb-sect{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-sect-lbl{padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.25);}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.48);font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;cursor:pointer;}
+.sb-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.88);}
+.sb-btn.on{background:rgba(0,168,130,.15);color:#fff;border-left-color:var(--teal2);}
+.sb-btn svg{width:15px;height:15px;flex-shrink:0;opacity:.6;}
+.sb-btn.on svg,.sb-btn:hover svg{opacity:1;}
+.sb-bdg{margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;display:none;}
+.sb-bdg.on{display:block;}
+/* ── CONTENT ── */
+.content{flex:1;padding:20px;overflow-y:auto;max-width:1100px;}
+.panel{display:none;}
+.panel.on{display:block;}
+/* ── CARDS ── */
+.card{background:#fff;border-radius:14px;border:1px solid var(--g1);padding:18px;margin-bottom:16px;}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.card-hd h3{font-family:var(--R);font-size:14px;font-weight:700;}
+/* ── STATS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.stat{background:#fff;border-radius:12px;border:1px solid var(--g1);padding:14px 16px;}
+.stat .lbl{font-size:11px;color:var(--g3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.stat .val{font-family:var(--R);font-size:22px;font-weight:800;color:var(--ocean);}
+.stat .sub{font-size:11.5px;color:var(--g3);margin-top:2px;}
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--g1);padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid var(--g1);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.bgreen{background:#dcfce7;color:#166534;}
+.bamber{background:#fef9c3;color:#854d0e;}
+.bred{background:#fee2e2;color:#991b1b;}
+.bblu{background:#dbeafe;color:#1e40af;}
+.bg{background:var(--g1);color:var(--g3);}
+.act{padding:5px 10px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--B);}
+.av{background:#dcfce7;color:#166534;}
+.ae{background:#dbeafe;color:#1e40af;}
+/* ── FORM ── */
+.ff{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;}
+.ff label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g3);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--g2);border-radius:9px;font-size:13.5px;font-family:var(--B);color:var(--text);outline:none;transition:border-color .2s;background:#fff;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--teal2);}
+.ff textarea{resize:vertical;min-height:72px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg .full{grid-column:1/-1;}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;font-family:var(--R);cursor:pointer;border:none;transition:all .2s;}
+.btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal2));color:var(--ocean);}
+.btn-teal:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,168,130,.3);}
+.btn-ghost{background:var(--g1);color:var(--text);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+/* ── PRODUCTS ── */
+.prod-img-sm{width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--g1);}
+/* ── STATUS ── */
+.empty-r td{text-align:center;color:var(--g3);padding:28px;font-size:13px;}
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--ocean),var(--ocean2));display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-box{background:#fff;border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.login-box h2{font-family:var(--R);font-size:22px;font-weight:800;margin-bottom:6px;}
+.login-box p{font-size:13px;color:var(--g3);margin-bottom:22px;}
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--ocean2);color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;z-index:9999;transform:translateY(20px);opacity:0;transition:all .3s;box-shadow:0 8px 32px rgba(0,0,0,.3);border:1px solid rgba(0,212,170,.15);pointer-events:none;max-width:260px;}
+/* ── MOBILE ── */
+.mob-menu-btn{display:none;background:none;border:none;color:#fff;cursor:pointer;padding:4px;}
+@media(max-width:700px){
+  .sidebar{position:fixed;left:-200px;top:56px;bottom:0;z-index:90;transition:left .3s;}
+  .sidebar.open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.4);}
+  .mob-menu-btn{display:flex;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .content{padding:14px;}
+  .fg{grid-template-columns:1fr;}
+  .fg .full{grid-column:1;}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <h2>🐠 Seller Login</h2>
+    <p>Welcome to Aquanics Seller Panel</p>
+    <div class="ff"><label>Phone Number</label><input id="sl-phone" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit mobile"></div>
+    <div id="sl-otp-wrap" style="display:none">
+      <div class="ff"><label>OTP</label><input id="sl-otp" type="tel" maxlength="6" inputmode="numeric" placeholder="6-digit OTP"></div>
+    </div>
+    <button class="btn btn-teal" style="width:100%;justify-content:center;padding:13px" id="sl-btn" onclick="sellerAuth()">Send OTP</button>
+    <div id="sl-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
+    <p style="margin-top:16px;font-size:12px;color:var(--g3);text-align:center">Don't have a seller account? <a href="contact.html" style="color:var(--teal2)">Contact us</a></p>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="mob-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="topbar-logo">🐠 Aquanics</div>
+    <span class="topbar-badge">Seller Panel</span>
+  </div>
+  <div class="topbar-right">
+    <span class="seller-name">Welcome, <strong id="seller-name-display">Seller</strong></span>
+    <button class="btn btn-ghost btn-sm" onclick="sellerLogout()">Logout</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-sect">
+      <div class="sb-sect-lbl">Overview</div>
+      <button class="sb-btn on" data-p="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </button>
+    </div>
+    <div class="sb-sect">
+      <div class="sb-sect-lbl">Products</div>
+      <button class="sb-btn" data-p="products">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>My Products
+      </button>
+    </div>
+    <div class="sb-sect">
+      <div class="sb-sect-lbl">Sales</div>
+      <button class="sb-btn" data-p="orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>My Orders<span class="sb-bdg" id="sel-bdg-orders">0</span>
+      </button>
+      <button class="sb-btn" data-p="earnings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Earnings & Payouts
+      </button>
+    </div>
+    <div class="sb-sect">
+      <div class="sb-sect-lbl">Account</div>
+      <button class="sb-btn" data-p="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My Profile
+      </button>
+      <button class="sb-btn" data-p="support">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Support
+      </button>
+    </div>
+  </aside>
+
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div class="panel on" id="panel-dashboard">
+      <h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:14px">Dashboard</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="lbl">Total Sales</div><div class="val" id="sd-sales">₹0</div><div class="sub">All time</div></div>
+        <div class="stat"><div class="lbl">Orders</div><div class="val" id="sd-orders">0</div><div class="sub">Total orders</div></div>
+        <div class="stat"><div class="lbl">Products</div><div class="val" id="sd-prods">0</div><div class="sub">Listed</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>Recent Orders</h3><a href="#" onclick="sw('orders');return false" style="font-size:13px;color:var(--teal2)">View all →</a></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Order ID</th><th>Product</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="sd-rec"><tr class="empty-r"><td colspan="5">Loading…</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="panel" id="panel-products">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <h2 style="font-family:var(--R);font-size:18px;font-weight:800">My Products</h2>
+        <button class="btn btn-teal btn-sm" onclick="openAddProduct()">+ Add Product</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table><thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="sel-prod-body"><tr class="empty-r"><td colspan="6">Loading…</td></tr></tbody></table></div>
+      </div>
+      <!-- Add/Edit Product Modal -->
+      <div id="sel-prod-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;overflow-y:auto;padding:20px">
+        <div style="background:#fff;border-radius:16px;max-width:520px;margin:40px auto;padding:22px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 id="sel-modal-title" style="font-family:var(--R);font-size:16px;font-weight:700">Add Product</h3>
+            <button onclick="document.getElementById('sel-prod-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">×</button>
+          </div>
+          <input type="hidden" id="sel-prod-id">
+          <div class="fg">
+            <div class="ff full"><label>Product Name *</label><input id="sp-name" placeholder="e.g. Glow Tetra Pair"></div>
+            <div class="ff"><label>Sale Price (₹) *</label><input id="sp-price" type="number" min="0" placeholder="0"></div>
+            <div class="ff"><label>MRP / Strike Price (₹)</label><input id="sp-mrp" type="number" min="0" placeholder="0"></div>
+            <div class="ff"><label>Stock Qty (-1 = unlimited)</label><input id="sp-stock" type="number" value="-1"></div>
+            <div class="ff"><label>Image URL</label><input id="sp-img" placeholder="https://…" oninput="if(this.value)document.getElementById('sp-prev').src=this.value"></div>
+            <div class="ff full"><label>Description</label><textarea id="sp-desc" rows="3" placeholder="Describe your product…"></textarea></div>
+          </div>
+          <img id="sp-prev" style="width:80px;height:80px;border-radius:10px;object-fit:cover;background:var(--g1);margin-bottom:10px;display:block">
+          <div id="sp-msg" style="font-size:13px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-teal" onclick="saveSellerProduct()">Save Product</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('sel-prod-modal').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="panel" id="panel-orders">
+      <h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:14px">My Orders</h2>
+      <div class="card">
+        <div class="tbl-wrap"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="sel-ord-body"><tr class="empty-r"><td colspan="7">Loading…</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div class="panel" id="panel-earnings">
+      <h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:14px">Earnings & Payouts</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="lbl">Total Earnings</div><div class="val" id="earn-total">₹0</div></div>
+        <div class="stat"><div class="lbl">Paid Out</div><div class="val" id="earn-paid">₹0</div></div>
+        <div class="stat"><div class="lbl">Pending</div><div class="val" id="earn-pend">₹0</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>Settlement History</h3></div>
+        <div id="earn-list"><p style="color:var(--g3);font-size:13px">No settlements yet.</p></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="panel" id="panel-profile">
+      <h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:14px">My Profile</h2>
+      <div class="card">
+        <div class="fg">
+          <div class="ff"><label>Business Name</label><input id="sp-biz" placeholder="Your store name"></div>
+          <div class="ff"><label>Phone</label><input id="sp-ph" disabled></div>
+          <div class="ff"><label>Email</label><input id="sp-em" type="email" placeholder="contact@yourbiz.com"></div>
+          <div class="ff"><label>GSTIN (optional)</label><input id="sp-gst" placeholder="GST number"></div>
+          <div class="ff full"><label>Bank Account (for settlements)</label><input id="sp-bank" placeholder="Account no. – IFSC – Holder name"></div>
+        </div>
+        <button class="btn btn-teal" onclick="saveSellerProfile()">Save Profile</button>
+        <div id="sp-msg2" style="margin-top:10px;font-size:13px"></div>
+      </div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div class="panel" id="panel-support">
+      <h2 style="font-family:var(--R);font-size:18px;font-weight:800;margin-bottom:14px">Support</h2>
+      <div class="card">
+        <p style="font-size:13px;color:var(--g3);margin-bottom:16px">Need help? Send us a message and we'll respond within 24 hours.</p>
+        <div class="ff"><label>Subject</label><input id="sup-subj" placeholder="Describe your issue…"></div>
+        <div class="ff"><label>Message</label><textarea id="sup-msg-txt" rows="4" placeholder="Details…"></textarea></div>
+        <button class="btn btn-teal" onclick="sendSupport()">Send Message</button>
+        <div id="sup-res" style="margin-top:10px;font-size:13px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPA_URL='https://dwfbqgkhefdzljewatvx.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3ZmJxZ2toZWZkemxqZXdhdHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDQ3NjYsImV4cCI6MjA5MTAyMDc2Nn0.tiZ7786a6J41geK9HZs-nFMe00cPlXDX1ptYQ-EQ1B4';
+const {createClient}=supabase;
+const sb=createClient(SUPA_URL,SUPA_KEY);
+const TWOFACTOR='2503bcf6-237e-11f1-bcb0-0200cd936042';
+
+let _seller=null, _otpSid=null;
+
+const P=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const DS=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+let _tTimer;
+function toast(m,e){
+  const el=document.getElementById('toast');el.textContent=m;
+  el.style.cssText+=';opacity:1;transform:none;'+(e?'border-color:rgba(239,68,68,.3)':'');
+  clearTimeout(_tTimer);_tTimer=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(20px)';},3000);
+}
+
+// ── PANEL SWITCHING ──
+const PL={dashboard:loadDash,products:loadProducts,orders:loadOrders,earnings:loadEarnings,profile:loadProfile,support:()=>{}};
+function sw(p){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(x=>x.classList.remove('on'));
+  document.getElementById('panel-'+p)?.classList.add('on');
+  document.querySelector(`[data-p="${p}"]`)?.classList.add('on');
+  document.querySelector('.sidebar')?.classList.remove('open');
+  if(PL[p])PL[p]();
+}
+document.querySelectorAll('.sb-btn[data-p]').forEach(b=>b.addEventListener('click',()=>sw(b.dataset.p)));
+
+// ── AUTH ──
+const SESS_KEY='aq_seller_sess';
+function getSess(){try{return JSON.parse(localStorage.getItem(SESS_KEY));}catch{return null;}}
+function setSess(v){localStorage.setItem(SESS_KEY,JSON.stringify(v));}
+function clearSess(){localStorage.removeItem(SESS_KEY);}
+
+async function sellerAuth(){
+  const phone=document.getElementById('sl-phone')?.value?.trim();
+  const msgEl=document.getElementById('sl-msg');
+  const btn=document.getElementById('sl-btn');
+  const otpWrap=document.getElementById('sl-otp-wrap');
+
+  if(!_otpSid){
+    if(!/^\d{10}$/.test(phone)){msgEl.innerHTML='<span style="color:#ef4444">Enter valid 10-digit number</span>';return;}
+    btn.disabled=true;btn.textContent='Sending OTP…';
+    try{
+      const r=await fetch(`https://2factor.in/API/V1/${TWOFACTOR}/SMS/+91${phone}/AUTOGEN/OTP1`);
+      const d=await r.json();
+      if(d.Status!=='Success')throw new Error(d.Details||'OTP failed');
+      _otpSid=d.Details;
+      otpWrap.style.display='block';
+      btn.textContent='Verify OTP';btn.disabled=false;
+      msgEl.innerHTML='<span style="color:#007a60">OTP sent to +91'+phone+'</span>';
+    }catch(e){msgEl.innerHTML=`<span style="color:#ef4444">${e.message}</span>`;btn.disabled=false;btn.textContent='Send OTP';}
+  } else {
+    const otp=document.getElementById('sl-otp')?.value?.trim();
+    if(!otp||otp.length<4){msgEl.innerHTML='<span style="color:#ef4444">Enter OTP</span>';return;}
+    btn.disabled=true;btn.textContent='Verifying…';
+    try{
+      const r=await fetch(`https://2factor.in/API/V1/${TWOFACTOR}/SMS/VERIFY/${_otpSid}/${otp}`);
+      const d=await r.json();
+      if(d.Status!=='Success')throw new Error('Invalid OTP');
+      // Check if this phone is a registered seller
+      const{data:user,error}=await sb.from('users').select('*').eq('phone',phone).single();
+      if(error||!user){msgEl.innerHTML='<span style="color:#ef4444">No seller account found for this number. <a href="contact.html">Contact us</a> to register.</span>';btn.disabled=false;btn.textContent='Verify OTP';return;}
+      if(user.role!=='seller'&&user.role!=='admin'){msgEl.innerHTML='<span style="color:#ef4444">This account is not registered as a seller. Contact Aquanics admin.</span>';btn.disabled=false;btn.textContent='Verify OTP';return;}
+      setSess({user,token:Date.now()});
+      _seller=user;
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('seller-name-display').textContent=user.name||'Seller';
+      loadProfile();
+      sw('dashboard');
+    }catch(e){msgEl.innerHTML=`<span style="color:#ef4444">${e.message}</span>`;btn.disabled=false;btn.textContent='Verify OTP';}
+  }
+}
+
+function sellerLogout(){clearSess();location.reload();}
+
+// ── DASHBOARD ──
+async function loadDash(){
+  if(!_seller)return;
+  try{
+    const{data:prods,count:pc}=await sb.from('products').select('*',{count:'exact'}).eq('seller_id',_seller.id);
+    document.getElementById('sd-prods').textContent=pc||0;
+    // Orders containing my products
+    const{data:ords}=await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(10);
+    const myOrds=(ords||[]).filter(o=>(o.items||[]).some(i=>prods?.some(p=>String(p.id)===String(i.id))));
+    const total=myOrds.reduce((s,o)=>{
+      const myAmt=(o.items||[]).filter(i=>prods?.some(p=>String(p.id)===String(i.id))).reduce((ss,i)=>ss+(+i.price)*(+i.qty),0);
+      return s+myAmt;
+    },0);
+    document.getElementById('sd-sales').textContent=P(total);
+    document.getElementById('sd-orders').textContent=myOrds.length;
+    const bdg=document.getElementById('sel-bdg-orders');
+    const newOrds=myOrds.filter(o=>o.status==='confirmed').length;
+    if(newOrds>0){bdg.textContent=newOrds;bdg.classList.add('on');}
+    document.getElementById('sd-rec').innerHTML=myOrds.slice(0,5).length
+      ? myOrds.slice(0,5).map(o=>`<tr>
+          <td><code style="font-size:11px">#${(o.id||'').slice(0,8).toUpperCase()}</code></td>
+          <td style="font-size:12px">${(o.items||[]).filter(i=>prods?.some(p=>String(p.id)===String(i.id))).map(i=>i.name).join(', ').slice(0,30)||'—'}</td>
+          <td>${P((o.items||[]).filter(i=>prods?.some(p=>String(p.id)===String(i.id))).reduce((s,i)=>s+(+i.price)*(+i.qty),0))}</td>
+          <td><span class="badge ${o.status==='delivered'?'bgreen':o.status==='cancelled'?'bred':'bamber'}">${o.status}</span></td>
+          <td style="font-size:12px">${DS(o.created_at)}</td>
+        </tr>`).join('')
+      : '<tr class="empty-r"><td colspan="5">No orders yet</td></tr>';
+  }catch(e){console.error(e);}
+}
+
+// ── PRODUCTS ──
+async function loadProducts(){
+  if(!_seller)return;
+  const body=document.getElementById('sel-prod-body');
+  body.innerHTML='<tr class="empty-r"><td colspan="6">Loading…</td></tr>';
+  try{
+    const{data,error}=await sb.from('products').select('*,categories(name)').eq('seller_id',_seller.id).order('created_at',{ascending:false});
+    if(error)throw error;
+    if(!data?.length){body.innerHTML='<tr class="empty-r"><td colspan="6">No products yet. Add your first product!</td></tr>';return;}
+    body.innerHTML=data.map(p=>`<tr>
+      <td><img class="prod-img-sm" src="${p.image_url||''}" onerror="this.style.display='none'"></td>
+      <td><strong>${p.name}</strong><br><span style="font-size:11px;color:var(--g3)">${p.categories?.name||''}</span></td>
+      <td>${P(p.price)}${p.mrp?`<br><del style="font-size:11px;color:var(--g3)">${P(p.mrp)}</del>`:''}</td>
+      <td>${p.stock_qty===-1?'∞':p.stock_qty}</td>
+      <td><span class="badge ${p.active?'bgreen':'bg'}">${p.active?'Active':'Inactive'}</span></td>
+      <td>
+        <button class="act ae" onclick="editSellerProduct('${p.id}')">✏️ Edit</button>
+        <button class="act" style="background:#fee2e2;color:#991b1b;margin-left:4px" onclick="toggleProduct('${p.id}',${!p.active})">${p.active?'Hide':'Show'}</button>
+      </td>
+    </tr>`).join('');
+  }catch(e){body.innerHTML=`<tr class="empty-r"><td colspan="6" style="color:#ef4444">Error: ${e.message}</td></tr>`;}
+}
+
+function openAddProduct(){
+  document.getElementById('sel-modal-title').textContent='Add Product';
+  document.getElementById('sel-prod-id').value='';
+  ['sp-name','sp-price','sp-mrp','sp-stock','sp-img','sp-desc'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value=id==='sp-stock'?'-1':'';
+  });
+  document.getElementById('sp-prev').src='';
+  document.getElementById('sp-msg').textContent='';
+  document.getElementById('sel-prod-modal').style.display='block';
+}
+
+async function editSellerProduct(id){
+  const{data:p}=await sb.from('products').select('*').eq('id',id).single();
+  if(!p)return;
+  document.getElementById('sel-modal-title').textContent='Edit Product';
+  document.getElementById('sel-prod-id').value=id;
+  document.getElementById('sp-name').value=p.name||'';
+  document.getElementById('sp-price').value=p.price||'';
+  document.getElementById('sp-mrp').value=p.mrp||'';
+  document.getElementById('sp-stock').value=p.stock_qty??-1;
+  document.getElementById('sp-img').value=p.image_url||'';
+  document.getElementById('sp-desc').value=p.description||'';
+  if(p.image_url)document.getElementById('sp-prev').src=p.image_url;
+  document.getElementById('sp-msg').textContent='';
+  document.getElementById('sel-prod-modal').style.display='block';
+}
+
+async function saveSellerProduct(){
+  const eid=document.getElementById('sel-prod-id').value;
+  const name=document.getElementById('sp-name').value.trim();
+  const price=parseFloat(document.getElementById('sp-price').value);
+  const msg=document.getElementById('sp-msg');
+  if(!name||!price){msg.innerHTML='<span style="color:#ef4444">Name and price required</span>';return;}
+  const payload={
+    name, price, mrp:parseFloat(document.getElementById('sp-mrp').value)||null,
+    stock_qty:parseInt(document.getElementById('sp-stock').value)||-1,
+    image_url:document.getElementById('sp-img').value.trim()||null,
+    description:document.getElementById('sp-desc').value.trim()||null,
+    seller_id:_seller.id, active:true,
+  };
+  try{
+    if(eid){const{error}=await sb.from('products').update(payload).eq('id',eid);if(error)throw error;toast('Product updated!');}
+    else{const{error}=await sb.from('products').insert([payload]);if(error)throw error;toast('Product added!');}
+    document.getElementById('sel-prod-modal').style.display='none';
+    loadProducts();
+  }catch(e){msg.innerHTML=`<span style="color:#ef4444">Error: ${e.message}</span>`;}
+}
+
+async function toggleProduct(id,active){
+  await sb.from('products').update({active}).eq('id',id);
+  toast(active?'Product activated':'Product hidden');
+  loadProducts();
+}
+
+// ── ORDERS ──
+async function loadOrders(){
+  if(!_seller)return;
+  const body=document.getElementById('sel-ord-body');
+  body.innerHTML='<tr class="empty-r"><td colspan="7">Loading…</td></tr>';
+  try{
+    const{data:prods}=await sb.from('products').select('id').eq('seller_id',_seller.id);
+    const prodIds=(prods||[]).map(p=>String(p.id));
+    const{data:ords}=await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
+    const myOrds=(ords||[]).filter(o=>(o.items||[]).some(i=>prodIds.includes(String(i.id))));
+    if(!myOrds.length){body.innerHTML='<tr class="empty-r"><td colspan="7">No orders yet</td></tr>';return;}
+    body.innerHTML=myOrds.map(o=>{
+      const myItems=(o.items||[]).filter(i=>prodIds.includes(String(i.id)));
+      const myAmt=myItems.reduce((s,i)=>s+(+i.price)*(+i.qty),0);
+      return`<tr>
+        <td><code style="font-size:11px">#${(o.id||'').slice(0,8).toUpperCase()}</code></td>
+        <td style="font-size:12px">${o.address?.name||'—'}</td>
+        <td style="font-size:12px">${myItems.map(i=>`${i.name} ×${i.qty}`).join(', ').slice(0,40)}</td>
+        <td>${P(myAmt)}</td>
+        <td><span class="badge ${o.status==='delivered'?'bgreen':o.status==='cancelled'?'bred':o.status==='confirmed'?'bblu':'bamber'}">${o.status}</span></td>
+        <td style="font-size:12px">${DS(o.created_at)}</td>
+        <td><span style="font-size:12px;color:var(--g3)">${o.address?.city||'—'}</span></td>
+      </tr>`;
+    }).join('');
+  }catch(e){body.innerHTML=`<tr class="empty-r"><td colspan="7" style="color:#ef4444">${e.message}</td></tr>`;}
+}
+
+// ── EARNINGS ──
+async function loadEarnings(){
+  if(!_seller)return;
+  try{
+    const{data:settlements}=await sb.from('settlements').select('*').eq('seller_id',_seller.id).order('created_at',{ascending:false});
+    const total=(settlements||[]).reduce((s,x)=>s+(+x.amount||0),0);
+    const paid=(settlements||[]).filter(x=>x.status==='paid').reduce((s,x)=>s+(+x.amount||0),0);
+    document.getElementById('earn-total').textContent=P(total);
+    document.getElementById('earn-paid').textContent=P(paid);
+    document.getElementById('earn-pend').textContent=P(total-paid);
+    const list=document.getElementById('earn-list');
+    if(!settlements?.length){list.innerHTML='<p style="color:var(--g3);font-size:13px">No settlements yet.</p>';return;}
+    list.innerHTML=settlements.map(s=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--g1);font-size:13px">
+        <div><div style="font-weight:600">${s.note||'Settlement'}</div><div style="font-size:11px;color:var(--g3)">${DS(s.created_at)}</div></div>
+        <div style="text-align:right"><div style="font-weight:700">${P(s.amount)}</div><span class="badge ${s.status==='paid'?'bgreen':'bamber'}">${s.status}</span></div>
+      </div>`).join('');
+  }catch(e){console.error(e);}
+}
+
+// ── PROFILE ──
+async function loadProfile(){
+  if(!_seller)return;
+  const{data:u}=await sb.from('users').select('*').eq('id',_seller.id).single();
+  if(!u)return;
+  document.getElementById('sp-ph').value=u.phone||'';
+  document.getElementById('sp-biz').value=u.seller_name||u.name||'';
+  document.getElementById('sp-em').value=u.email||'';
+  document.getElementById('sp-gst').value=u.gstin||'';
+  document.getElementById('sp-bank').value=u.bank_details||'';
+}
+
+async function saveSellerProfile(){
+  const msg=document.getElementById('sp-msg2');
+  const payload={
+    seller_name:document.getElementById('sp-biz').value.trim(),
+    email:document.getElementById('sp-em').value.trim(),
+    gstin:document.getElementById('sp-gst').value.trim(),
+    bank_details:document.getElementById('sp-bank').value.trim(),
+  };
+  const{error}=await sb.from('users').update(payload).eq('id',_seller.id);
+  if(error){msg.innerHTML=`<span style="color:#ef4444">Error: ${error.message}</span>`;}
+  else{msg.innerHTML='<span style="color:#007a60">✅ Profile saved!</span>';setTimeout(()=>msg.innerHTML='',3000);}
+}
+
+// ── SUPPORT ──
+async function sendSupport(){
+  const subj=document.getElementById('sup-subj').value.trim();
+  const msgTxt=document.getElementById('sup-msg-txt').value.trim();
+  const res=document.getElementById('sup-res');
+  if(!subj||!msgTxt){res.innerHTML='<span style="color:#ef4444">Please fill both fields</span>';return;}
+  try{
+    const{data:thread}=await sb.from('support_threads').insert([{user_id:_seller.id,subject:'[Seller] '+subj,status:'open'}]).select().single();
+    if(thread){await sb.from('support_messages').insert([{thread_id:thread.id,sender:'user',message:msgTxt}]);}
+    res.innerHTML='<span style="color:#007a60">✅ Message sent! We will respond within 24 hours.</span>';
+    document.getElementById('sup-subj').value='';document.getElementById('sup-msg-txt').value='';
+  }catch(e){res.innerHTML=`<span style="color:#ef4444">Error: ${e.message}</span>`;}
+}
+
+// ── INIT ──
+const sess=getSess();
+if(sess?.user){
+  _seller=sess.user;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('seller-name-display').textContent=_seller.name||'Seller';
+  loadProfile();
+  sw('dashboard');
+}
+</script>
+</body>
+</html>

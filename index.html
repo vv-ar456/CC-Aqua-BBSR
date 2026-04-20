@@ -817,6 +817,11 @@ footer {
   .prod-grid   { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .cats-grid   { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
+@media (max-width: 640px) {
+  #ns-desktop { display: none !important; }
+  #ns-mob-btn { display: flex !important; }
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
 @media (max-width: 600px) {
   .nav-btn span { display: none; }
   .cats-grid   { grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -873,12 +878,16 @@ footer {
 <div id="nav">
   <div class="nav-row">
     <a href="index.html" class="nav-logo"><img src="logo.png" alt="Aquanics"></a>
-    <div class="nav-search">
-      <input id="ns" type="text" placeholder="Search fish, aquariums, pets…" onkeydown="if(event.key==='Enter')goSearch()">
+    <div class="nav-search" id="ns-desktop">
+      <input id="ns" type="search" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="Search fish, aquariums, pets…" onkeydown="if(event.key==='Enter'){event.preventDefault();goSearch();}">
       <button class="nav-search-btn" onclick="goSearch()" aria-label="Search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
     </div>
+    <button id="ns-mob-btn" onclick="openSearchModal()" style="display:none;background:var(--teal);border:none;border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;color:var(--ocean);flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
     <div class="nav-actions">
       <button class="nav-btn" id="nav-account" onclick="location.href='login.html'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

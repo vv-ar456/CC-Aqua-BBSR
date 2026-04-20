@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About Us – Aquanics by Coreconics</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+<style>
+.about-wrap{max-width:1000px;margin:0 auto;padding:40px 20px 80px;}
+
+/* ── HERO ── */
+.about-hero{text-align:center;padding:60px 20px;background:linear-gradient(135deg,var(--ocean),var(--ocean2),var(--ocean3));border-radius:24px;margin-bottom:56px;position:relative;overflow:hidden;}
+.about-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,212,170,.18),transparent);}
+.about-hero h1{font-family:var(--R);font-size:clamp(28px,5vw,48px);font-weight:800;color:#fff;line-height:1.1;margin-bottom:16px;position:relative;}
+.about-hero h1 span{color:var(--teal);}
+.about-hero p{font-size:16px;color:rgba(255,255,255,.65);max-width:560px;margin:0 auto;line-height:1.7;position:relative;}
+
+/* ── STORY ── */
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-bottom:64px;}
+.story-text h2{font-family:var(--R);font-size:26px;font-weight:800;color:var(--ocean);margin-bottom:14px;}
+.story-text p{font-size:14.5px;color:#4a6a64;line-height:1.8;margin-bottom:12px;}
+.story-visual{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.story-card{background:#fff;border-radius:16px;padding:20px;border:1px solid var(--g1);text-align:center;}
+.story-card .ico{font-size:32px;margin-bottom:8px;}
+.story-card .n{font-family:var(--R);font-size:22px;font-weight:800;color:var(--ocean);}
+.story-card .lbl{font-size:12px;color:var(--g3);}
+
+/* ── PARTNERS SECTION ── */
+.partners-section{margin-bottom:64px;}
+.partners-section .sec-title{text-align:center;font-family:var(--R);font-size:28px;font-weight:800;color:var(--ocean);margin-bottom:8px;}
+.partners-section .sec-sub{text-align:center;font-size:14px;color:var(--g3);margin-bottom:48px;}
+.partners-grid{display:flex;flex-direction:column;gap:40px;}
+
+/* ── PARTNER CARD ── */
+.partner-card{background:#fff;border-radius:24px;border:1px solid var(--g1);overflow:hidden;display:grid;grid-template-columns:280px 1fr;min-height:200px;box-shadow:0 4px 24px rgba(0,0,0,.06);opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease;}
+.partner-card.visible{opacity:1;transform:translateY(0);}
+.partner-card:nth-child(even){grid-template-columns:1fr 280px;}
+.partner-card:nth-child(even) .pc-img{order:2;}
+.partner-card:nth-child(even) .pc-body{order:1;}
+.pc-img{background:linear-gradient(135deg,var(--g1),#d4e8e4);display:flex;align-items:center;justify-content:center;padding:30px;position:relative;overflow:hidden;}
+.pc-img::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .5s;background:radial-gradient(circle at center,rgba(0,212,170,.15),transparent);}
+.partner-card.visible .pc-img::before{opacity:1;}
+.pc-img img{max-width:160px;max-height:120px;object-fit:contain;filter:brightness(0);opacity:.85;transition:all .6s ease;}
+.partner-card.visible .pc-img img{filter:brightness(0);opacity:1;transform:scale(1.05);}
+
+/* Blur effect on scroll edges - only active when NOT fully visible */
+.partner-card:not(.visible) .pc-img img{filter:blur(4px) brightness(0);opacity:.4;}
+
+.pc-body{padding:32px;}
+.pc-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal2);margin-bottom:8px;}
+.pc-name{font-family:var(--R);font-size:22px;font-weight:800;color:var(--ocean);margin-bottom:10px;}
+.pc-desc{font-size:14px;color:#4a6a64;line-height:1.75;}
+.pc-tag{display:inline-flex;align-items:center;gap:5px;margin-top:14px;padding:5px 12px;background:var(--g1);border-radius:20px;font-size:12px;font-weight:600;color:var(--g4);}
+
+/* ── ANIMATED RING ── */
+.ring-anim{position:absolute;inset:-20%;border:2px solid rgba(0,212,170,.2);border-radius:50%;animation:ringPulse 3s ease-in-out infinite;}
+.ring-anim:nth-child(2){inset:-30%;animation-delay:.5s;}
+.ring-anim:nth-child(3){inset:-40%;animation-delay:1s;}
+.partner-card.visible .ring-anim{border-color:rgba(0,212,170,.25);}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.05);opacity:1}}
+
+/* ── REVEAL ON SCROLL ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MISSION ── */
+.mission{background:linear-gradient(135deg,var(--ocean),var(--ocean2));border-radius:20px;padding:40px;text-align:center;margin-bottom:48px;}
+.mission h2{font-family:var(--R);font-size:24px;font-weight:800;color:#fff;margin-bottom:12px;}
+.mission p{font-size:15px;color:rgba(255,255,255,.7);max-width:560px;margin:0 auto;line-height:1.75;}
+
+@media(max-width:700px){
+  .story-grid{grid-template-columns:1fr;}
+  .partner-card,.partner-card:nth-child(even){grid-template-columns:1fr;grid-template-rows:auto;}
+  .partner-card:nth-child(even) .pc-img,.partner-card:nth-child(even) .pc-body{order:unset;}
+  .pc-img{min-height:180px;}
+  .pc-body{padding:22px;}
+  .story-visual{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+
+<div class="about-wrap">
+  <!-- HERO -->
+  <div class="about-hero">
+    <h1>Passionate About <span>Pets</span> &amp;<br>Aquatic Life</h1>
+    <p>Aquanics by Coreconics — bringing premium aquarium fish, birds, pets, and supplies to Odisha with love and expertise since 2024.</p>
+  </div>
+
+  <!-- STORY -->
+  <div class="story-grid">
+    <div class="story-text">
+      <h2>Our Story</h2>
+      <p>Aquanics was born from a simple frustration — finding quality aquarium fish and pet supplies in Bhubaneswar was hard. We set out to change that by building a platform that brings ethically sourced, healthy live fish and premium pet products directly to your doorstep.</p>
+      <p>From colorful Bettas and graceful Goldfish to parrots, dogs, and everything they need — we're your one-stop pet destination in Odisha.</p>
+      <p>We deliver across Bhubaneswar, Puri, Cuttack &amp; Khordha with same-day processing and careful live animal packaging.</p>
+    </div>
+    <div class="story-visual">
+      <div class="story-card"><div class="ico">🐠</div><div class="n">50+</div><div class="lbl">Fish Species</div></div>
+      <div class="story-card"><div class="ico">📦</div><div class="n">500+</div><div class="lbl">Orders Delivered</div></div>
+      <div class="story-card"><div class="ico">😊</div><div class="n">98%</div><div class="lbl">Happy Customers</div></div>
+      <div class="story-card"><div class="ico">📍</div><div class="n">4</div><div class="lbl">Districts Covered</div></div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="mission">
+    <h2>🌊 Our Mission</h2>
+    <p>To make premium aquatic life and pet care accessible, affordable, and joyful for every family in Odisha — while ensuring the health and ethical treatment of every animal we sell.</p>
+  </div>
+
+  <!-- PARTNERS -->
+  <div class="partners-section">
+    <div class="sec-title">Our Trusted Partners</div>
+    <div class="sec-sub">The amazing teams who make Aquanics possible</div>
+
+    <div class="partners-grid">
+
+      <!-- BLANCR -->
+      <div class="partner-card" id="pc-blancr">
+        <div class="pc-img">
+          <div class="ring-anim"></div>
+          <div class="ring-anim"></div>
+          <div class="ring-anim"></div>
+          <img src="partners/blancr.jpg" alt="Blancr" id="blancr-logo">
+        </div>
+        <div class="pc-body">
+          <div class="pc-role">🎨 Marketing Partner</div>
+          <div class="pc-name">Blancr.</div>
+          <div class="pc-desc">Blancr is our creative marketing powerhouse — crafting compelling brand stories, stunning visuals, and strategic campaigns that bring Aquanics to life. Their minimalist yet bold approach perfectly captures the premium, nature-inspired identity of our brand.</div>
+          <span class="pc-tag">✦ Brand Strategy &amp; Creative Marketing</span>
+        </div>
+      </div>
+
+      <!-- CORVION -->
+      <div class="partner-card" id="pc-corvion">
+        <div class="pc-img">
+          <div class="ring-anim"></div>
+          <div class="ring-anim"></div>
+          <img src="partners/corvion.png" alt="Corvion" id="corvion-logo">
+        </div>
+        <div class="pc-body">
+          <div class="pc-role">💻 Website Developer</div>
+          <div class="pc-name">Corvion</div>
+          <div class="pc-desc">Corvion built and powers the entire Aquanics digital platform — from our store front and AI advisor to the admin panel and seller ecosystem. Their engineering excellence ensures a seamless, fast, and beautiful experience on every device.</div>
+          <span class="pc-tag">⚡ Full-Stack Web Development</span>
+        </div>
+      </div>
+
+      <!-- CORECONICS -->
+      <div class="partner-card" id="pc-coreconics">
+        <div class="pc-img">
+          <div class="ring-anim"></div>
+          <div class="ring-anim"></div>
+          <div class="ring-anim"></div>
+          <img src="partners/coreconics.png" alt="Coreconics" id="coreconics-logo">
+        </div>
+        <div class="pc-body">
+          <div class="pc-role">🚚 Delivery Partner</div>
+          <div class="pc-name">Coreconics</div>
+          <div class="pc-desc">Coreconics handles our last-mile delivery operations across Bhubaneswar, Puri, Cuttack &amp; Khordha. With specialised live animal packaging know-how and careful handling, they ensure your fish and pets arrive healthy and safe at your doorstep.</div>
+          <span class="pc-tag">📦 Last-Mile Delivery &amp; Logistics</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="footer-wrap"></div>
+
+<script>
+// Scroll-based animations for partner cards
+function initScrollAnim(){
+  const cards = document.querySelectorAll('.partner-card');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting && entry.intersectionRatio >= 0.25){
+        entry.target.classList.add('visible');
+      } else if(!entry.isIntersecting){
+        // Remove visible when scrolled away (blur re-applies)
+        entry.target.classList.remove('visible');
+      }
+    });
+  },{threshold:[0,0.25,0.5,0.75,1]});
+  cards.forEach(c=>io.observe(c));
+}
+
+// Init
+async function init(){
+  await renderNav();
+  renderFooter();
+  initScrollAnim();
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
