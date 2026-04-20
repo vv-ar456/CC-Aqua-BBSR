@@ -264,19 +264,16 @@ async function renderNav(activeCat=''){
   <div class="nav-row">
     <a href="index.html" class="nav-logo"><img src="logo.png" alt="Aquanics"></a>
     <div class="nav-search" id="nav-search-wrap">
-      <input id="ns" type="text" placeholder="Search fish, aquariums, pets…"
-        onkeydown="if(event.key==='Enter')goSearch()"
-        onkeyup="if(this.value.length>0)document.getElementById('ns-clear').style.display='flex';else document.getElementById('ns-clear').style.display='none'"
-      >
-      <button id="ns-clear" onclick="document.getElementById('ns').value='';this.style.display='none';document.getElementById('ns').focus()"
-        style="display:none;position:absolute;right:36px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;width:20px;height:20px;align-items:center;justify-content:center;font-size:16px">×</button>
+      <input id="ns" type="search" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="Search fish, aquariums, pets…"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();goSearch();}">
       <button class="nav-search-btn" onclick="goSearch()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
     </div>
-    <button class="nav-search-toggle" id="ns-toggle" onclick="toggleNavSearch()"
-      style="display:none;background:var(--teal);border:none;border-radius:8px;width:36px;height:36px;align-items:center;justify-content:center;cursor:pointer;color:var(--ocean);flex-shrink:0">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <button id="ns-toggle" onclick="openSearchModal()"
+      style="display:none;background:var(--teal);border:none;border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;color:var(--ocean);flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
     <div class="nav-actions">
       <button class="nav-btn" onclick="location.href='${user?'account':'login'}.html'">
@@ -296,6 +293,8 @@ async function renderNav(activeCat=''){
       <li class="${!activeCat?'active':''}"><a href="index.html">🏠 Home</a></li>
       ${catHtml}
       <li><a href="contact.html">📞 Contact</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+      <li><a href="seller.html">🏪 Sell on Aquanics</a></li>
     </ul>
   </nav>`;
   Cart.badge();
@@ -308,19 +307,37 @@ function goSearch(){
   else { document.getElementById('ns')?.focus(); }
 }
 
-function toggleNavSearch(){
-  const wrap=document.getElementById('nav-search-wrap');
-  const tog=document.getElementById('ns-toggle');
-  if(!wrap)return;
-  const isVisible=wrap.style.display!=='none'&&wrap.offsetWidth>0;
-  if(isVisible){
-    wrap.style.cssText='display:none';
-    tog.style.background='var(--teal)';
-  } else {
-    wrap.style.cssText='display:flex;position:absolute;left:0;right:0;top:0;height:62px;padding:12px 16px;background:var(--ocean2);z-index:200;align-items:center';
-    document.getElementById('ns')?.focus();
-  }
+function openSearchModal(){
+  // Remove existing modal if any
+  document.getElementById('search-modal')?.remove();
+  const modal=document.createElement('div');
+  modal.id='search-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(3,21,32,.92);z-index:9998;display:flex;flex-direction:column;padding:16px';
+  modal.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="flex:1;position:relative">
+        <input id="ns-modal" type="search" autocomplete="off" autocorrect="off" spellcheck="false"
+          placeholder="Search fish, aquariums, pets…"
+          style="width:100%;padding:12px 44px 12px 16px;background:rgba(255,255,255,.1);border:1.5px solid rgba(0,212,170,.3);border-radius:12px;color:#fff;font-size:15px;font-family:var(--B);outline:none;-webkit-appearance:none;box-sizing:border-box"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();doModalSearch();}"
+        >
+        <button onclick="doModalSearch()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--teal);border:none;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#031520">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+      </div>
+      <button onclick="document.getElementById('search-modal').remove()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:10px;cursor:pointer;font-size:18px;flex-shrink:0">✕</button>
+    </div>
+    <div id="search-quick" style="display:flex;flex-wrap:wrap;gap:8px">
+      ${['Live Fish','Aquariums','Bird Food','Dog Food','Cat Food','Fish Tank'].map(t=>`<button onclick="document.getElementById('ns-modal').value='${t}';doModalSearch()" style="padding:7px 14px;background:rgba(0,212,170,.12);border:1.5px solid rgba(0,212,170,.22);border-radius:20px;color:#00d4aa;font-size:13px;cursor:pointer">${t}</button>`).join('')}
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('ns-modal')?.focus(),100);
 }
+
+window.doModalSearch=function(){
+  const q=(document.getElementById('ns-modal')?.value||'').trim();
+  if(q){document.getElementById('search-modal')?.remove();location.href='products.html?search='+encodeURIComponent(q);}
+};
 
 // Inject mobile nav search CSS
 (function(){
@@ -357,6 +374,7 @@ function renderFooter(){
         <li><a href="index.html">Home</a></li>
         <li><a href="products.html">All Products</a></li>
         <li><a href="contact.html">Contact Us</a></li>
+        <li><a href="about.html">About Us</a></li>
         <li><a href="policies.html#doa">DOA Policy</a></li>
       </ul></div>
       <div class="footer-col"><h5>Customer Care</h5><ul>
