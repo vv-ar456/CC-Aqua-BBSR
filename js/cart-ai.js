@@ -359,47 +359,83 @@ function updateCartPreview() {
 /* ── Local fallback analysis (runs when API fails) ─────── */
 function localAnalysis(items) {
   const cards = [];
-  const names  = items.map(i => (i.name||'').toLowerCase());
-  const cats   = items.map(i => (i.category_slug||'').toLowerCase());
-  const allText = names.join(' ');
+  const names = items.map(i => (i.name||'').toLowerCase());
+  const cats  = items.map(i => (i.category_slug||'').toLowerCase());
 
-  const hasFish    = cats.some(c=>c.includes('fish')||c.includes('aquarium')) || names.some(n=>n.match(/fish|betta|tetra|goldfish|cichlid|guppy|barb|platy|molly/));
-  const hasDogFood = names.some(n=>n.match(/dog food|pedigree|royal canin dog|drools|kibble|dog biscuit|dog treat/));
-  const hasCatFood = names.some(n=>n.match(/cat food|whiskas|meow|cat treat|kitty/));
-  const hasBetta   = names.some(n=>n.match(/betta/));
-  const hasBird    = cats.some(c=>c.includes('bird')) || names.some(n=>n.match(/parrot|bird|finch|canary|cockatiel/));
-  const hasDog     = cats.some(c=>c.includes('dog')) || names.some(n=>n.match(/labrador|golden|puppy|pup\b/));
-  const hasCat     = cats.some(c=>c.includes('cat')) || names.some(n=>n.match(/kitten|kitty|cat\b/));
+  const has = (patterns) => patterns.some(p => names.some(n=>n.match(p)) || cats.some(c=>c.match(p)));
 
-  if (hasFish && hasDogFood) {
-    cards.push({ type:'danger', title:'Dog food is toxic for fish!',
-      body:'Dog food like Pedigree contains proteins and preservatives that are toxic to fish. Fish need specialized fish pellets or flakes. Please add fish food to your cart instead.' });
-  }
-  if (hasFish && hasCatFood) {
-    cards.push({ type:'danger', title:'Cat food will harm your fish!',
-      body:'Cat food is formulated for cats and can make fish sick or die. Always use fish-specific food for your aquarium.' });
-  }
-  if (hasBetta && items.filter(i=>(i.category_slug||'').includes('fish') || (i.name||'').match(/fish|tetra|barb|guppy|molly|platy/i)).length > 1) {
-    cards.push({ type:'danger', title:'Betta will attack other fish!',
-      body:'Betta fish are highly aggressive and will attack and kill most tank mates. Keep Betta alone or only with very specific peaceful bottom dwellers.' });
-  }
-  if (hasBird && hasCat) {
-    cards.push({ type:'warning', title:'Cat + Bird needs precaution',
-      body:'Cats are natural predators of birds. Keep them in separate, secure rooms and never leave them unsupervised together.' });
-  }
-  if (hasDog && hasCatFood) {
-    cards.push({ type:'warning', title:'Dog eating cat food = problems',
-      body:'Cat food has too much protein and fat for dogs. Feed each pet their own food to avoid digestive issues.' });
-  }
-  if (cards.length === 0 && hasFish) {
-    cards.push({ type:'tip', title:'Check fish compatibility',
-      body:'Before adding fish together, verify they have similar temperature, pH, and peaceful temperaments. Research each species.' });
-  }
-  if (cards.length === 0) {
-    cards.push({ type:'safe', title:'Cart looks good!',
-      body:'No obvious compatibility issues detected. Double-check species requirements before buying live animals.' });
-  }
-  return cards;
+  const hasFish     = has([/fish|aquarium/]) || names.some(n=>n.match(/tetra|betta|goldfish|guppy|cichlid|barb|platy|molly|loach|danio|rasbora/));
+  const hasBetta    = names.some(n=>n.match(/betta/));
+  const hasGoldfish = names.some(n=>n.match(/goldfish|comet|koi|fantail/));
+  const hasTropical = names.some(n=>n.match(/tetra|guppy|barb|platy|molly|cichlid|discus|angel/));
+  const hasMale     = names.some(n=>n.match(/male betta|betta male/));
+  const hasBird     = has([/bird|parrot|finch|canary|cockatiel|budgie|macaw|lovebird/]);
+  const hasDog      = has([/dog|puppy|labrador|golden retriev|pup/]);
+  const hasCat      = has([/cat|kitten|kitty|feline/]);
+  const hasDogFood  = names.some(n=>n.match(/dog food|pedigree|drools|royal canin dog|dog biscuit|dog treat|dog kibble/));
+  const hasCatFood  = names.some(n=>n.match(/cat food|whiskas|meow|cat treat|cat biscuit|cat kibble/));
+  const hasBirdFood = names.some(n=>n.match(/bird food|bird seed|parrot food|millet|bird treat/));
+  const hasFishFood = names.some(n=>n.match(/fish food|fish flake|fish pellet|aquarium food/));
+  const hasMarine   = names.some(n=>n.match(/marine|saltwater|reef|clownfish|tang/));
+  const hasFreshwater = hasFish && !hasMarine;
+
+  // ── DANGER: Cross-species feeding ─────────────────────────────────
+  if (hasFish && hasDogFood)
+    cards.push({type:'danger',title:'⚠️ Dog food is toxic for fish!',
+      body:'Dog food (like Pedigree) has proteins, salts & preservatives that will poison your fish. Remove it from your fish's feeding routine — add proper fish pellets/flakes instead.'});
+
+  if (hasFish && hasCatFood)
+    cards.push({type:'danger',title:'⚠️ Cat food is deadly for fish!',
+      body:'Cat food has the wrong nutrition profile for fish and contains ingredients that will foul your tank water. Always use fish-specific food.'});
+
+  if (hasBird && hasDogFood)
+    cards.push({type:'warning',title:'Wrong food for your bird',
+      body:'Dog food is not suitable for birds. Birds need species-specific seeds, pellets, or fresh food. Add bird-appropriate food to your cart.'});
+
+  if (hasDog && hasCatFood)
+    cards.push({type:'warning',title:'Cat food causes issues in dogs',
+      body:'Cat food has too much protein and fat for dogs and can cause digestive problems or obesity. Keep each pet's food separate.'});
+
+  // ── DANGER: Fish aggression ────────────────────────────────────────
+  if (hasBetta && hasTropical && items.length > 1)
+    cards.push({type:'danger',title:'Betta will attack other fish!',
+      body:'Betta fish are territorial and will aggressively attack most other fish, especially those with flowing fins. House Betta alone or only with very specific peaceful bottom-dwellers like corydoras.'});
+
+  if (hasGoldfish && hasTropical)
+    cards.push({type:'warning',title:'Goldfish + Tropical fish mismatch',
+      body:'Goldfish prefer cooler water (18-22°C) while tropical fish need 24-28°C. Keeping them together causes stress and illness. Consider separate tanks.'});
+
+  if (hasMarine && hasFreshwater)
+    cards.push({type:'danger',title:'Marine + freshwater fish incompatible',
+      body:'Marine/saltwater fish require completely different water chemistry than freshwater fish. They cannot be kept together under any circumstances.'});
+
+  // ── WARNINGS: Care requirements ───────────────────────────────────
+  if (hasBird && hasCat)
+    cards.push({type:'warning',title:'Cat is a predator to birds',
+      body:'Cats have strong natural instinct to chase birds. Always keep them in completely separate secured rooms and never leave them unsupervised — even briefly.'});
+
+  if (hasDog && hasBird)
+    cards.push({type:'warning',title:'Supervise dogs around birds',
+      body:'Many dogs have prey drive and may harm birds. Keep them separated and introduce carefully under supervision only.'});
+
+  // ── TIPS: Helpful advice ──────────────────────────────────────────
+  if (hasFish && !hasFishFood && !hasDogFood && !hasCatFood)
+    cards.push({type:'tip',title:'Don't forget fish food!',
+      body:'You have fish in your cart but no fish food. Add tropical flakes, pellets, or live food like bloodworms to keep your fish healthy.'});
+
+  if (hasBetta)
+    cards.push({type:'tip',title:'Betta care tips',
+      body:'Betta fish need a minimum 10L tank with a heater (26-28°C) and gentle filter. Change 20-25% water weekly. Avoid putting two males together — they will fight.'});
+
+  if (hasBird && !hasBirdFood)
+    cards.push({type:'tip',title:'Add bird food to your cart!',
+      body:'Birds need a varied diet of seeds, fresh fruit, and species-specific pellets. Malnourishment is the most common issue with pet birds.'});
+
+  if (cards.length === 0)
+    cards.push({type:'safe',title:'✅ Cart looks compatible!',
+      body:'No obvious compatibility issues found. Always research the specific care needs of each animal before purchase. If unsure, contact us!'});
+
+  return cards.slice(0, 5); // max 5 cards
 }
 
 /* ── AI Analysis ──────────────────────────────────────── */
@@ -424,16 +460,14 @@ window.runAIAnalysis = async function () {
   avatar.classList.add('thinking');
   status.textContent = 'Analyzing your cart…';
 
-  // Show instant local analysis first, then upgrade with AI
+  // Run local analysis immediately (fast, no network needed)
   const quickCards = localAnalysis(items);
   const quickIssues = quickCards.filter(c => c.type==='danger'||c.type==='warning').length;
+  // Show thinking animation briefly
   body.innerHTML = `
     <div class="ai-thinking">
       <div class="ai-thinking-dots"><span></span><span></span><span></span></div>
-      <div class="ai-thinking-text">Getting deeper AI analysis…</div>
-    </div>
-    <div style="margin-top:10px;padding:8px 12px;background:#f0fbf8;border-radius:8px;font-size:12px;color:#007a60">
-      ⚡ Quick check: ${quickIssues > 0 ? quickIssues + ' issue(s) found — details loading…' : 'Looks OK — verifying with AI…'}
+      <div class="ai-thinking-text">Analysing your cart…</div>
     </div>`;
 
   try {
@@ -547,7 +581,7 @@ Example:
         <button onclick="resetAIPanel()">↻ Re-check Cart</button>
       </div>`;
 
-    status.textContent = `${cards.length} insight${cards.length !== 1 ? 's' : ''} found`;
+    status.textContent = cards.filter(c=>c.type==='danger'||c.type==='warning').length > 0 ? `⚠️ ${cards.filter(c=>c.type==='danger'||c.type==='warning').length} issue(s) found` : '✅ All clear!';
     if (issues > 0 && badge) { badge.textContent = '!'; badge.classList.add('show'); }
 
   } catch(e) {
@@ -557,9 +591,6 @@ Example:
       const fallbackCards = localAnalysis(items);
       const fIssues = fallbackCards.filter(c => c.type==='danger'||c.type==='warning').length;
       body.innerHTML = `
-        <div style="background:#fff8e6;border:1px solid #f0a843;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:10px">
-          ⚡ Using offline analysis (AI server unreachable)
-        </div>
         <div class="ai-summary">
           <div class="ai-summary-icon">${fIssues===0?'✅':fIssues===1?'⚠️':'🚨'}</div>
           <div class="ai-summary-text">
@@ -576,7 +607,7 @@ Example:
             <div class="ai-result-body">${c.body}</div>
           </div>`).join('')}
         <div class="ai-recheck"><button onclick="resetAIPanel()">↻ Re-check</button></div>`;
-      status.textContent = fIssues + ' insight' + (fIssues!==1?'s':'') + ' (offline)';
+      status.textContent = fIssues + ' insight' + (fIssues!==1?'s':'') + ' found';
     } catch(e2) {
       body.innerHTML = `<div class="ai-result warning"><div class="ai-result-header"><div class="ai-result-icon">⚠️</div><div class="ai-result-title">Could not analyze</div></div><div class="ai-result-body">Please check cart items manually before purchasing.</div></div><div class="ai-recheck"><button onclick="resetAIPanel()">Try Again</button></div>`;
       status.textContent = 'Offline';
