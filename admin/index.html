@@ -771,7 +771,6 @@ const PM={
   media:      {t:'Media Requests'},
   settings:   {t:'Settings'},
   delivery:   {t:'Delivery & Policy'},
-  wallets:    {t:'Wallets & Statements'},
 };
 const PL={dashboard:loadDash,orders:loadOrds,products:loadProds,categories:loadCats,offers:loadOffers,coupons:loadCoupons,customers:loadCusts,wallets:loadWals,chat:loadAdmThreads,media:loadMedia,delivery:loadDelivery};
 
@@ -1449,7 +1448,12 @@ async function viewStmt(uid,name){
     if(!walRes.error) wal=walRes.data;
     if(!txnRes.error) txns=txnRes.data||[];
     else txns=[];
-  }catch(e){console.error('viewStmt:',e.message);}
+  }catch(e){
+    console.error('viewStmt:',e.message);
+    document.getElementById('stmt-summary').innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;
+    document.getElementById('stmt-body').innerHTML=`<p style="color:var(--muted);font-size:13px">Could not load statement. Check console for details.</p>`;
+    return;
+  }
   stmtData=txns||[];
   const ico={credit:'➕',debit:'➖',interest:'⭐',admin_credit:'🎁',admin_debit:'⚙️',refund:'↩️',set:'⚙️'};
   document.getElementById('stmt-summary').innerHTML=`Balance: <strong style="color:var(--teal)">${P2(wal?.balance||0)}</strong> | Total Added: <strong>${P2(wal?.total_added||0)}</strong> | Interest: <strong>${P2(wal?.interest_earned||0)}</strong> | ${stmtData.length} transactions`;
@@ -1646,8 +1650,13 @@ async function changePwd(){
 // ═════════════════════════════════════
 async function loadDelivery(){
   try{
-    const{data}=await sb.from('settings').select('*').eq('id',1).single();
-    if(!data)return;
+    const{data,error:de}=await sb.from('settings').select('*').eq('id',1).maybeSingle();
+    if(de){console.error('loadDelivery error:',de.message);return;}
+    if(!data){
+      // Settings row doesn't exist - show empty form with placeholders
+      document.getElementById('del-msg').innerHTML='<span style="color:#f0a843">⚠️ Run supabase-fix-final.sql to initialise settings row, then reload.</span>';
+      return;
+    }
     if(data.delivery_zones) document.getElementById('del-zones').value=data.delivery_zones;
     if(data.free_delivery_threshold) document.getElementById('del-free').value=data.free_delivery_threshold;
     if(data.delivery_fee) document.getElementById('del-fee').value=data.delivery_fee;
