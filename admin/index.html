@@ -712,7 +712,8 @@ async function checkAuth(){
   if(sessionStorage.getItem('aq_adm')==='1')return true;
   const pwd=prompt('🔐 Admin Password:');
   if(!pwd){location.href='../index.html';return false;}
-  const{data}=await sb.from('settings').select('admin_password').eq('id',1).single().catch(()=>({data:null}));
+  let data=null;
+  try{const{data:sd,error:se}=await sb.from('settings').select('admin_password').eq('id',1).maybeSingle();if(!se)data=sd;}catch(e){}
   if(pwd!==(data?.admin_password||'aquanics2024')){alert('Wrong password.');location.href='../index.html';return false;}
   sessionStorage.setItem('aq_adm','1');return true;
 }
@@ -1415,7 +1416,8 @@ async function saveWal(){
   const msgEl=document.getElementById('m-wal-msg');
   if(!amount||isNaN(amount)||amount<=0){msgEl.innerHTML='<div class="fmsg fe">Enter a valid amount.</div>';return;}
   try{
-    const{data:wallet}=await sb.from('wallets').select('*').eq('user_id',uid).single().catch(()=>({data:null}));
+    let wallet=null;
+    try{const{data:wd,error:we}=await sb.from('wallets').select('*').eq('user_id',uid).maybeSingle();if(!we)wallet=wd;}catch(e){}
     let newBal=wallet?.balance||0;
     if(action==='admin_credit')     newBal=Math.max(0,+newBal+amount);
     else if(action==='admin_debit') newBal=Math.max(0,+newBal-amount);
@@ -1438,10 +1440,16 @@ async function viewStmt(uid,name){
   document.getElementById('stmt-body').innerHTML='<p style="color:var(--muted);font-size:13px">Loading…</p>';
   om('m-stmt');
   // Load wallet + transactions
-  const[{data:wal},{data:txns}]=await Promise.all([
-    sb.from('wallets').select('*').eq('user_id',uid).single().catch(()=>({data:null})),
-    sb.from('wallet_transactions').select('*').eq('user_id',uid).order('created_at',{ascending:false}).catch(()=>({data:[]})),
-  ]);
+  let wal=null,txns=[];
+  try{
+    const[walRes,txnRes]=await Promise.all([
+      sb.from('wallets').select('*').eq('user_id',uid).maybeSingle(),
+      sb.from('wallet_transactions').select('*').eq('user_id',uid).order('created_at',{ascending:false}),
+    ]);
+    if(!walRes.error) wal=walRes.data;
+    if(!txnRes.error) txns=txnRes.data||[];
+    else txns=[];
+  }catch(e){console.error('viewStmt:',e.message);}
   stmtData=txns||[];
   const ico={credit:'➕',debit:'➖',interest:'⭐',admin_credit:'🎁',admin_debit:'⚙️',refund:'↩️',set:'⚙️'};
   document.getElementById('stmt-summary').innerHTML=`Balance: <strong style="color:var(--teal)">${P2(wal?.balance||0)}</strong> | Total Added: <strong>${P2(wal?.total_added||0)}</strong> | Interest: <strong>${P2(wal?.interest_earned||0)}</strong> | ${stmtData.length} transactions`;
