@@ -155,7 +155,8 @@ document.addEventListener('keydown',e=>{if(e.key==='F12'||(e.ctrlKey&&e.shiftKey
           <div style="background:linear-gradient(135deg,#031520,#062035);border-radius:14px;padding:20px;margin-bottom:18px">
             <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Your Referral Code</div>
             <div style="display:flex;align-items:center;gap:12px">
-              <div id="ref-code" style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#00d4aa;letter-spacing:3px">—</div>
+              <div id="ref-code" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#00d4aa;letter-spacing:2px">—</div>
+              <div id="ref-link" style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px;word-break:break-all"></div>
               <button onclick="copyRefCode()" style="padding:8px 16px;background:rgba(0,212,170,.15);border:1.5px solid rgba(0,212,170,.3);border-radius:10px;color:#00d4aa;font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy</button>
               <button onclick="shareRefCode()" style="padding:8px 16px;background:rgba(0,212,170,.15);border:1.5px solid rgba(0,212,170,.3);border-radius:10px;color:#00d4aa;font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif">📤 Share</button>
             </div>
@@ -413,6 +414,9 @@ async function loadRefer(){
     const{data:u}=await sb.from('users').select('referral_code').eq('id',_u.id).single();
     const code=u?.referral_code||_u.id.slice(0,8).toUpperCase();
     document.getElementById('ref-code').textContent=code;
+    const refLink=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+    const linkEl=document.getElementById('ref-link');
+    if(linkEl)linkEl.textContent=refLink;
     // Load earnings
     const{data:earnings,count}=await sb.from('referral_earnings').select('*',{count:'exact'}).eq('referrer_id',_u.id).order('created_at',{ascending:false});
     const total=(earnings||[]).reduce((s,e)=>s+e.amount,0);
@@ -429,16 +433,26 @@ async function loadRefer(){
 function copyRefCode(){
   const code=document.getElementById('ref-code')?.textContent;
   if(!code||code==='—')return;
-  navigator.clipboard?.writeText(code).then(()=>showToast('✅ Code copied!')).catch(()=>{
-    const ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('✅ Code copied!');
-  });
+  const link=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+  navigator.clipboard?.writeText(link)
+    .then(()=>showToast('📋 Referral link copied!'))
+    .catch(()=>{
+      const ta=document.createElement('textarea');ta.value=link;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('📋 Link copied!');
+    });
 }
 function shareRefCode(){
   const code=document.getElementById('ref-code')?.textContent;
   if(!code||code==='—')return;
-  const text=`🐠 Shop at Aquanics - your premium pet & aquarium store! Use my referral code ${code} to get started. Shop here: https://vv-ar456.github.io/Aquanics/`;
-  if(navigator.share){navigator.share({title:'Aquanics Referral',text}).catch(()=>{});}
-  else{navigator.clipboard?.writeText(text);showToast('Link copied to clipboard!');}
+  // Generate link with ?ref= param — user just needs to click this link to auto-register with referral
+  const link=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+  const text=`🐠 Join Aquanics — Odisha's best online pet & aquarium store!\nUse my referral link to sign up and start shopping:\n${link}\n\nYour referral code: ${code}`;
+  if(navigator.share){
+    navigator.share({title:'Join Aquanics!',text,url:link}).catch(()=>{
+      navigator.clipboard?.writeText(link);showToast('📋 Link copied!');
+    });
+  } else {
+    navigator.clipboard?.writeText(link).then(()=>showToast('📋 Referral link copied!')).catch(()=>showToast('Link: '+link));
+  }
 }
 
 async function init(){

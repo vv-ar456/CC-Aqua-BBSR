@@ -320,6 +320,21 @@ let otpSessionId  = null; // 2Factor session ID
 let verifiedPhone = '';   // phone that was successfully OTP-verified
 let timerInterval = null;
 
+// ── REFERRAL: read from URL ?ref=XXXXX ────────────────
+const _refParam = new URLSearchParams(location.search).get('ref') || '';
+if(_refParam) {
+  sessionStorage.setItem('aq_ref_code', _refParam.toUpperCase());
+}
+const _savedRef = sessionStorage.getItem('aq_ref_code') || '';
+
+// Show referral banner if code present
+if(_savedRef) {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:#e6faf5;border:1.5px solid #00a882;border-radius:12px;padding:11px 16px;margin-bottom:16px;font-size:13px;color:#007a60;text-align:center';
+  banner.innerHTML = '🎁 <strong>Referral code applied:</strong> ' + _savedRef + ' — You were referred!';
+  document.getElementById('card')?.prepend(banner);
+}
+
 // ── HELPERS ───────────────────────────────────────────
 const getRedirect = () => new URLSearchParams(location.search).get('redirect') || 'index.html';
 
@@ -582,13 +597,21 @@ async function onCreateAccount() {
 
     if (!user) {
       // Insert new user
+      // Get stored referral code (from URL or sessionStorage)
+      const refCode = sessionStorage.getItem('aq_ref_code') || '';
+      // Auto-generate referral code for this new user
+      const newRefCode = Math.random().toString(36).substring(2,6).toUpperCase() +
+                         Math.random().toString(36).substring(2,6).toUpperCase();
+
       const { data: newUser, error: insertErr } = await sb
         .from('users')
         .insert([{
-          phone:      verifiedPhone,
-          name:       name,
-          email:      email || null,
-          created_at: new Date().toISOString(),
+          phone:         verifiedPhone,
+          name:          name,
+          email:         email || null,
+          created_at:    new Date().toISOString(),
+          referral_code: newRefCode,
+          referred_by:   refCode || null,
         }])
         .select()
         .single();
@@ -607,6 +630,8 @@ async function onCreateAccount() {
     }]);
 
     Auth.set(user, token);
+    // Clear referral code from session after successful registration
+    sessionStorage.removeItem('aq_ref_code');
     showMsg('Account created! Welcome to Aquanics 🎉', 'success');
     setTimeout(() => { location.href = getRedirect(); }, 800);
 
