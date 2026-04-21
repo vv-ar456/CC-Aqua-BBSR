@@ -270,11 +270,12 @@ async function loadWallet(){
             }).eq('user_id',_u.id);
             if(!ue){
               // Only log transaction if update succeeded
-              await sb.from('wallet_transactions').insert([{
+              const{error:iErr}=await sb.from('wallet_transactions').insert([{
                 user_id:_u.id, type:'interest', amount:parseFloat(interest.toFixed(2)),
                 balance_after:nb,
-                description:`Daily interest: ${days} day(s) × 4%PA on ${fp2(w.balance)}`
+                description:`Daily interest: ${days} day(s) x 4%PA on ${fp2(w.balance)}`
               }]);
+              if(iErr) console.warn('Interest txn log failed:',iErr.message);
             }
             // Re-fetch latest balance
             const{data:fw}=await sb.from('wallets').select('*').eq('user_id',_u.id).single();
@@ -362,11 +363,15 @@ async function addMoney(){
 
         if(ue){console.error('Wallet upsert error:',ue);throw new Error(ue.message);}
 
-        // Log transaction
-        await sb.from('wallet_transactions').insert([{
+        // Log transaction - check for error explicitly
+        const{error:txnErr}=await sb.from('wallet_transactions').insert([{
           user_id:_u.id,type:'credit',amount:amt,balance_after:curBal,
           description:'Wallet top-up via Razorpay',payment_id:resp.razorpay_payment_id
         }]);
+        if(txnErr){
+          console.error('Transaction log failed:',txnErr.message);
+          // Don't block user - balance is updated, just log failed
+        }
 
         msgEl.innerHTML=`<span style="color:#007a60">✅ ₹${amt} added to wallet!</span>`;
         document.getElementById('wamt').value='';
@@ -414,7 +419,7 @@ async function loadRefer(){
     const{data:u}=await sb.from('users').select('referral_code').eq('id',_u.id).single();
     const code=u?.referral_code||_u.id.slice(0,8).toUpperCase();
     document.getElementById('ref-code').textContent=code;
-    const refLink=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+    const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/, '/');const refLink=`${base}login.html?ref=${code}`;
     const linkEl=document.getElementById('ref-link');
     if(linkEl)linkEl.textContent=refLink;
     // Load earnings
@@ -433,7 +438,8 @@ async function loadRefer(){
 function copyRefCode(){
   const code=document.getElementById('ref-code')?.textContent;
   if(!code||code==='—')return;
-  const link=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+  const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/, '/');
+  const link=`${base}login.html?ref=${code}`;
   navigator.clipboard?.writeText(link)
     .then(()=>showToast('📋 Referral link copied!'))
     .catch(()=>{
@@ -444,7 +450,8 @@ function shareRefCode(){
   const code=document.getElementById('ref-code')?.textContent;
   if(!code||code==='—')return;
   // Generate link with ?ref= param — user just needs to click this link to auto-register with referral
-  const link=`https://vv-ar456.github.io/Aquanics/login.html?ref=${code}`;
+  const base=window.location.origin+window.location.pathname.replace(/\/[^/]*$/, '/');
+  const link=`${base}login.html?ref=${code}`;
   const text=`🐠 Join Aquanics — Odisha's best online pet & aquarium store!\nUse my referral link to sign up and start shopping:\n${link}\n\nYour referral code: ${code}`;
   if(navigator.share){
     navigator.share({title:'Join Aquanics!',text,url:link}).catch(()=>{

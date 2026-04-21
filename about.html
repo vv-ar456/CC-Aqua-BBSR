@@ -45,11 +45,10 @@
 .pc-img{background:linear-gradient(135deg,var(--g1),#d4e8e4);display:flex;align-items:center;justify-content:center;padding:30px;position:relative;overflow:hidden;}
 .pc-img::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .5s;background:radial-gradient(circle at center,rgba(0,212,170,.15),transparent);}
 .partner-card.visible .pc-img::before{opacity:1;}
-.pc-img img{max-width:160px;max-height:120px;object-fit:contain;filter:brightness(0);opacity:.85;transition:all .6s ease;}
-.partner-card.visible .pc-img img{filter:brightness(0);opacity:1;transform:scale(1.05);}
-
-/* Blur effect on scroll edges - only active when NOT fully visible */
-.partner-card:not(.visible) .pc-img img{filter:blur(4px) brightness(0);opacity:.4;}
+.pc-img img{max-width:160px;max-height:120px;object-fit:contain;opacity:.5;filter:blur(3px) grayscale(30%);transition:all .7s ease;transform:scale(.95);}
+.partner-card.visible .pc-img img{filter:none;opacity:1;transform:scale(1.05);}
+/* When not in view - blurred and faded */
+.partner-card:not(.visible) .pc-img img{filter:blur(3px) grayscale(30%);opacity:.4;transform:scale(.95);}
 
 .pc-body{padding:32px;}
 .pc-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal2);margin-bottom:8px;}
@@ -180,14 +179,13 @@ function initScrollAnim(){
   const cards = document.querySelectorAll('.partner-card');
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
-      if(entry.isIntersecting && entry.intersectionRatio >= 0.25){
+      if(entry.intersectionRatio >= 0.2){
         entry.target.classList.add('visible');
-      } else if(!entry.isIntersecting){
-        // Remove visible when scrolled away (blur re-applies)
+      } else {
         entry.target.classList.remove('visible');
       }
     });
-  },{threshold:[0,0.25,0.5,0.75,1]});
+  },{threshold:[0, 0.1, 0.2, 0.5, 0.8, 1.0], rootMargin:'0px 0px -50px 0px'});
   cards.forEach(c=>io.observe(c));
 }
 
